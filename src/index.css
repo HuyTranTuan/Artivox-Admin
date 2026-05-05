@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&family=Merriweather:wght@400;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --color-primary: #f59e0b;
+  --color-secondary: #64748b;
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-soft: #fff7ed;
+  --color-border: #e2e8f0;
+  --color-title: #0f172a;
+  --color-text: #334155;
+  --color-muted: #94a3b8;
+  --color-success: #16a34a;
+  --shadow-card: 0 14px 40px rgba(15, 23, 42, 0.08);
+  --radius-card: 12px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.14), transparent 25%),
+    linear-gradient(180deg, #fffaf2 0%, var(--color-background) 30%, #eef4fb 100%);
+  color: var(--color-text);
+  font-family: "Merriweather", serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.font-title {
+  font-family: "Inter", sans-serif;
+}
+
+.card-shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.scrollbar-soft::-webkit-scrollbar {
+  width: 10px;
+}
+
+.scrollbar-soft::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.28);
+  border-radius: 999px;
+}
