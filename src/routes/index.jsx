@@ -5,6 +5,7 @@ import ProtectedRoute from "@routes/ProtectedRoute";
 import SignInPage from "@pages/auth/SignInPage";
 import RegisterPage from "@pages/auth/RegisterPage";
 import ArticleCampaignsPage from "@pages/campaigns/ArticleCampaignsPage";
+import CreateArticlePage from "@pages/campaigns/CreateArticlePage";
 import DiscountCampaignsPage from "@pages/campaigns/DiscountCampaignsPage";
 import OrderApprovalPage from "@pages/orders/OrderApprovalPage";
 import OrderDetailPage from "@pages/orders/OrderDetailPage";
@@ -32,6 +33,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "campaigns/article",
             element: <ArticleCampaignsPage />,
+          },
+          {
+            path: "campaigns/article/create",
+            element: <CreateArticlePage />,
           },
           {
             path: "campaigns/discount",

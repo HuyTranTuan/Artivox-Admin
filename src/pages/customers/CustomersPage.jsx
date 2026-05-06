@@ -18,11 +18,23 @@ import { Input } from "@components/ui/input";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
+import { customerService } from "@services/customerService";
 
 const generateMockCustomers = () => {
   const statuses = ["Active", "Inactive", "Suspended"];
   const tiers = ["Standard", "Premium", "VIP"];
-  const names = ["Nguyen Minh", "Tran Anh", "Le Hieu", "Pham Duc", "Hoang Tuan", "Vu Linh", "Dang Ha", "Bui Khanh", "Do Phuc", "Ngo Dat"];
+  const names = [
+    "Nguyen Minh",
+    "Tran Anh",
+    "Le Hieu",
+    "Pham Duc",
+    "Hoang Tuan",
+    "Vu Linh",
+    "Dang Ha",
+    "Bui Khanh",
+    "Do Phuc",
+    "Ngo Dat",
+  ];
   const customers = [];
 
   for (let i = 1; i <= 48; i += 1) {
@@ -35,7 +47,9 @@ const generateMockCustomers = () => {
       tier: tiers[i % 3],
       totalOrders: Math.floor(Math.random() * 50) + 1,
       totalSpent: Math.floor(Math.random() * 50000000) + 100000,
-      joinedAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+      joinedAt: new Date(
+        Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000,
+      ).toLocaleDateString(),
     });
   }
 
@@ -60,7 +74,8 @@ const createDraft = (customer) => ({
 const CustomersPage = () => {
   const navigate = useNavigate();
   const search = useExpandableSearch();
-  const [customers, setCustomers] = useState(generateMockCustomers());
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -77,18 +92,45 @@ const CustomersPage = () => {
   const filtered = useMemo(() => {
     const keyword = debouncedSearch.toLowerCase();
 
-    return customers.filter((customer) => (
-      keyword === ""
-      || customer.name.toLowerCase().includes(keyword)
-      || customer.email.toLowerCase().includes(keyword)
-      || customer.phone.toLowerCase().includes(keyword)
-    ));
+    return customers.filter(
+      (customer) =>
+        keyword === "" ||
+        customer.name.toLowerCase().includes(keyword) ||
+        customer.email.toLowerCase().includes(keyword) ||
+        customer.phone.toLowerCase().includes(keyword),
+    );
   }, [customers, debouncedSearch]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
-  const fmt = (value) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
+  const fmt = (value) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
+
+  // Fetch customers from API with mock fallback
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const data = await customerService.getCustomers();
+        if (mounted)
+          setCustomers(
+            Array.isArray(data) && data.length ? data : generateMockCustomers(),
+          );
+      } catch {
+        if (mounted) setCustomers(generateMockCustomers());
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -147,9 +189,11 @@ const CustomersPage = () => {
     const draft = draftValues[customerId];
     if (!draft) return;
 
-    setCustomers((prev) => prev.map((customer) => (
-      customer.id === customerId ? { ...customer, ...draft } : customer
-    )));
+    setCustomers((prev) =>
+      prev.map((customer) =>
+        customer.id === customerId ? { ...customer, ...draft } : customer,
+      ),
+    );
     setEditingRowId(null);
     setEditingField(null);
     setActionMenuId(null);
@@ -162,7 +206,9 @@ const CustomersPage = () => {
 
   const deleteCustomer = () => {
     if (!selectedCustomer) return;
-    setCustomers((prev) => prev.filter((customer) => customer.id !== selectedCustomer.id));
+    setCustomers((prev) =>
+      prev.filter((customer) => customer.id !== selectedCustomer.id),
+    );
     setCheckedIds((prev) => {
       const next = new Set(prev);
       next.delete(selectedCustomer.id);
@@ -183,11 +229,15 @@ const CustomersPage = () => {
           <select
             className="h-10 w-full rounded-xl border border-amber-300 bg-white px-3 text-sm text-slate-700 outline-none"
             value={value}
-            onChange={(event) => updateDraftField(customer.id, field, event.target.value)}
+            onChange={(event) =>
+              updateDraftField(customer.id, field, event.target.value)
+            }
             autoFocus
           >
             {tierOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>
+                {option}
+              </option>
             ))}
           </select>
         );
@@ -197,7 +247,9 @@ const CustomersPage = () => {
         <Input
           className="h-10 border-amber-300 px-3 py-2"
           value={value}
-          onChange={(event) => updateDraftField(customer.id, field, event.target.value)}
+          onChange={(event) =>
+            updateDraftField(customer.id, field, event.target.value)
+          }
           onKeyDown={(event) => {
             if (event.key === "Enter") saveCustomer(customer.id);
             if (event.key === "Escape") cancelEditing();
@@ -223,15 +275,22 @@ const CustomersPage = () => {
       <Card className="p-6">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="font-title text-2xl font-bold text-slate-950">Customers</h1>
-            <p className="mt-1 text-sm text-slate-500">View and manage all registered customers.</p>
+            <h1 className="font-title text-2xl font-bold text-slate-950">
+              Customers
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              View and manage all registered customers.
+            </p>
           </div>
         </div>
       </Card>
 
       <Card className="p-6">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div ref={search.containerRef} className="flex flex-1 items-center gap-2">
+          <div
+            ref={search.containerRef}
+            className="flex flex-1 items-center gap-2"
+          >
             {search.isOpen ? (
               <div className="relative flex-1">
                 <Input
@@ -257,19 +316,30 @@ const CustomersPage = () => {
                 ) : null}
               </div>
             ) : null}
-            <Button variant="ghost" className="h-10 w-10 p-0" onClick={search.submit}>
+            <Button
+              variant="ghost"
+              className="h-10 w-10 p-0"
+              onClick={search.submit}
+            >
               <Search style={{ width: 18, height: 18 }} />
             </Button>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="h-10 w-10 p-0" aria-label="Export customers">
+            <Button
+              variant="ghost"
+              className="h-10 w-10 p-0"
+              aria-label="Export customers"
+            >
               <Download style={{ width: 18, height: 18 }} />
             </Button>
           </div>
         </div>
 
-        <div className="relative overflow-x-auto" style={{ maxHeight: "calc(100vh - 340px)" }}>
+        <div
+          className="relative overflow-x-auto"
+          style={{ maxHeight: "calc(100vh - 340px)" }}
+        >
           {actionMenuId ? (
             <button
               type="button"
@@ -281,9 +351,17 @@ const CustomersPage = () => {
 
           <div className="min-w-[900px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_140px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 sticky top-0 z-10">
+              <div className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_200px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
                 <div className="flex items-center">
-                  <input type="checkbox" checked={checkedIds.size === paginated.length && paginated.length > 0} onChange={toggleAll} className="rounded" />
+                  <input
+                    type="checkbox"
+                    checked={
+                      checkedIds.size === paginated.length &&
+                      paginated.length > 0
+                    }
+                    onChange={toggleAll}
+                    className="rounded accent-orange-600"
+                  />
                 </div>
                 <div>Name</div>
                 <div>Email</div>
@@ -295,74 +373,108 @@ const CustomersPage = () => {
                 <div>Actions</div>
               </div>
 
-              <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 420px)" }}>
+              <div
+                className="overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 420px)" }}
+              >
                 {paginated.length === 0 ? (
-                  <div className="px-4 py-8 text-center text-sm text-slate-500">No customers found</div>
-                ) : paginated.map((customer) => (
-                  <div key={customer.id} className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_140px] gap-3 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center">
-                    <div>
-                      <input type="checkbox" checked={checkedIds.has(customer.id)} onChange={() => toggleCheck(customer.id)} className="rounded" />
-                    </div>
-                    <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                      {renderEditableCell(customer, "name", "truncate")}
-                    </div>
-                    <div className="text-xs truncate">
-                      {renderEditableCell(customer, "email", "truncate")}
-                    </div>
-                    <div className="text-xs">
-                      {renderEditableCell(customer, "phone")}
-                    </div>
-                    <div className="text-xs text-slate-500">{customer.joinedAt}</div>
-                    <div>
-                      <span className={`text-xs font-medium ${statusColor[customer.status]}`}>{customer.status}</span>
-                    </div>
-                    <div>
-                      {renderEditableCell(customer, "tier")}
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium">{customer.totalOrders}</div>
-                      <div className="text-[10px] text-slate-400">{fmt(customer.totalSpent)}</div>
-                    </div>
-                    <div className="relative z-20 flex justify-end">
-                      {editingRowId === customer.id ? (
-                        <div className="flex gap-1.5">
-                          <button onClick={() => saveCustomer(customer.id)} className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 transition hover:bg-emerald-50" style={{ padding: 5 }}>
-                            <Save style={{ width: 18, height: 18 }} />
-                          </button>
-                          <button onClick={cancelEditing} className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-slate-500 transition hover:bg-slate-100" style={{ padding: 5 }}>
-                            <X style={{ width: 18, height: 18 }} />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => setActionMenuId((prev) => (prev === customer.id ? null : customer.id))}
-                            className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-slate-600 transition hover:bg-slate-100"
-                            style={{ padding: 5 }}
-                          >
-                            <MoreHorizontal style={{ width: 18, height: 18 }} />
-                          </button>
-                          {actionMenuId === customer.id ? (
-                            <div ref={actionMenuRef} className="absolute right-0 top-10 z-20 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
-                              <button onClick={() => { setActionMenuId(null); navigate(`/customers/${customer.id}`); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-blue-600 transition hover:bg-blue-50">
-                                <Eye style={{ width: 18, height: 18 }} />
-                                View
-                              </button>
-                              <button onClick={() => startEditing(customer, "name")} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-emerald-600 transition hover:bg-emerald-50">
-                                <Pencil style={{ width: 18, height: 18 }} />
-                                Edit
-                              </button>
-                              <button onClick={() => { setActionMenuId(null); setSelectedCustomer(customer); setOpenDialog("delete"); }} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 transition hover:bg-rose-50">
-                                <Trash2 style={{ width: 18, height: 18 }} />
-                                Delete
-                              </button>
-                            </div>
-                          ) : null}
-                        </>
-                      )}
-                    </div>
+                  <div className="px-4 py-8 text-center text-sm text-slate-500">
+                    No customers found
                   </div>
-                ))}
+                ) : (
+                  paginated.map((customer) => (
+                    <div
+                      key={customer.id}
+                      className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_200px] gap-3 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-50 transition"
+                    >
+                      <div>
+                        <input
+                          type="checkbox"
+                          checked={checkedIds.has(customer.id)}
+                          onChange={() => toggleCheck(customer.id)}
+                          className="rounded accent-orange-600"
+                        />
+                      </div>
+                      <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                        {renderEditableCell(customer, "name", "truncate")}
+                      </div>
+                      <div className="text-xs truncate">
+                        {renderEditableCell(customer, "email", "truncate")}
+                      </div>
+                      <div className="text-xs">
+                        {renderEditableCell(customer, "phone")}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {customer.joinedAt}
+                      </div>
+                      <div>
+                        <span
+                          className={`text-xs font-medium ${statusColor[customer.status]}`}
+                        >
+                          {customer.status}
+                        </span>
+                      </div>
+                      <div>{renderEditableCell(customer, "tier")}</div>
+                      <div>
+                        <div className="text-sm font-medium">
+                          {customer.totalOrders}
+                        </div>
+                        <div className="text-[10px] text-slate-400">
+                          {fmt(customer.totalSpent)}
+                        </div>
+                      </div>
+                      <div className="relative z-20 flex justify-end gap-1.5">
+                        {editingRowId === customer.id ? (
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => saveCustomer(customer.id)}
+                              className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 transition hover:bg-emerald-50"
+                              style={{ padding: 5 }}
+                            >
+                              <Save style={{ width: 18, height: 18 }} />
+                            </button>
+                            <button
+                              onClick={cancelEditing}
+                              className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-slate-500 transition hover:bg-slate-100"
+                              style={{ padding: 5 }}
+                            >
+                              <X style={{ width: 18, height: 18 }} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() =>
+                                navigate(`/customers/${customer.id}`)
+                              }
+                              className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 transition hover:bg-blue-50"
+                              style={{ padding: 5 }}
+                            >
+                              <Eye style={{ width: 18, height: 18 }} />
+                            </button>
+                            <button
+                              onClick={() => startEditing(customer, "name")}
+                              className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 transition hover:bg-emerald-50"
+                              style={{ padding: 5 }}
+                            >
+                              <Pencil style={{ width: 18, height: 18 }} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedCustomer(customer);
+                                setOpenDialog("delete");
+                              }}
+                              className="flex h-8 w-8 items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 transition hover:bg-rose-50"
+                              style={{ padding: 5 }}
+                            >
+                              <Trash2 style={{ width: 18, height: 18 }} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -370,10 +482,17 @@ const CustomersPage = () => {
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
           <div className="text-sm text-slate-600">
-            Showing {filtered.length ? startIdx + 1 : 0}-{Math.min(startIdx + itemsPerPage, filtered.length)} of {filtered.length}
+            Showing {filtered.length ? startIdx + 1 : 0}-
+            {Math.min(startIdx + itemsPerPage, filtered.length)} of{" "}
+            {filtered.length}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+            >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
@@ -382,17 +501,31 @@ const CustomersPage = () => {
                 let page;
                 if (totalPages <= 5) page = index + 1;
                 else if (currentPage <= 3) page = index + 1;
-                else if (currentPage >= totalPages - 2) page = totalPages - 4 + index;
+                else if (currentPage >= totalPages - 2)
+                  page = totalPages - 4 + index;
                 else page = currentPage - 2 + index;
 
                 return (
-                  <Button key={page} variant={currentPage === page ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentPage(page)}>
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(page)}
+                  >
                     {page}
                   </Button>
                 );
               })}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
+              disabled={currentPage === totalPages}
+            >
               Next
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -402,14 +535,32 @@ const CustomersPage = () => {
 
       {openDialog ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div ref={dialogRef} className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="mb-4 font-title text-xl font-bold text-slate-900">Delete Customer</h2>
+          <div
+            ref={dialogRef}
+            className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+          >
+            <h2 className="mb-4 font-title text-xl font-bold text-slate-900">
+              Delete Customer
+            </h2>
             <p className="mb-4 text-sm text-slate-600">
-              Are you sure you want to delete <strong>{selectedCustomer?.name}</strong>?
+              Are you sure you want to delete{" "}
+              <strong>{selectedCustomer?.name}</strong>?
             </p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>Cancel</Button>
-              <Button variant="destructive" className="flex-1" onClick={deleteCustomer}>Delete</Button>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setOpenDialog(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={deleteCustomer}
+              >
+                Delete
+              </Button>
             </div>
           </div>
         </div>

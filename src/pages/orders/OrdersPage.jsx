@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Eye,
-  Pencil,
-  Trash2,
   Search,
   Filter,
   ChevronLeft,
@@ -15,19 +14,25 @@ import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { orderService } from "@services/orderService";
-import { formatPrice } from "@utils/formatPrice";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 
-const statusOptions = ["PENDING", "PAID", "REFUND_PENDING"];
+const statusColor = {
+  PENDING: "text-amber-600",
+  PAID: "text-emerald-600",
+  REFUND_PENDING: "text-rose-600",
+  PROCESSING: "text-blue-600",
+  SHIPPED: "text-indigo-600",
+  DELIVERED: "text-emerald-600",
+  CANCELLED: "text-slate-500",
+};
 
-const OrderApprovalPage = () => {
+const OrdersPage = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [openDialog, setOpenDialog] = useState(null);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [checkedIds, setCheckedIds] = useState(new Set());
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [sortField, setSortField] = useState(null);
@@ -36,15 +41,21 @@ const OrderApprovalPage = () => {
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
-  const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
 
+  // Fetch orders from API
   useEffect(() => {
     let mounted = true;
-    const loadOrders = async () => {
-      const data = await orderService.listOrders();
-      if (mounted) setOrders(data);
+    const load = async () => {
+      try {
+        const data = await orderService.listOrders();
+        if (mounted) setOrders(Array.isArray(data) ? data : []);
+      } catch {
+        if (mounted) setOrders([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     };
-    loadOrders();
+    load();
     return () => {
       mounted = false;
     };
@@ -54,25 +65,25 @@ const OrderApprovalPage = () => {
     setCurrentPage(1);
   }, [debouncedSearch, selectedStatus, sortField, sortDir]);
 
+  const statusOptions = [
+    ...new Set(orders.map((o) => o.status).filter(Boolean)),
+  ];
+
   const filtered = useMemo(() => {
     let result = [...orders];
-
-    // Search filter
     const keyword = debouncedSearch.toLowerCase();
     if (keyword) {
       result = result.filter(
         (o) =>
-          o.id.toLowerCase().includes(keyword) ||
-          o.customer.toLowerCase().includes(keyword),
+          (o.code || o.id || "").toLowerCase().includes(keyword) ||
+          (o.customer?.name || o.customer || "")
+            .toLowerCase()
+            .includes(keyword),
       );
     }
-
-    // Status filter
     if (selectedStatus) {
       result = result.filter((o) => o.status === selectedStatus);
     }
-
-    // Sort
     if (sortField) {
       result.sort((a, b) => {
         const valA = a[sortField];
@@ -85,30 +96,19 @@ const OrderApprovalPage = () => {
         return sortDir === "asc" ? valA - valB : valB - valA;
       });
     }
-
     return result;
   }, [orders, debouncedSearch, selectedStatus, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
-
-  const toggleCheck = (id) => {
-    setCheckedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleAll = () => {
-    if (checkedIds.size === paginated.length) {
-      setCheckedIds(new Set());
-      return;
-    }
-    setCheckedIds(new Set(paginated.map((o) => o.id)));
-  };
+  const fmtPrice = (v) =>
+    v
+      ? new Intl.NumberFormat("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        }).format(v)
+      : "—";
 
   const toggleSort = (field) => {
     if (sortField === field) {
@@ -120,22 +120,7 @@ const OrderApprovalPage = () => {
   };
 
   const handleView = (item) => {
-    setSelectedOrder(item);
-    setOpenDialog("view");
-  };
-  const handleEdit = (item) => {
-    setSelectedOrder(item);
-    setOpenDialog("edit");
-  };
-  const handleDelete = (item) => {
-    setSelectedOrder(item);
-    setOpenDialog("delete");
-  };
-
-  const statusColor = {
-    PENDING: "text-amber-600",
-    PAID: "text-emerald-600",
-    REFUND_PENDING: "text-rose-600",
+    navigate(`/orders/${item.id || item.code}`);
   };
 
   return (
@@ -144,11 +129,9 @@ const OrderApprovalPage = () => {
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="font-title text-2xl font-bold text-slate-950">
-              Order approval
+              Orders
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Lifecycle: PENDING - PAID - REFUND_PENDING
-            </p>
+            <p className="mt-1 text-sm text-slate-500">Manage all orders</p>
           </div>
           <div className="flex items-center gap-2">
             <div ref={search.containerRef} className="flex items-center gap-2">
@@ -244,45 +227,30 @@ const OrderApprovalPage = () => {
         >
           <div className="min-w-[900px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[40px_1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={
-                      checkedIds.size === paginated.length &&
-                      paginated.length > 0
-                    }
-                    onChange={toggleAll}
-                    className="rounded"
-                  />
-                </div>
+              <div className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
                 <div
                   className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("id")}
+                  onClick={() => toggleSort("code")}
                 >
-                  Code
-                  <ArrowUpDown className="h-3 w-3" />
+                  Code <ArrowUpDown className="h-3 w-3" />
                 </div>
                 <div
                   className="flex items-center gap-1 cursor-pointer"
                   onClick={() => toggleSort("customer")}
                 >
-                  Customer
-                  <ArrowUpDown className="h-3 w-3" />
+                  Customer <ArrowUpDown className="h-3 w-3" />
                 </div>
                 <div
                   className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("amount")}
+                  onClick={() => toggleSort("totalAmount")}
                 >
-                  Amount
-                  <ArrowUpDown className="h-3 w-3" />
+                  Amount <ArrowUpDown className="h-3 w-3" />
                 </div>
                 <div
                   className="flex items-center gap-1 cursor-pointer"
                   onClick={() => toggleSort("status")}
                 >
-                  Status
-                  <ArrowUpDown className="h-3 w-3" />
+                  Status <ArrowUpDown className="h-3 w-3" />
                 </div>
                 <div>Actions</div>
               </div>
@@ -291,32 +259,29 @@ const OrderApprovalPage = () => {
                 className="overflow-y-auto"
                 style={{ maxHeight: "calc(100vh - 420px)" }}
               >
-                {paginated.length === 0 ? (
+                {loading ? (
+                  <div className="px-4 py-8 text-center text-sm text-slate-500">
+                    Loading orders...
+                  </div>
+                ) : paginated.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-slate-500">
                     No orders found
                   </div>
                 ) : (
-                  paginated.map((item) => (
+                  paginated.map((item, idx) => (
                     <div
-                      key={item.id}
-                      className="grid grid-cols-[40px_1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center"
+                      key={item.id || item.code || idx}
+                      className={`grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center ${idx % 2 === 0 ? "bg-slate-50/50" : "bg-white"} hover:bg-orange-50 transition cursor-pointer`}
+                      onClick={() => handleView(item)}
                     >
-                      <div>
-                        <input
-                          type="checkbox"
-                          checked={checkedIds.has(item.id)}
-                          onChange={() => toggleCheck(item.id)}
-                          className="rounded"
-                        />
-                      </div>
                       <div className="font-title text-sm font-semibold text-slate-900">
-                        {item.id}
+                        {item.code || item.id}
                       </div>
                       <div className="text-sm text-slate-700">
-                        {item.customer}
+                        {item.customer?.name || item.customer || "—"}
                       </div>
                       <div className="font-semibold text-slate-900">
-                        {formatPrice(item.amount)}
+                        {fmtPrice(item.totalAmount || item.amount)}
                       </div>
                       <div>
                         <span
@@ -327,25 +292,14 @@ const OrderApprovalPage = () => {
                       </div>
                       <div className="flex gap-1.5">
                         <button
-                          onClick={() => handleView(item)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleView(item);
+                          }}
                           className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
                           style={{ padding: 5 }}
                         >
                           <Eye style={{ width: 18, height: 18 }} />
-                        </button>
-                        <button
-                          onClick={() => handleEdit(item)}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Pencil style={{ width: 18, height: 18 }} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Trash2 style={{ width: 18, height: 18 }} />
                         </button>
                       </div>
                     </div>
@@ -369,8 +323,7 @@ const OrderApprovalPage = () => {
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
+              <ChevronLeft className="h-4 w-4" /> Previous
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
@@ -401,124 +354,13 @@ const OrderApprovalPage = () => {
               }
               disabled={currentPage === totalPages}
             >
-              Next
-              <ChevronRight className="h-4 w-4" />
+              Next <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </Card>
-
-      {openDialog && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div
-            ref={dialogRef}
-            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-          >
-            {openDialog === "view" && (
-              <>
-                <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                  Order Details
-                </h2>
-                <div className="space-y-3">
-                  <div>
-                    <div className="text-xs text-slate-500 uppercase">
-                      Order Code
-                    </div>
-                    <div className="text-sm font-semibold text-slate-900">
-                      {selectedOrder?.id}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 uppercase">
-                      Customer
-                    </div>
-                    <div className="text-sm text-slate-900">
-                      {selectedOrder?.customer}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 uppercase">
-                      Amount
-                    </div>
-                    <div className="text-sm text-slate-900">
-                      {formatPrice(selectedOrder?.amount)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 uppercase">
-                      Status
-                    </div>
-                    <span
-                      className={`text-xs font-medium ${statusColor[selectedOrder?.status]}`}
-                    >
-                      {selectedOrder?.status}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  className="w-full mt-6"
-                  onClick={() => setOpenDialog(null)}
-                >
-                  Close
-                </Button>
-              </>
-            )}
-            {openDialog === "edit" && (
-              <>
-                <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                  Edit Order
-                </h2>
-                <p className="text-sm text-slate-600">
-                  Edit coming soon for: <strong>{selectedOrder?.id}</strong>
-                </p>
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setOpenDialog(null)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    className="flex-1"
-                    onClick={() => setOpenDialog(null)}
-                  >
-                    Save
-                  </Button>
-                </div>
-              </>
-            )}
-            {openDialog === "delete" && (
-              <>
-                <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                  Delete Order
-                </h2>
-                <p className="text-sm text-slate-600 mb-4">
-                  Are you sure? This action cannot be undone.
-                </p>
-                <div className="flex gap-3">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setOpenDialog(null)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    className="flex-1"
-                    onClick={() => setOpenDialog(null)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </section>
   );
 };
 
-export default OrderApprovalPage;
+export default OrdersPage;

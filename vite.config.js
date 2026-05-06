@@ -18,10 +18,10 @@ export default defineConfig({
       "@services": path.resolve(__dirname, "./src/services"),
       "@store": path.resolve(__dirname, "./src/store"),
       "@utils": path.resolve(__dirname, "./src/utils"),
-      "@validators": path.resolve(__dirname, "./src/validators")
-    }
+      "@validators": path.resolve(__dirname, "./src/validators"),
+    },
   },
   server: {
-    port: 5173
-  }
+    port: 5173,
+  },
 });

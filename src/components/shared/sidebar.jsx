@@ -9,6 +9,8 @@ import {
   Box,
   Layers,
   Wrench,
+  Settings2,
+  Library,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@utils/cn";
@@ -25,11 +27,13 @@ const navItems = [
       { to: "/products/models", label: "Models", icon: Box },
       { to: "/products/materials", label: "Materials", icon: Layers },
       { to: "/products/tools", label: "Tools", icon: Wrench },
+      { to: "/products/collections", label: "Collections", icon: Library },
     ],
   },
   { to: "/orders/approval", label: "Orders", icon: ShoppingCart },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/support/chat", label: "Support Chat", icon: MessageCircleMore },
+  { to: "/settings/personal", label: "Settings", icon: Settings2 },
 ];
 
 export const Sidebar = ({ forcedOpen }) => {
@@ -99,7 +103,9 @@ export const Sidebar = ({ forcedOpen }) => {
                             )
                           }
                         >
-                          {ChildIcon && <ChildIcon className="h-4 w-4 shrink-0" />}
+                          {ChildIcon && (
+                            <ChildIcon className="h-4 w-4 shrink-0" />
+                          )}
                           <span className="font-title font-medium">
                             {child.label}
                           </span>

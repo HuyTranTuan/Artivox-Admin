@@ -1,9 +1,8 @@
 # STATE: Current Progress
 
-## Focus: Table Quick Edit, Header UX, Support Chat
+## Focus: Campaign/Table UX Polish, Article Create Page, Order Approval Table
 
-- **Current task**: Customer table quick edit, header search/notification toggle, support chat workspace.
-- **Next task**: Materials/Tools CRUD depth, discount campaigns, order approvals.
+- **Current task**: Article campaigns - New button navigates to create page, Refresh icon button, all table th bold black. Customers - 3 visible action buttons, orange row hover, orange checkbox. Order approval - proper table with columns, filter/sort/search.
 
 ## Completed Checklist
 
@@ -31,6 +30,11 @@
 - [x] Tables: expandable search input + clear button + enter/search action
 - [x] CustomersPage: export icon button, double-click inline quick edit with save/cancel, actions menu overlay scoped to table
 - [x] Customer Support Chat: 2-column chat list + history + message/file/image send with WebSocket-ready mock transport
+- [x] ArticleCampaignsPage: Refresh replaced with RefreshCw icon button, "New campaign" → "New", navigates to create page
+- [x] CreateArticlePage: full-screen overlay with title input, locale select, status select, ReactQuill rich text editor
+- [x] All table headers (th): bold black text (font-bold text-slate-900)
+- [x] CustomersPage: 3 action buttons visible (Eye/Pencil/Trash2), orange row hover (hover:bg-orange-50), orange checkbox accent
+- [x] OrderApprovalPage: rebuilt as proper table with checkbox/Code/Customer/Amount/Status/Actions columns, sort/filter/search
 
 ## Remaining Checklist
 
@@ -38,7 +42,6 @@
 - [ ] CRUD Tools UI
 - [ ] Discount Campaigns List
 - [ ] Personal setting UI
-- [ ] Order Approval & Refund View
 - [ ] Real support chat channel wiring
 
 ## Action Button Standard
