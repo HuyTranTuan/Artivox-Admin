@@ -2,27 +2,20 @@
 
 ## Current Goal
 
-Complete major UI/UX improvements and establish ModelsPage with advanced features.
+UI/UX polish: customer quick edit, table search behavior, header notification/search dropdowns, support chat workspace.
 
 ## Current Solution
 
-- ✅ Renamed BlogCampaignsPage to ArticleCampaignsPage with /campaigns/article route
-- ✅ Logo now clickable to navigate to dashboard
-- ✅ Sidebar navigation restructured with Products submenu (Models, Materials, Tools)
-- ✅ Added Dashboard link, Customers list, copyright footer in sidebar
-- ✅ Improved header UI: bigger toggle button (h-14 w-14), larger notification icon (h-6 w-6)
-- ✅ Account display changed to circular avatar with name beneath
-- ✅ Search converted to icon-based toggle with input display and useDebounce integration
-- ✅ ArticleCampaignsPage table now has straight line borders with action buttons (view, edit, delete)
-- ✅ Status badges now show only text color without background
-- ✅ ModelsPage built with search, view mode toggle (table/grid), filter panel, pagination (20 items/page)
-- ✅ Created useClickOutsideClose hook for dialog interactions
-- ✅ Table rows have icon buttons: Eye (normal), Pencil (green), Trash (red) with dialog confirmations
+- Header: expandable search stays open when text exists, clear-X inside input, bigger search/notification icons, unread badge, read/unread notification filter box at z-900.
+- Sidebar: removed "Admin Dashboard" from logo area and footer.
+- CustomersPage: export icon button in table header, row action menu scoped to table area, double-click inline edit for name/email/phone/tier, save/cancel inline controls.
+- Models/Materials/Tools/ArticleCampaigns tables: action icons normalized to 18px, search toggle now input + search action button + clear-X.
+- Support Chat page: 2-column customer list + chat thread + file/image send controls using a WebSocket-ready mock transport service.
 
 ## Next Build Targets
 
-- Discount campaign screen enhancements
-- Materials and Tools product pages
-- Personal settings refinement
-- Customer support chat interactions
-- Dashboard index page customization
+- Materials and Tools pages CRUD depth
+- Discount campaigns enhancements
+- Personal settings page
+- Order approval & refund view
+- Real support chat backend channel hookup

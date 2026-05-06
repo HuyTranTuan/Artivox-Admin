@@ -9,7 +9,7 @@ export const useAuth = () => {
   const handleSignIn = async (payload) => {
     const response = await authService.signIn(payload);
     signIn(response);
-    navigate("/campaigns/blog");
+    navigate("/");
   };
 
   const handleSignOut = () => {

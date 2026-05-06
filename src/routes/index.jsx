@@ -7,11 +7,15 @@ import RegisterPage from "@pages/auth/RegisterPage";
 import ArticleCampaignsPage from "@pages/campaigns/ArticleCampaignsPage";
 import DiscountCampaignsPage from "@pages/campaigns/DiscountCampaignsPage";
 import OrderApprovalPage from "@pages/orders/OrderApprovalPage";
+import OrderDetailPage from "@pages/orders/OrderDetailPage";
 import ModelsPage from "@pages/products/ModelsPage";
 import MaterialsPage from "@pages/products/MaterialsPage";
 import ToolsPage from "@pages/products/ToolsPage";
 import PersonalSettingsPage from "@pages/settings/PersonalSettingsPage";
 import ChatPage from "@pages/support/ChatPage";
+import CustomersPage from "@pages/customers/CustomersPage";
+import CustomerDetailPage from "@pages/customers/CustomerDetailPage";
+import DashboardPage from "@pages/dashboard/DashboardPage";
 
 export const appRouter = createBrowserRouter([
   {
@@ -23,7 +27,7 @@ export const appRouter = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate replace to="/campaigns/article" />,
+            element: <DashboardPage />,
           },
           {
             path: "campaigns/article",
@@ -36,6 +40,10 @@ export const appRouter = createBrowserRouter([
           {
             path: "orders/approval",
             element: <OrderApprovalPage />,
+          },
+          {
+            path: "orders/:orderId",
+            element: <OrderDetailPage />,
           },
           {
             path: "products/models",
@@ -56,6 +64,14 @@ export const appRouter = createBrowserRouter([
           {
             path: "support/chat",
             element: <ChatPage />,
+          },
+          {
+            path: "customers",
+            element: <CustomersPage />,
+          },
+          {
+            path: "customers/:id",
+            element: <CustomerDetailPage />,
           },
         ],
       },

@@ -4,7 +4,8 @@ export const Button = ({ className, variant = "primary", ...props }) => {
   const variantClassName = {
     primary: "bg-amber-500 text-slate-950 hover:bg-amber-400",
     ghost: "bg-transparent text-slate-600 hover:bg-slate-100",
-    secondary: "bg-slate-900 text-white hover:bg-slate-800"
+    secondary: "bg-slate-900 text-white hover:bg-slate-800",
+    destructive: "bg-rose-600 text-white hover:bg-rose-500",
   };
 
   return (

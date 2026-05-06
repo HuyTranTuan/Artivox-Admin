@@ -1,9 +1,9 @@
 # STATE: Current Progress
 
-## Focus: Major UI/UX Improvements & Advanced Features
+## Focus: Table Quick Edit, Header UX, Support Chat
 
-- **Task hiện tại**: Xây dựng ModelsPage với search, filter, view modes, pagination.
-- **Task tiếp theo**: Discount Campaigns List enhancement.
+- **Current task**: Customer table quick edit, header search/notification toggle, support chat workspace.
+- **Next task**: Materials/Tools CRUD depth, discount campaigns, order approvals.
 
 ## Completed Checklist
 
@@ -12,30 +12,40 @@
 - [x] Admin Shell Layout (Sidebar/Header)
 - [x] Register Page
 - [x] SignIn Page (Sign In Mock)
-- [x] Article Campaigns List (renamed from Blog)
-- [x] Article Campaigns with action buttons (view/edit/delete)
-- [x] Header with circular avatar and improved UI
-- [x] Sidebar with navigation groups and copyright footer
+- [x] Article Campaigns List
+- [x] Header with circular avatar, ADMIN badge, user dropdown
+- [x] Sidebar: sticky h-screen, scroll items, product child icons, orange active
 - [x] Models Page with table/grid views, search, filter, pagination
-- [x] useClickOutsideClose hook for dialogs
-- [x] Badge component with text-only styling
+- [x] Badge component, useClickOutsideClose hook
+- [x] CustomersPage + CustomerDetailPage
+- [x] Default route / -> Dashboard
+- [x] Header icons 22px, dropdown z-900, darker hover, more padding
+- [x] DashboardPage: stat cards, revenue chart, category breakdown, top models, recent orders
+- [x] ArticleCampaignsPage: horizontal stats, create button in table head, no header description
+- [x] ModelsPage: "+" button, no "Product Management" header, scrollable table
+- [x] All tables: action buttons 18px icons, thin border, 5px padding, 5px border radius, hover bg
+- [x] All tables: maxHeight scroll, horizontal scroll < 1000px
+- [x] CustomersPage: split Email/Phone columns, Name/Joined columns, row checkboxes
+- [x] Sidebar footer: removed "Admin Dashboard"
+- [x] Header: bigger search/notification icons, unread notification badge, z-900 notification box, tighter dropdown container padding
+- [x] Tables: expandable search input + clear button + enter/search action
+- [x] CustomersPage: export icon button, double-click inline quick edit with save/cancel, actions menu overlay scoped to table
+- [x] Customer Support Chat: 2-column chat list + history + message/file/image send with WebSocket-ready mock transport
 
 ## Remaining Checklist
 
-- [ ] Discount Campaigns List (Screenshot style)
 - [ ] CRUD Materials UI
 - [ ] CRUD Tools UI
+- [ ] Discount Campaigns List
 - [ ] Personal setting UI
 - [ ] Order Approval & Refund View
-- [ ] Customer Support Chat UI
-- [ ] Dashboard index customization
+- [ ] Real support chat channel wiring
 
-## Key Improvements Implemented
+## Action Button Standard
 
-1. **Navigation**: Blog → Article routes, Dashboard link, nested Products menu
-2. **Header**: Larger buttons (h-14 w-14), circular avatar display, search toggle with debounce
-3. **Sidebar**: Logo clickable, Products submenu, copyright footer
-4. **Tables**: Straight line borders, straight line column separators
-5. **Actions**: View/Edit/Delete buttons with dialog confirmations
-6. **Status**: Badge text-only styling (no background)
-7. **ModelsPage**: Full-featured with 40+ mock data, search, filter, view modes, 20/page pagination
+```text
+h-8 w-8, rounded-[5px], border border-slate-200, padding: 5px
+Icon: 18x18px via inline style
+Colors: blue-600 (view), emerald-600 (edit), rose-600 (delete)
+Hover: bg-blue-50, bg-emerald-50, bg-rose-50
+```
