@@ -4,7 +4,7 @@ import DashboardLayout from "@layouts/DashboardLayout";
 import ProtectedRoute from "@routes/ProtectedRoute";
 import SignInPage from "@pages/auth/SignInPage";
 import RegisterPage from "@pages/auth/RegisterPage";
-import BlogCampaignsPage from "@pages/campaigns/BlogCampaignsPage";
+import ArticleCampaignsPage from "@pages/campaigns/ArticleCampaignsPage";
 import DiscountCampaignsPage from "@pages/campaigns/DiscountCampaignsPage";
 import OrderApprovalPage from "@pages/orders/OrderApprovalPage";
 import ModelsPage from "@pages/products/ModelsPage";
@@ -23,55 +23,55 @@ export const appRouter = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate replace to="/campaigns/blog" />
+            element: <Navigate replace to="/campaigns/article" />,
           },
           {
-            path: "campaigns/blog",
-            element: <BlogCampaignsPage />
+            path: "campaigns/article",
+            element: <ArticleCampaignsPage />,
           },
           {
             path: "campaigns/discount",
-            element: <DiscountCampaignsPage />
+            element: <DiscountCampaignsPage />,
           },
           {
             path: "orders/approval",
-            element: <OrderApprovalPage />
+            element: <OrderApprovalPage />,
           },
           {
             path: "products/models",
-            element: <ModelsPage />
+            element: <ModelsPage />,
           },
           {
             path: "products/materials",
-            element: <MaterialsPage />
+            element: <MaterialsPage />,
           },
           {
             path: "products/tools",
-            element: <ToolsPage />
+            element: <ToolsPage />,
           },
           {
             path: "settings/personal",
-            element: <PersonalSettingsPage />
+            element: <PersonalSettingsPage />,
           },
           {
             path: "support/chat",
-            element: <ChatPage />
-          }
-        ]
-      }
-    ]
+            element: <ChatPage />,
+          },
+        ],
+      },
+    ],
   },
   {
     element: <AuthLayout />,
     children: [
       {
         path: "/signin",
-        element: <SignInPage />
+        element: <SignInPage />,
       },
       {
         path: "/register",
-        element: <RegisterPage />
-      }
-    ]
-  }
+        element: <RegisterPage />,
+      },
+    ],
+  },
 ]);

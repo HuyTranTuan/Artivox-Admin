@@ -9,6 +9,7 @@ Artivox Admin Dashboard v1
 Admin control panel for the Artivox 3D printing ecosystem.
 
 Primary scope:
+
 - Manage polymorphic product catalogs: Models, Materials, Tools
 - Manage order fulfillment and approval flows
 - Manage multi-language CMS content
@@ -34,7 +35,7 @@ src/
     forms/      # Feature forms: ProductForm, ArticleForm
     shared/     # Shared layout blocks: Sidebar, Header, Navbar
   constants/    # Enums and app constants
-  hooks/        # Custom hooks: useAuth, useOrders, useProducts
+  hooks/        # Custom hooks: useAuth, useOrders, useProducts, useClickOutsideClose, useDebounce
   layouts/      # App shell layouts
   pages/        # Route-level screens
   services/     # API modules per feature
@@ -101,7 +102,68 @@ User Action
 - Axios interceptor handles unauthorized responses
 - Invalid sessions redirect to `/login`
 
+## Recent UI/UX Patterns Established
+
+### Search with Debounce
+
+- Search button toggles input visibility
+- useDebounce hook debounces input for 300ms before filtering
+- Commonly used in tables and list pages
+- Pattern: Icon button → Click → Input shows → Type → useDebounce fires
+
+### Filter Panel
+
+- Filter icon opens/closes dropdown panel
+- useClickOutsideClose hook closes panel when clicking outside
+- Checkbox-based filtering with multiple categories and statuses
+- Clear Filters button resets all filters
+
+### Action Buttons in Tables
+
+- Three icon buttons per row: View (eye), Edit (pencil green), Delete (trash red)
+- Buttons trigger dialogs using useClickOutsideClose for modal behavior
+- Icons from lucide-react library
+- Dialogs: View shows data, Edit shows placeholder, Delete shows confirmation
+
+### Table Styling
+
+- Straight line borders (not boxed cells)
+- Column header with uppercase text and bottom border
+- Row borders with simple bottom border separators
+- Consistent grid layout for alignment
+
+### Sidebar Navigation
+
+- Nested menu items under Products heading
+- Dashboard link at top level
+- Customers list added
+- Copyright footer at bottom when sidebar is open
+- Logo is clickable NavLink to dashboard
+
+### Header Improvements
+
+- Bigger toggle button (h-14 w-14 instead of h-11 w-11)
+- Larger notification icon (h-6 w-6 instead of h-5 w-5)
+- Circular avatar with gradient background
+- User name displayed below avatar
+- Search toggle with input display
+
+### Badge Component
+
+- Text-only styling (no background colors)
+- Uses semantic color mapping per status
+- No padding or rounded container
+
+### Pagination
+
+- 20 items per page standard
+- Previous/Next buttons
+- Page number buttons (shows 5 pages max)
+- Summary text showing range and total count
+- Disabled state on boundary pages
+
 ## Current Focus
 
-- Current build target: Blog Campaign management UI
-- Next target: Order approval workflow
+- Current build target: ModelsPage with full CRUD UI
+- Next target: Materials and Tools pages following ModelsPage pattern
+- Following target: Discount campaigns and dashboard customization
