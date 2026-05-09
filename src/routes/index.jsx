@@ -1,22 +1,42 @@
-import { Navigate, createBrowserRouter } from "react-router-dom";
-import AuthLayout from "@layouts/AuthLayout";
-import DashboardLayout from "@layouts/DashboardLayout";
+import { lazy, Suspense } from "react";
+import { createBrowserRouter } from "react-router-dom";
+import AuthLayout from "@/layouts/AuthLayout/index.jsx";
+import DashboardLayout from "@/layouts/DashoardLayout";
 import ProtectedRoute from "@routes/ProtectedRoute";
 import SignInPage from "@pages/auth/SignInPage";
-import RegisterPage from "@pages/auth/RegisterPage";
-import ArticleCampaignsPage from "@pages/campaigns/ArticleCampaignsPage";
-import CreateArticlePage from "@pages/campaigns/CreateArticlePage";
-import DiscountCampaignsPage from "@pages/campaigns/DiscountCampaignsPage";
-import OrderApprovalPage from "@pages/orders/OrderApprovalPage";
-import OrderDetailPage from "@pages/orders/OrderDetailPage";
-import ModelsPage from "@pages/products/ModelsPage";
-import MaterialsPage from "@pages/products/MaterialsPage";
-import ToolsPage from "@pages/products/ToolsPage";
-import PersonalSettingsPage from "@pages/settings/PersonalSettingsPage";
-import ChatPage from "@pages/support/ChatPage";
-import CustomersPage from "@pages/customers/CustomersPage";
-import CustomerDetailPage from "@pages/customers/CustomerDetailPage";
 import DashboardPage from "@pages/dashboard/DashboardPage";
+
+const RegisterPage = lazy(() => import("@pages/auth/RegisterPage"));
+const ArticleCampaignsPage = lazy(
+  () => import("@pages/campaigns/ArticleCampaignsPage"),
+);
+const CreateArticlePage = lazy(
+  () => import("@pages/campaigns/CreateArticlePage"),
+);
+const DiscountCampaignsPage = lazy(
+  () => import("@pages/campaigns/DiscountCampaignsPage"),
+);
+const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
+const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
+const ModelsPage = lazy(() => import("@pages/products/ModelsPage"));
+const MaterialsPage = lazy(() => import("@pages/products/MaterialsPage"));
+const ToolsPage = lazy(() => import("@pages/products/ToolsPage"));
+const PersonalSettingsPage = lazy(
+  () => import("@pages/settings/PersonalSettingsPage"),
+);
+const ChatPage = lazy(() => import("@pages/support/ChatPage"));
+const CustomersPage = lazy(() => import("@pages/customers/CustomersPage"));
+const CustomerDetailPage = lazy(
+  () => import("@pages/customers/CustomerDetailPage"),
+);
+
+const withLazyLoad = (Component) => (
+  <Suspense
+    fallback={<div className="p-6 text-sm text-slate-500">Loading page...</div>}
+  >
+    <Component />
+  </Suspense>
+);
 
 export const appRouter = createBrowserRouter([
   {
@@ -32,51 +52,59 @@ export const appRouter = createBrowserRouter([
           },
           {
             path: "campaigns/article",
-            element: <ArticleCampaignsPage />,
+            element: withLazyLoad(ArticleCampaignsPage),
+          },
+          {
+            path: "campaigns/article/:slug",
+            element: withLazyLoad(ArticleCampaignsPage),
           },
           {
             path: "campaigns/article/create",
-            element: <CreateArticlePage />,
+            element: withLazyLoad(CreateArticlePage),
           },
           {
             path: "campaigns/discount",
-            element: <DiscountCampaignsPage />,
+            element: withLazyLoad(DiscountCampaignsPage),
           },
           {
-            path: "orders/approval",
-            element: <OrderApprovalPage />,
+            path: "campaigns/discount/:slug",
+            element: withLazyLoad(DiscountCampaignsPage),
+          },
+          {
+            path: "orders",
+            element: withLazyLoad(OrdersPage),
           },
           {
             path: "orders/:orderId",
-            element: <OrderDetailPage />,
+            element: withLazyLoad(OrderDetailPage),
           },
           {
             path: "products/models",
-            element: <ModelsPage />,
+            element: withLazyLoad(ModelsPage),
           },
           {
             path: "products/materials",
-            element: <MaterialsPage />,
+            element: withLazyLoad(MaterialsPage),
           },
           {
             path: "products/tools",
-            element: <ToolsPage />,
+            element: withLazyLoad(ToolsPage),
           },
           {
             path: "settings/personal",
-            element: <PersonalSettingsPage />,
+            element: withLazyLoad(PersonalSettingsPage),
           },
           {
             path: "support/chat",
-            element: <ChatPage />,
+            element: withLazyLoad(ChatPage),
           },
           {
             path: "customers",
-            element: <CustomersPage />,
+            element: withLazyLoad(CustomersPage),
           },
           {
             path: "customers/:id",
-            element: <CustomerDetailPage />,
+            element: withLazyLoad(CustomerDetailPage),
           },
         ],
       },
@@ -91,7 +119,7 @@ export const appRouter = createBrowserRouter([
       },
       {
         path: "/register",
-        element: <RegisterPage />,
+        element: withLazyLoad(RegisterPage),
       },
     ],
   },

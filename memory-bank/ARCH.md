@@ -12,6 +12,7 @@ Primary scope:
 
 - Manage polymorphic product catalogs: Models, Materials, Tools
 - Manage order fulfillment and approval flows
+- Manage customers, customer support
 - Manage multi-language CMS content
 - Provide role-based admin/staff operations
 
@@ -42,6 +43,14 @@ src/
   store/        # Zustand stores
   utils/        # Helpers, formatters, guards, data transforms
   validators/   # Zod schemas
+memory-bank/
+  ├── activeContext.md       # Current state (Đã cập nhật UI/UX)
+  ├── STATE.md               # Process (33/33 tasks hoàn thành)
+  ├── ARCH.md                # Architecture & Design System (Amber-500, Slate-900)
+  ├── TECH.md                # Stack & Patterns (CJS, Debounce, Dialogs)
+  ├── RULES.md               # Rules of code (Module Import, Memory Bank rules)
+  ├── IMPLEMENTATION_LOG.md  # (Gom từ IMPLEMENTATION_SUMMARY & VERIFICATION)
+  └── REFERENCE.md           # (Gom từ QUICK_REFERENCE & TEAM_SUMMARY)
 ```
 
 ## Data Flow

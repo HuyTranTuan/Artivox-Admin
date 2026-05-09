@@ -17,42 +17,63 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { Input } from "@components/ui/input";
+import { discountService } from "@services/discountService";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
-
-// Mock data generator for discount campaigns
-const generateMock = () => {
-  const types = ["Percentage", "Fixed Amount", "BOGO", "Free Shipping"];
-  const st = ["Active", "Scheduled", "Expired", "Paused"];
-  const arr = [];
-  for (let i = 1; i <= 36; i++)
-    arr.push({
-      id: i,
-      name: `Discount Campaign ${i}`,
-      type: types[i % 4],
-      status: st[i % 4],
-      discount:
-        i % 4 === 0 ? "Free" : `${Math.floor(Math.random() * 50 + 10)}%`,
-      usage: Math.floor(Math.random() * 2000),
-      startDate: new Date(
-        Date.now() - Math.random() * 30 * 864e5,
-      ).toLocaleDateString(),
-      endDate: new Date(
-        Date.now() + Math.random() * 60 * 864e5,
-      ).toLocaleDateString(),
-    });
-  return arr;
-};
 
 const stats = [
   { label: "Active campaigns", value: "8", icon: Percent },
   { label: "Total redeemed", value: "3,240", icon: Gift },
   { label: "Avg. discount", value: "22%", icon: Clock },
 ];
+const formatDateLabel = (value) => {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString("en-US");
+};
+
+const normalizeDiscount = (rawItem, index) => {
+  const id = rawItem?.id || rawItem?._id || rawItem?.slug || `discount-${index}`;
+  const slug = rawItem?.slug || rawItem?.code || String(id);
+  const percentValue =
+    rawItem?.percent ?? rawItem?.percentage ?? rawItem?.discountPercent;
+  const amountValue = rawItem?.amount ?? rawItem?.discountAmount;
+  const discountValue =
+    rawItem?.discount ??
+    rawItem?.value ??
+    (percentValue !== undefined && percentValue !== null
+      ? `${percentValue}%`
+      : amountValue !== undefined && amountValue !== null
+        ? `${amountValue}`
+        : "—");
+
+  return {
+    id,
+    slug,
+    name:
+      rawItem?.name ||
+      rawItem?.title ||
+      rawItem?.campaignName ||
+      rawItem?.code ||
+      `Discount Campaign ${index + 1}`,
+    type: rawItem?.type || rawItem?.discountType || "Unknown",
+    status: rawItem?.status || "UNKNOWN",
+    discount: String(discountValue),
+    usage: Number(rawItem?.usage ?? rawItem?.usedCount ?? rawItem?.redeemedCount ?? 0),
+    startDate: formatDateLabel(
+      rawItem?.startDate || rawItem?.startAt || rawItem?.createdAt,
+    ),
+    endDate: formatDateLabel(
+      rawItem?.endDate || rawItem?.endAt || rawItem?.expiresAt,
+    ),
+  };
+};
 
 const DiscountCampaignsPage = () => {
-  const [items] = useState(generateMock);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [fo, setFo] = useState(false);
   const [cp, setCp] = useState(1);
   const [od, setOd] = useState(null);
@@ -63,13 +84,39 @@ const DiscountCampaignsPage = () => {
   const ds = useDebounce(search.value, 300);
   const dr = useClickOutsideClose(() => setOd(null));
   const fr = useClickOutsideClose(() => setFo(false));
-  const types = ["Percentage", "Fixed Amount", "BOGO", "Free Shipping"];
-  const sts = ["Active", "Scheduled", "Expired", "Paused"];
+
+  useEffect(() => {
+    let mounted = true;
+    const loadDiscounts = async () => {
+      setLoading(true);
+      try {
+        const data = await discountService.getDiscounts();
+        const normalized = (Array.isArray(data) ? data : []).map(normalizeDiscount);
+        if (mounted) setItems(normalized);
+      } catch {
+        if (mounted) setItems([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    loadDiscounts();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     setCp(1);
   }, [ds, sf]);
 
+  const types = useMemo(
+    () => [...new Set(items.map((item) => item.type).filter(Boolean))],
+    [items],
+  );
+  const sts = useMemo(
+    () => [...new Set(items.map((item) => item.status).filter(Boolean))],
+    [items],
+  );
   // Filter campaigns based on search and filters
   const f = useMemo(
     () =>
@@ -83,18 +130,34 @@ const DiscountCampaignsPage = () => {
       }),
     [items, ds, sf],
   );
-  const tp = Math.ceil(f.length / pp);
+  const tp = Math.max(1, Math.ceil(f.length / pp));
   const si2 = (cp - 1) * pp;
   const pg = f.slice(si2, si2 + pp);
+  const showingFrom = f.length === 0 ? 0 : si2 + 1;
+  const showingTo = Math.min(si2 + pp, f.length);
+
+  const handleView = async (item) => {
+    setSi(item);
+    setOd("view");
+
+    if (!item.slug) return;
+
+    try {
+      const detail = await discountService.getDiscountBySlug(item.slug);
+      setSi((prev) => ({
+        ...(prev || {}),
+        ...normalizeDiscount(detail, 0),
+      }));
+    } catch {
+      // Keep current list item data if detail request fails.
+    }
+  };
 
   // Action buttons following the standard: h-8 w-8, rounded-[5px], border, 5px padding, 18px icons
   const ActionBtns = ({ item }) => (
     <div className="flex gap-1.5">
       <button
-        onClick={() => {
-          setSi(item);
-          setOd("view");
-        }}
+        onClick={() => handleView(item)}
         className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
         style={{ padding: 5 }}
       >
@@ -287,15 +350,19 @@ const DiscountCampaignsPage = () => {
                 className="overflow-y-auto"
                 style={{ maxHeight: "calc(100vh - 420px)" }}
               >
-                {pg.length === 0 ? (
+                {loading ? (
+                  <div className="px-4 py-8 text-sm text-slate-500 text-center">
+                    Loading campaigns...
+                  </div>
+                ) : pg.length === 0 ? (
                   <div className="px-4 py-8 text-sm text-slate-500 text-center">
                     No campaigns found
                   </div>
                 ) : (
-                  pg.map((m) => (
+                  pg.map((m, idx) => (
                     <div
                       key={m.id}
-                      className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600"
+                      className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
                     >
                       <div>
                         <div className="font-title text-base font-semibold text-slate-900">
@@ -344,7 +411,7 @@ const DiscountCampaignsPage = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
           <div className="text-sm text-slate-600">
-            Showing {si2 + 1}-{Math.min(si2 + pp, f.length)} of {f.length}
+            Showing {showingFrom}-{showingTo} of {f.length}
           </div>
           <div className="flex gap-2">
             <Button

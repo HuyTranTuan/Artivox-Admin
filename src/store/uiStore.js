@@ -6,14 +6,22 @@ export const useUiStore = create(
     (set) => ({
       sidebarOpen: true,
       sidebarMobileOpen: false,
-      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      currentLanguage: "en",
+      theme: "light",
+      toggleSidebar: () =>
+        set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
-      toggleMobileSidebar: () => set((state) => ({ sidebarMobileOpen: !state.sidebarMobileOpen })),
+      toggleMobileSidebar: () =>
+        set((state) => ({ sidebarMobileOpen: !state.sidebarMobileOpen })),
       closeMobileSidebar: () => set({ sidebarMobileOpen: false }),
+      setTheme: (state) => {
+        if (state.theme === "light") set({ theme: "dark" });
+        else set({ theme: "light" });
+      },
     }),
     {
       name: "artivox-ui-storage",
       getStorage: () => sessionStorage,
-    }
-  )
+    },
+  ),
 );

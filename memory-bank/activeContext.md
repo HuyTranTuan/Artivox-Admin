@@ -2,20 +2,18 @@
 
 ## Current Goal
 
-UI/UX polish: customer quick edit, table search behavior, header notification/search dropdowns, support chat workspace.
+Keep campaign/order flows stable after route migration and API field normalization.
 
 ## Current Solution
 
-- Header: expandable search stays open when text exists, clear-X inside input, bigger search/notification icons, unread badge, read/unread notification filter box at z-900.
-- Sidebar: removed "Admin Dashboard" from logo area and footer.
-- CustomersPage: export icon button in table header, row action menu scoped to table area, double-click inline edit for name/email/phone/tier, save/cancel inline controls.
-- Models/Materials/Tools/ArticleCampaigns tables: action icons normalized to 18px, search toggle now input + search action button + clear-X.
-- Support Chat page: 2-column customer list + chat thread + file/image send controls using a WebSocket-ready mock transport service.
+- Router lazy-loads all pages except `DashboardLayout`, `AuthLayout`, `SignInPage`, and `DashboardPage`.
+- Orders list uses `/orders`; legacy `/orders/approval` route is removed; sidebar points to `/orders`.
+- Campaign routes now support list + slug paths: `/campaigns/article/:slug` and `/campaigns/discount/:slug`.
+- `DiscountCampaignsPage` and `ArticleCampaignsPage` now fetch list data in `useEffect`, normalize API fields to table columns, and request detail by slug for view dialogs.
+- Discount/article tables apply odd-row light gray background and light-orange row hover.
 
 ## Next Build Targets
 
-- Materials and Tools pages CRUD depth
-- Discount campaigns enhancements
-- Personal settings page
-- Order approval & refund view
-- Real support chat backend channel hookup
+- Replace static stat cards with live summary metrics.
+- Add dedicated article/discount detail pages for slug routes.
+- Continue Materials/Tools CRUD depth and personal settings expansion.

@@ -1,54 +1,39 @@
 # STATE: Current Progress
 
-## Focus: Campaign/Table UX Polish, Article Create Page, Order Approval Table
+## Focus: UI Polish + Auth Protected Routes
 
-- **Current task**: Article campaigns - New button navigates to create page, Refresh icon button, all table th bold black. Customers - 3 visible action buttons, orange row hover, orange checkbox. Order approval - proper table with columns, filter/sort/search.
+- **Current task**: ProtectedRoute covers all app routes. Orders/Tools/Materials/Models pages fixed with mock data, DD/MM/YYYY dates, Name/Date/Author columns, Add New toggle forms. Header revamped.
 
 ## Completed Checklist
 
-- [x] Vite + React Project Init
-- [x] Tailwind CSS Setup
-- [x] Admin Shell Layout (Sidebar/Header)
-- [x] Register Page
-- [x] SignIn Page (Sign In Mock)
-- [x] Article Campaigns List
-- [x] Header with circular avatar, ADMIN badge, user dropdown
-- [x] Sidebar: sticky h-screen, scroll items, product child icons, orange active
-- [x] Models Page with table/grid views, search, filter, pagination
-- [x] Badge component, useClickOutsideClose hook
-- [x] CustomersPage + CustomerDetailPage
-- [x] Default route / -> Dashboard
-- [x] Header icons 22px, dropdown z-900, darker hover, more padding
-- [x] DashboardPage: stat cards, revenue chart, category breakdown, top models, recent orders
-- [x] ArticleCampaignsPage: horizontal stats, create button in table head, no header description
-- [x] ModelsPage: "+" button, no "Product Management" header, scrollable table
-- [x] All tables: action buttons 18px icons, thin border, 5px padding, 5px border radius, hover bg
-- [x] All tables: maxHeight scroll, horizontal scroll < 1000px
-- [x] CustomersPage: split Email/Phone columns, Name/Joined columns, row checkboxes
-- [x] Sidebar footer: removed "Admin Dashboard"
-- [x] Header: bigger search/notification icons, unread notification badge, z-900 notification box, tighter dropdown container padding
-- [x] Tables: expandable search input + clear button + enter/search action
-- [x] CustomersPage: export icon button, double-click inline quick edit with save/cancel, actions menu overlay scoped to table
-- [x] Customer Support Chat: 2-column chat list + history + message/file/image send with WebSocket-ready mock transport
-- [x] ArticleCampaignsPage: Refresh replaced with RefreshCw icon button, "New campaign" → "New", navigates to create page
-- [x] CreateArticlePage: full-screen overlay with title input, locale select, status select, ReactQuill rich text editor
-- [x] All table headers (th): bold black text (font-bold text-slate-900)
-- [x] CustomersPage: 3 action buttons visible (Eye/Pencil/Trash2), orange row hover (hover:bg-orange-50), orange checkbox accent
-- [x] OrderApprovalPage: rebuilt as proper table with checkbox/Code/Customer/Amount/Status/Actions columns, sort/filter/search
+- [x] **Project Foundation:** Vite + React + Tailwind setup.
+- [x] **Auth:** Sign-in / Register mock pages.
+- [x] **Navigation:** Article and discount campaign routes active.
+- [x] **Sidebar:** Orders link now points to `/orders`.
+- [x] **Routes:** Lazy-loaded all route pages except `DashboardLayout`, `AuthLayout`, `SignInPage`, `DashboardPage`.
+- [x] **Protected Route:** All app routes wrapped. On mount: check token expiry → auto-refresh if expired → redirect to /signin if no token.
+- [x] **Auth Store:** Added `refreshToken` state + `refreshAuth` action. Persisted to localStorage.
+- [x] **Auth Service:** Added `refreshToken()` mock endpoint returning refreshed tokens.
+- [x] **useAuth Hook:** Exposes `handleRefreshToken` that calls service + updates store.
+- [x] **Axios Interceptors:** On 401, attempt refresh via fetch. Queues concurrent requests until refresh completes.
+- [x] **Orders Page:** Switched to mock data, added Date column with DD/MM/YYYY format.
+- [x] **Header:** Removed "A" badge, added email under avatar, theme toggle (light/dark), bigger Search/Notification icons.
+- [x] **Tools Page:** Bigger "Add New +" button, toggle form (modal) with Cancel/Create, table columns: Name, Category, Status, Created At, Author, Actions. DD/MM/YYYY dates.
+- [x] **Materials Page:** Same pattern as Tools: Add New + toggle form, Name/Type/Status/Created At/Author columns, DD/MM/YYYY.
+- [x] **Models Page:** Same pattern: Add New + toggle form, Name/Category/Status/Created At/Author columns, DD/MM/YYYY.
+- [x] **Dashboard:** 6 stats cards (added Active Products, Pending Orders), mini sparkline charts per card, summary metrics row (Avg Order, Conversion, Churn, Growth, Active Products, Total Customers), Week/Month chart toggle.
+- [x] **Build Validation:** Production build passes with zero errors.
 
 ## Remaining Checklist
 
-- [ ] CRUD Materials UI
-- [ ] CRUD Tools UI
-- [ ] Discount Campaigns List
-- [ ] Personal setting UI
-- [ ] Real support chat channel wiring
+- [ ] Replace static campaign stats with live summary metrics.
+- [ ] Add dedicated article/discount detail pages for slug routes.
+- [ ] Connect Real API (Prisma/Node.js).
 
-## Action Button Standard
+## UI Standard
 
-```text
-h-8 w-8, rounded-[5px], border border-slate-200, padding: 5px
-Icon: 18x18px via inline style
-Colors: blue-600 (view), emerald-600 (edit), rose-600 (delete)
-Hover: bg-blue-50, bg-emerald-50, bg-rose-50
-```
+- **Radius:** 16px (`rounded-2xl`).
+- **Table Buttons:** h-8 w-8, 5px radius, thin border.
+- **Colors:** Blue (View), Emerald (Edit), Rose (Delete), Orange (Hover).
+- **Dates:** DD/MM/YYYY throughout.
+- **Table Columns:** Name, [Type/Category/Status], Created At, Author, Actions.

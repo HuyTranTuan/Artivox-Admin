@@ -10,13 +10,26 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import { Card } from "@components/ui/card";
-import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
-import { orderService } from "@services/orderService";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
+
+// Format date to DD/MM/YYYY
+const fmtDate = (dateStr) => {
+  if (!dateStr) return "—";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  } catch {
+    return dateStr;
+  }
+};
 
 const statusColor = {
   PENDING: "text-amber-600",
@@ -27,6 +40,74 @@ const statusColor = {
   DELIVERED: "text-emerald-600",
   CANCELLED: "text-slate-500",
 };
+
+// Mock orders data
+const MOCK_ORDERS = [
+  {
+    id: "ORD-1847",
+    code: "ORD-1847",
+    customer: { name: "Nguyen Minh" },
+    totalAmount: 2400000,
+    status: "DELIVERED",
+    createdAt: "2026-05-05T10:30:00Z",
+  },
+  {
+    id: "ORD-1846",
+    code: "ORD-1846",
+    customer: { name: "Tran Anh" },
+    totalAmount: 1800000,
+    status: "PROCESSING",
+    createdAt: "2026-05-04T14:20:00Z",
+  },
+  {
+    id: "ORD-1845",
+    code: "ORD-1845",
+    customer: { name: "Le Hieu" },
+    totalAmount: 3200000,
+    status: "SHIPPED",
+    createdAt: "2026-05-03T09:15:00Z",
+  },
+  {
+    id: "ORD-1844",
+    code: "ORD-1844",
+    customer: { name: "Pham Duc" },
+    totalAmount: 1200000,
+    status: "PENDING",
+    createdAt: "2026-05-02T16:45:00Z",
+  },
+  {
+    id: "ORD-1843",
+    code: "ORD-1843",
+    customer: { name: "Hoang Tuan" },
+    totalAmount: 2800000,
+    status: "DELIVERED",
+    createdAt: "2026-05-01T11:00:00Z",
+  },
+  {
+    id: "ORD-1842",
+    code: "ORD-1842",
+    customer: { name: "Vo Lan" },
+    totalAmount: 5600000,
+    status: "PAID",
+    createdAt: "2026-04-28T08:30:00Z",
+  },
+  {
+    id: "ORD-1841",
+    code: "ORD-1841",
+    customer: { name: "Dang Khoa" },
+    totalAmount: 950000,
+    status: "REFUND_PENDING",
+    createdAt: "2026-04-25T13:10:00Z",
+  },
+  {
+    id: "ORD-1840",
+    code: "ORD-1840",
+    customer: { name: "Bich Ngoc" },
+    totalAmount: 4100000,
+    status: "DELIVERED",
+    createdAt: "2026-04-22T15:25:00Z",
+  },
+];
 
 const OrdersPage = () => {
   const navigate = useNavigate();
@@ -42,23 +123,14 @@ const OrdersPage = () => {
   const debouncedSearch = useDebounce(search.value, 300);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
-  // Fetch orders from API
+  // Load mock data
   useEffect(() => {
-    let mounted = true;
     const load = async () => {
-      try {
-        const data = await orderService.listOrders();
-        if (mounted) setOrders(Array.isArray(data) ? data : []);
-      } catch {
-        if (mounted) setOrders([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+      await new Promise((r) => setTimeout(r, 300));
+      setOrders(MOCK_ORDERS);
+      setLoading(false);
     };
     load();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -86,14 +158,14 @@ const OrdersPage = () => {
     }
     if (sortField) {
       result.sort((a, b) => {
-        const valA = a[sortField];
-        const valB = b[sortField];
-        if (typeof valA === "string") {
+        const va = a[sortField];
+        const vb = b[sortField];
+        if (typeof va === "string") {
           return sortDir === "asc"
-            ? valA.localeCompare(valB)
-            : valB.localeCompare(valA);
+            ? va.localeCompare(vb)
+            : vb.localeCompare(va);
         }
-        return sortDir === "asc" ? valA - valB : valB - valA;
+        return sortDir === "asc" ? va - vb : vb - va;
       });
     }
     return result;
@@ -227,7 +299,7 @@ const OrdersPage = () => {
         >
           <div className="min-w-[900px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
+              <div className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
                 <div
                   className="flex items-center gap-1 cursor-pointer"
                   onClick={() => toggleSort("code")}
@@ -252,6 +324,7 @@ const OrdersPage = () => {
                 >
                   Status <ArrowUpDown className="h-3 w-3" />
                 </div>
+                <div>Date</div>
                 <div>Actions</div>
               </div>
 
@@ -271,7 +344,7 @@ const OrdersPage = () => {
                   paginated.map((item, idx) => (
                     <div
                       key={item.id || item.code || idx}
-                      className={`grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center ${idx % 2 === 0 ? "bg-slate-50/50" : "bg-white"} hover:bg-orange-50 transition cursor-pointer`}
+                      className={`grid grid-cols-[1.2fr_1.5fr_1fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center ${idx % 2 === 0 ? "bg-slate-50/50" : "bg-white"} hover:bg-orange-50 transition cursor-pointer`}
                       onClick={() => handleView(item)}
                     >
                       <div className="font-title text-sm font-semibold text-slate-900">
@@ -289,6 +362,9 @@ const OrdersPage = () => {
                         >
                           {item.status}
                         </span>
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {fmtDate(item.createdAt)}
                       </div>
                       <div className="flex gap-1.5">
                         <button

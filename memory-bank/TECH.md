@@ -9,6 +9,7 @@ Artivox Admin Frontend Setup
 Technical guide for the Artivox Admin Dashboard frontend.
 
 Primary scope:
+
 - Local development setup
 - Core libraries and responsibilities
 - Suggested folder structure
@@ -61,6 +62,14 @@ VITE_DEFAULT_LOCALE=vi
 ## Project Structure
 
 ```text
+memory-bank/
+  activeContext.md
+  ARCH.md
+  REFERENCE.md
+  RULES.md
+  STATE.md
+  TECH.md
+  IMPLEMENTATION_LOG.md
 src/
   api/
     axios.js           # Base axios instance
@@ -101,8 +110,7 @@ src/
     uiStore.js
   utils/
     bigint.js
-    formatDate.js
-    formatPrice.js
+    formatUtils.js
   validators/
     auth.schema.js
     article.schema.js

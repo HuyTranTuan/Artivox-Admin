@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Eye,
   FilePenLine,
@@ -13,7 +13,7 @@ import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { formatDate } from "@utils/formatDate";
+import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 
@@ -23,44 +23,105 @@ const stats = [
   { label: "Total views", value: "24.3K", icon: Eye },
 ];
 
+const normalizeArticle = (rawItem, index = 0) => {
+  const id = rawItem?.id || rawItem?._id || rawItem?.slug || `article-${index}`;
+  return {
+    id,
+    slug: rawItem?.slug || String(id),
+    title:
+      rawItem?.title ||
+      rawItem?.name ||
+      rawItem?.headline ||
+      `Article ${index + 1}`,
+    locale: rawItem?.locale || rawItem?.language || rawItem?.lang || "EN",
+    author:
+      rawItem?.author?.name ||
+      rawItem?.authorName ||
+      rawItem?.author ||
+      "Unknown",
+    status:
+      rawItem?.status ||
+      (rawItem?.publishedAt || rawItem?.publishDate ? "Published" : "Draft"),
+    publishedAt:
+      rawItem?.publishedAt ||
+      rawItem?.publishDate ||
+      rawItem?.createdAt ||
+      null,
+    views: Number(rawItem?.views ?? rawItem?.viewCount ?? 0),
+  };
+};
+
 const ArticleCampaignsPage = () => {
   const navigate = useNavigate();
+  const { slug } = useParams();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
 
-  useEffect(() => {
-    let mounted = true;
-    const loadCampaigns = async () => {
-      const data = await articleService.listCampaigns();
-      if (mounted) {
-        setCampaigns(data);
-        setLoading(false);
-      }
-    };
-    loadCampaigns();
-    return () => {
-      mounted = false;
-    };
+  const loadCampaigns = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await articleService.getArticles();
+      const normalized = (Array.isArray(data) ? data : []).map(
+        normalizeArticle,
+      );
+      setCampaigns(normalized);
+    } catch {
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleView = (item) => {
+  useEffect(() => {
+    loadCampaigns();
+  }, [loadCampaigns]);
+
+  useEffect(() => {
+    if (!slug) return;
+
+    const loadDetailBySlug = async () => {
+      try {
+        const detail = await articleService.getArticleBySlug(slug);
+        setSelectedItem(normalizeArticle(detail, 0));
+        setOpenDialog("view");
+      } catch {
+        // Keep page usable if detail endpoint fails.
+      }
+    };
+
+    loadDetailBySlug();
+  }, [slug]);
+
+  const handleView = async (item) => {
     setSelectedItem(item);
     setOpenDialog("view");
+
+    if (!item.slug) return;
+
+    try {
+      const detail = await articleService.getArticleBySlug(item.slug);
+      setSelectedItem(normalizeArticle(detail, 0));
+    } catch {
+      // Keep current row data if detail fetch fails.
+    }
   };
+
   const handleEdit = (item) => {
     setSelectedItem(item);
     setOpenDialog("edit");
   };
+
   const handleDelete = (item) => {
     setSelectedItem(item);
     setOpenDialog("delete");
   };
+
   const confirmDelete = async () => {
     if (selectedItem) {
-      setCampaigns(campaigns.filter((c) => c.id !== selectedItem.id));
+      setCampaigns((prev) => prev.filter((c) => c.id !== selectedItem.id));
       setOpenDialog(null);
       setSelectedItem(null);
     }
@@ -68,7 +129,6 @@ const ArticleCampaignsPage = () => {
 
   return (
     <section className="space-y-6">
-      {/* Horizontal Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {stats.map((item) => {
           const Icon = item.icon;
@@ -89,7 +149,6 @@ const ArticleCampaignsPage = () => {
       </div>
 
       <Card className="p-6">
-        {/* Table Header with Create Button */}
         <div className="mb-5 flex items-center justify-between">
           <div>
             <div className="font-title text-xl font-bold text-slate-950">
@@ -103,7 +162,7 @@ const ArticleCampaignsPage = () => {
             <Button
               variant="ghost"
               className="h-10 w-10 p-0"
-              onClick={() => window.location.reload()}
+              onClick={loadCampaigns}
             >
               <RefreshCw className="h-4 w-4" />
             </Button>
@@ -140,11 +199,15 @@ const ArticleCampaignsPage = () => {
                   <div className="px-4 py-8 text-sm text-slate-500">
                     Loading campaigns...
                   </div>
+                ) : campaigns.length === 0 ? (
+                  <div className="px-4 py-8 text-sm text-slate-500">
+                    No campaigns found
+                  </div>
                 ) : (
-                  campaigns.map((item) => (
+                  campaigns.map((item, idx) => (
                     <div
                       key={item.id}
-                      className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600"
+                      className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
                     >
                       <div>
                         <div className="font-title text-base font-semibold text-slate-900">
@@ -192,7 +255,6 @@ const ArticleCampaignsPage = () => {
           </div>
         </div>
 
-        {/* Dialogs */}
         {openDialog && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
             <div
@@ -246,6 +308,7 @@ const ArticleCampaignsPage = () => {
                   </Button>
                 </>
               )}
+
               {openDialog === "edit" && (
                 <>
                   <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
@@ -272,6 +335,7 @@ const ArticleCampaignsPage = () => {
                   </div>
                 </>
               )}
+
               {openDialog === "delete" && (
                 <>
                   <h2 className="font-title text-xl font-bold text-slate-900 mb-4">

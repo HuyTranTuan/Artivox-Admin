@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Eye,
   Edit,
@@ -19,48 +19,56 @@ import { Input } from "@components/ui/input";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
-import { materialsService } from "@services/materialsService";
+
+const fmtDate = (d) => {
+  if (!d) return "—";
+  try {
+    const date = new Date(d);
+    if (isNaN(date.getTime())) return d;
+    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+  } catch {
+    return d;
+  }
+};
+
+const MOCK = Array.from({ length: 30 }, (_, i) => ({
+  id: i + 1,
+  name: `Material ${i + 1}`,
+  type: ["PLA", "ABS", "Resin", "TPU"][i % 4],
+  status: ["Active", "Inactive", "Discontinued"][i % 3],
+  stock: Math.floor(Math.random() * 500),
+  price: Math.floor(Math.random() * 2000000) + 50000,
+  createdAt: new Date(
+    Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000,
+  ).toISOString(),
+  author: `User ${(i % 6) + 1}`,
+}));
 
 const MaterialsPage = () => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [items] = useState(MOCK);
   const [vm, setVm] = useState("table");
   const [fo, setFo] = useState(false);
   const [cp, setCp] = useState(1);
   const [od, setOd] = useState(null);
   const [si, setSi] = useState(null);
   const [sf, setSf] = useState({ type: null, status: null });
+  const [form, setForm] = useState({
+    name: "",
+    type: "",
+    status: "Active",
+    stock: "",
+    price: "",
+  });
   const search = useExpandableSearch();
   const pp = 20;
   const ds = useDebounce(search.value, 300);
   const dr = useClickOutsideClose(() => setOd(null));
   const fr = useClickOutsideClose(() => setFo(false));
 
-  // Fetch materials from API
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const data = await materialsService.getMaterials();
-        if (mounted) setItems(Array.isArray(data) ? data : []);
-      } catch {
-        if (mounted) setItems([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    load();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   const types = [...new Set(items.map((m) => m.type).filter(Boolean))];
   const sts = [...new Set(items.map((m) => m.status).filter(Boolean))];
 
-  useEffect(() => {
-    setCp(1);
-  }, [ds, sf]);
+  useMemo(() => setCp(1), [ds, sf]);
 
   const f = useMemo(
     () =>
@@ -74,9 +82,20 @@ const MaterialsPage = () => {
       }),
     [items, ds, sf],
   );
+
   const tp = Math.ceil(f.length / pp);
   const si2 = (cp - 1) * pp;
   const pg = f.slice(si2, si2 + pp);
+
+  const resetForm = () =>
+    setForm({ name: "", type: "", status: "Active", stock: "", price: "" });
+
+  const handleCreate = () => {
+    resetForm();
+    setSi(null);
+    setOd("create");
+  };
+  const handleSubmit = () => setOd(null);
 
   const ActionBtns = ({ item }) => (
     <div className="flex gap-1.5">
@@ -94,6 +113,13 @@ const MaterialsPage = () => {
         onClick={() => {
           setSi(item);
           setOd("edit");
+          setForm({
+            name: item.name,
+            type: item.type,
+            status: item.status,
+            stock: String(item.stock ?? ""),
+            price: String(item.price ?? ""),
+          });
         }}
         className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
         style={{ padding: 5 }}
@@ -113,6 +139,88 @@ const MaterialsPage = () => {
     </div>
   );
 
+  const FormModal = () => (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+      <div
+        ref={dr}
+        className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+      >
+        <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
+          {od === "create" ? "Add New Material" : "Edit Material"}
+        </h2>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-semibold text-slate-700">Name</label>
+            <Input
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-700">Type</label>
+            <select
+              value={form.type}
+              onChange={(e) => setForm({ ...form, type: e.target.value })}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="">Select type</option>
+              <option>PLA</option>
+              <option>ABS</option>
+              <option>Resin</option>
+              <option>TPU</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-semibold text-slate-700">
+              Status
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+            >
+              <option>Active</option>
+              <option>Inactive</option>
+              <option>Discontinued</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                Stock
+              </label>
+              <Input
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                Price (VND)
+              </label>
+              <Input
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: e.target.value })}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setOd(null)}
+          >
+            Cancel
+          </Button>
+          <Button className="flex-1" onClick={handleSubmit}>
+            {od === "create" ? "Create" : "Save"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <section className="space-y-6">
       <Card className="p-6">
@@ -121,8 +229,11 @@ const MaterialsPage = () => {
             <h1 className="font-title text-2xl font-bold text-slate-950">
               Materials
             </h1>
-            <Button className="h-8 w-8 p-0 rounded-lg">
-              <Plus className="h-5 w-5" />
+            <Button
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
+              onClick={handleCreate}
+            >
+              <Plus className="h-5 w-5" /> Add New
             </Button>
           </div>
           <div className="flex items-center gap-2">
@@ -253,234 +364,208 @@ const MaterialsPage = () => {
           </div>
         </div>
 
-        {loading ? (
-          <div className="py-12 text-sm text-slate-500 text-center">
-            Loading materials...
-          </div>
-        ) : (
-          <>
-            {vm === "table" && (
-              <div
-                className="overflow-x-auto"
-                style={{ maxHeight: "calc(100vh - 300px)" }}
-              >
-                <div className="min-w-[700px]">
-                  <div className="overflow-hidden rounded-2xl border border-slate-200">
-                    <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                      <div>Name</div>
-                      <div>Type</div>
-                      <div>Status</div>
-                      <div>Stock</div>
-                      <div>Price</div>
-                      <div>Actions</div>
-                    </div>
-                    <div
-                      className="overflow-y-auto"
-                      style={{ maxHeight: "calc(100vh - 380px)" }}
-                    >
-                      {pg.length === 0 ? (
-                        <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                          No materials found
-                        </div>
-                      ) : (
-                        pg.map((m) => (
-                          <div
-                            key={m.id}
-                            className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600"
-                          >
-                            <div>
-                              <div className="font-title text-base font-semibold text-slate-900">
-                                {m.name}
-                              </div>
-                              <div className="mt-1 text-xs text-slate-500">
-                                {m.createdAt || m.created || ""}
-                              </div>
-                            </div>
-                            <div>{m.type}</div>
-                            <div>
-                              <Badge>{m.status}</Badge>
-                            </div>
-                            <div>{m.stock ?? m.quantity ?? "—"}</div>
-                            <div className="font-semibold">
-                              {m.price
-                                ? `₫${Number(m.price).toLocaleString()}`
-                                : "—"}
-                            </div>
-                            <ActionBtns item={m} />
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
+        {vm === "table" && (
+          <div
+            className="overflow-x-auto"
+            style={{ maxHeight: "calc(100vh - 300px)" }}
+          >
+            <div className="min-w-[700px]">
+              <div className="overflow-hidden rounded-2xl border border-slate-200">
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
+                  <div>Name</div>
+                  <div>Type</div>
+                  <div>Status</div>
+                  <div>Created At</div>
+                  <div>Author</div>
+                  <div>Actions</div>
                 </div>
-              </div>
-            )}
-
-            {vm === "grid" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pg.map((m) => (
-                  <div
-                    key={m.id}
-                    className="border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition"
-                  >
-                    <div className="bg-slate-100 h-32 rounded-xl mb-4 flex items-center justify-center text-slate-400">
-                      Preview
-                    </div>
-                    <div className="font-title text-base font-semibold text-slate-900 mb-1">
-                      {m.name}
-                    </div>
-                    <div className="text-xs text-slate-500 mb-3">
-                      {m.type} • {m.stock ?? m.quantity ?? "—"} in stock •{" "}
-                      {m.price ? `₫${Number(m.price).toLocaleString()}` : "—"}
-                    </div>
-                    <Badge className="mb-3">{m.status}</Badge>
-                    <div className="flex gap-2 mt-2">
-                      <ActionBtns item={m} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-              <div className="text-sm text-slate-600">
-                Showing {si2 + 1}-{Math.min(si2 + pp, f.length)} of {f.length}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCp(Math.max(1, cp - 1))}
-                  disabled={cp === 1}
+                <div
+                  className="overflow-y-auto"
+                  style={{ maxHeight: "calc(100vh - 380px)" }}
                 >
-                  <ChevronLeft className="h-4 w-4" /> Prev
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, tp) }, (_, i) => {
-                    let p;
-                    if (tp <= 5) p = i + 1;
-                    else if (cp <= 3) p = i + 1;
-                    else if (cp >= tp - 2) p = tp - 4 + i;
-                    else p = cp - 2 + i;
-                    return (
-                      <Button
-                        key={p}
-                        variant={cp === p ? "default" : "ghost"}
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setCp(p)}
+                  {pg.length === 0 ? (
+                    <div className="px-4 py-8 text-sm text-slate-500 text-center">
+                      No materials found
+                    </div>
+                  ) : (
+                    pg.map((m) => (
+                      <div
+                        key={m.id}
+                        className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600"
                       >
-                        {p}
-                      </Button>
-                    );
-                  })}
+                        <div className="font-title text-base font-semibold text-slate-900">
+                          {m.name}
+                        </div>
+                        <div>{m.type}</div>
+                        <div>
+                          <Badge>{m.status}</Badge>
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {fmtDate(m.createdAt)}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {m.author || "—"}
+                        </div>
+                        <ActionBtns item={m} />
+                      </div>
+                    ))
+                  )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCp(Math.min(tp, cp + 1))}
-                  disabled={cp === tp}
-                >
-                  Next <ChevronRight className="h-4 w-4" />
-                </Button>
               </div>
             </div>
-          </>
+          </div>
         )}
+
+        {vm === "grid" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {pg.map((m) => (
+              <div
+                key={m.id}
+                className="border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition"
+              >
+                <div className="bg-slate-100 h-32 rounded-xl mb-4 flex items-center justify-center text-slate-400">
+                  Preview
+                </div>
+                <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                  {m.name}
+                </div>
+                <div className="text-xs text-slate-500 mb-3">
+                  {m.type} • Created {fmtDate(m.createdAt)}
+                </div>
+                <Badge className="mb-3">{m.status}</Badge>
+                <div className="flex gap-2 mt-2">
+                  <ActionBtns item={m} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
+          <div className="text-sm text-slate-600">
+            Showing {si2 + 1}-{Math.min(si2 + pp, f.length)} of {f.length}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCp(Math.max(1, cp - 1))}
+              disabled={cp === 1}
+            >
+              <ChevronLeft className="h-4 w-4" /> Prev
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: Math.min(5, tp) }, (_, i) => {
+                let p;
+                if (tp <= 5) p = i + 1;
+                else if (cp <= 3) p = i + 1;
+                else if (cp >= tp - 2) p = tp - 4 + i;
+                else p = cp - 2 + i;
+                return (
+                  <Button
+                    key={p}
+                    variant={cp === p ? "default" : "ghost"}
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCp(p)}
+                  >
+                    {p}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCp(Math.min(tp, cp + 1))}
+              disabled={cp === tp}
+            >
+              Next <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </Card>
 
-      {od && (
+      {od === "create" || od === "edit" ? <FormModal /> : null}
+
+      {od === "view" && si && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div
             ref={dr}
             className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
-            {od === "view" && (
-              <>
-                <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                  Material Detail
-                </h2>
-                <div className="space-y-3">
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      Name
-                    </span>
-                    <div className="text-sm">{si?.name}</div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      Type
-                    </span>
-                    <div className="text-sm">{si?.type}</div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      Stock
-                    </span>
-                    <div className="text-sm">
-                      {si?.stock ?? si?.quantity ?? "—"}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      Price
-                    </span>
-                    <div className="text-sm">
-                      {si?.price
-                        ? `₫${Number(si.price).toLocaleString()}`
-                        : "—"}
-                    </div>
-                  </div>
+            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
+              Material Detail
+            </h2>
+            <div className="space-y-3">
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Name</span>
+                <div className="text-sm">{si.name}</div>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Type</span>
+                <div className="text-sm">{si.type}</div>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Status</span>
+                <Badge>{si.status}</Badge>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Stock</span>
+                <div className="text-sm">{si.stock ?? "—"}</div>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Price</span>
+                <div className="text-sm">
+                  {si.price ? `₫${Number(si.price).toLocaleString()}` : "—"}
                 </div>
-                <Button className="w-full mt-6" onClick={() => setOd(null)}>
-                  Close
-                </Button>
-              </>
-            )}
-            {od === "edit" && (
-              <>
-                <h2 className="font-title text-xl font-bold mb-4">
-                  Edit Material
-                </h2>
-                <p className="text-sm text-slate-600">
-                  Edit coming soon for: <strong>{si?.name}</strong>
-                </p>
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setOd(null)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button className="flex-1" onClick={() => setOd(null)}>
-                    Save
-                  </Button>
-                </div>
-              </>
-            )}
-            {od === "delete" && (
-              <>
-                <h2 className="font-title text-xl font-bold mb-4">
-                  Delete Material
-                </h2>
-                <p className="text-sm text-slate-600 mb-4">
-                  Delete <strong>{si?.name}</strong>?
-                </p>
-                <div className="flex gap-3">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => setOd(null)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button variant="destructive" className="flex-1">
-                    Delete
-                  </Button>
-                </div>
-              </>
-            )}
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">
+                  Created
+                </span>
+                <div className="text-sm">{fmtDate(si.createdAt)}</div>
+              </div>
+              <div>
+                <span className="text-xs text-slate-500 uppercase">Author</span>
+                <div className="text-sm">{si.author || "—"}</div>
+              </div>
+            </div>
+            <Button className="w-full mt-6" onClick={() => setOd(null)}>
+              Close
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {od === "delete" && si && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div
+            ref={dr}
+            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+          >
+            <h2 className="font-title text-xl font-bold mb-4">
+              Delete Material
+            </h2>
+            <p className="text-sm text-slate-600 mb-4">
+              Delete <strong>{si.name}</strong>?
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setOd(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={() => setOd(null)}
+              >
+                Delete
+              </Button>
+            </div>
           </div>
         </div>
       )}

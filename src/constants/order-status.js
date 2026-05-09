@@ -1,1 +1,0 @@
-export const ORDER_STATUSES = ["PENDING", "PAID", "REFUND_PENDING"];

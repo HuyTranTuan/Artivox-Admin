@@ -4,13 +4,13 @@ import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { formatDate } from "@utils/formatDate";
+import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 
 const stats = [
   { label: "Active campaigns", value: "12", icon: FilePenLine },
   { label: "Locale coverage", value: "VI / EN", icon: Languages },
-  { label: "Total views", value: "24.3K", icon: Eye }
+  { label: "Total views", value: "24.3K", icon: Eye },
 ];
 
 const BlogCampaignsPage = () => {
@@ -49,8 +49,8 @@ const BlogCampaignsPage = () => {
                 Blog campaign management
               </h1>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                Track multilingual blog launches, review publishing status, and keep editorial
-                momentum visible for the whole admin team.
+                Track multilingual blog launches, review publishing status, and
+                keep editorial momentum visible for the whole admin team.
               </p>
             </div>
             <Button className="gap-2">
@@ -65,11 +65,16 @@ const BlogCampaignsPage = () => {
             const Icon = item.icon;
 
             return (
-              <div key={item.label} className="rounded-2xl bg-slate-950 px-4 py-4 text-white">
+              <div
+                key={item.label}
+                className="rounded-2xl bg-slate-950 px-4 py-4 text-white"
+              >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="font-title text-2xl font-bold">{item.value}</div>
+                <div className="font-title text-2xl font-bold">
+                  {item.value}
+                </div>
                 <div className="mt-1 text-sm text-slate-300">{item.label}</div>
               </div>
             );
@@ -80,8 +85,12 @@ const BlogCampaignsPage = () => {
       <Card className="p-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <div className="font-title text-xl font-bold text-slate-950">Campaign list</div>
-            <div className="mt-1 text-sm text-slate-500">Side-by-side locale publishing overview</div>
+            <div className="font-title text-xl font-bold text-slate-950">
+              Campaign list
+            </div>
+            <div className="mt-1 text-sm text-slate-500">
+              Side-by-side locale publishing overview
+            </div>
           </div>
           <Button variant="ghost">Refresh</Button>
         </div>
@@ -96,7 +105,9 @@ const BlogCampaignsPage = () => {
           </div>
 
           {loading ? (
-            <div className="px-4 py-8 text-sm text-slate-500">Loading campaigns...</div>
+            <div className="px-4 py-8 text-sm text-slate-500">
+              Loading campaigns...
+            </div>
           ) : (
             campaigns.map((item) => (
               <div
@@ -104,7 +115,9 @@ const BlogCampaignsPage = () => {
                 className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr] gap-4 border-t border-slate-200 px-4 py-4 text-sm text-slate-600"
               >
                 <div>
-                  <div className="font-title text-base font-semibold text-slate-900">{item.title}</div>
+                  <div className="font-title text-base font-semibold text-slate-900">
+                    {item.title}
+                  </div>
                   <div className="mt-1 text-xs text-slate-500">
                     {toSafeNumber(item.views).toLocaleString("en-US")} views
                   </div>

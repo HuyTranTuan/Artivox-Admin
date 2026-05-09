@@ -1,38 +1,34 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
-const STORAGE_KEY = "artivox-admin-auth";
-
-const readStorage = () => {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-  } catch (error) {
-    return null;
-  }
-};
-
-const writeStorage = (value) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
-};
-
-export const useAuthStore = create((set) => {
-  const persisted = typeof window !== "undefined" ? readStorage() : null;
-
-  return {
-    user: persisted?.user || null,
-    token: persisted?.token || "",
-    signIn: (payload) => {
-      writeStorage(payload);
-      set({
-        user: payload.user,
-        token: payload.token
-      });
+export const useAuthStore = create(
+  persist(
+    (set) => ({
+      user: null,
+      token: "",
+      refreshToken: "",
+      signIn: (payload) => {
+        const data = {
+          user: payload.user,
+          token: payload.token,
+          refreshToken: payload.refreshToken || "",
+        };
+        set(data);
+      },
+      refreshAuth: (payload) => {
+        set((state) => ({
+          ...state,
+          token: payload.token,
+          refreshToken: payload.refreshToken || "",
+        }));
+      },
+      signOut: () => {
+        set({ user: null, token: "", refreshToken: "" });
+      },
+    }),
+    {
+      name: "artivox-admin-auth",
+      getStorage: () => sessionStorage,
     },
-    signOut: () => {
-      localStorage.removeItem(STORAGE_KEY);
-      set({
-        user: null,
-        token: ""
-      });
-    }
-  };
-});
+  ),
+);

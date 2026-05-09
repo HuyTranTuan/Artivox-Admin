@@ -9,7 +9,7 @@ export const discountService = {
 
   // Fetch a single discount by slug
   getDiscountBySlug: async (slug) => {
-    const response = await axiosClient.get(`/discounts/${slug}`);
+    const response = await axiosClient.get(`/discount/${slug}`);
     return response.data.data;
   },
 };

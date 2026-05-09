@@ -15,7 +15,7 @@ import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { orderService } from "@services/orderService";
-import { formatPrice } from "@utils/formatPrice";
+import { formatPrice } from "@utils/formatUtils";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";

@@ -1,24 +1,33 @@
-# RULES: Frontend Dev Protocol
+# 📜 CAVEMAN RULES: PROJECT PROTOCOL
 
-## Vibe Rules (FE)
+## 🛠 VIBE RULES (FE)
 
-1. **No Yapping**: Minimal talk. Output code directly.
-2. **Mocking**: Use `useEffect` with hardcoded JSON to simulate API calls.
-3. **Styling**: Tailwind CSS exclusively. No external CSS unless global.
-4. **Icons**: Use `lucide-react`. Fallback to Unicode nếu cần.
-5. **Components**: Functional components + Hooks. No classes.
-6. **Colors**: Dùng biến root. Primary: #F59E0B, Secondary: #64748B, Background: #F8FAFC, Card Background: #ffffff, Card Box Shadow: #c7c7c7ff
-7. **Fonts**: Inter (Google Fonts) for title, Merriweather for content.
-8. **Text**: Title 18px or 20px, content 14px.
-9. **Border Radius**: 8px or 12px (rounded-lg)
+- **No Yap:** Code only. Minimal talk.
+- **Mocking:** Use `useEffect` + hardcoded JSON to simulate API calls.
+- [cite_start]**Styling:** Tailwind CSS only[cite: 4]. No external CSS.
+- **Icons:** Use `lucide-react`. Fallback to Unicode if needed.
+- [cite_start]**Stack:** React (Vite)[cite: 4]. Functional components + Hooks. No classes.
+- **English:** Code, file names, and docs strictly English. No Vietnamese.
 
-## Logic rules (Logic 4.3)
+## 🏗 DESIGN
 
-- **Soft Delete UI**: Chỉ ẩn item khỏi giao diện (update local state), không xóa thật.
-- **Order Lifecycle UI**: PENDING -> PAID -> REFUND_PENDING.
-- **i18n UI**: Quản lý bản dịch ArticleTranslation dạng side-by-side (song song).
+- **Colors:** Primary `#F59E0B`. Secondary `#64748B`. Background `#F8FAFC`.
+- **Card:** Background `#FFFFFF`. Shadow `#C7C7C7FF`.
+- **Radius:** 8px or 12px (`rounded-lg`).
+- **Fonts:** Titles Inter. Content Merriweather.
+- **Text:** Title 18-20px. Content 14px.
 
-## Workflow
+## 🧠 LOGIC RULES
 
-- **BEFORE**: Cập nhật `activeContext.md` (Giải pháp UI).
-- **AFTER**: Cập nhật `STATE.md` (Tiến độ).
+- **Delete:** Soft delete only. Hide from UI state. No real database delete.
+- **Orders:** `PENDING` -> `PAID` -> `REFUND_PENDING`.
+- **i18n:** Parallel view. Side-by-side translation.
+
+## 🔄 WORKFLOW
+
+- [cite_start]**Before:** Check `memory-bank/`[cite: 4]. Fix `activeContext.md` first.
+- [cite_start]**After:** Update `STATE.md` with progress after finishing a task[cite: 5].
+- **Module:** ESM (`import`/`export`). No CommonJS.
+- [cite_start]**Port:** 5173[cite: 4].
+
+---
