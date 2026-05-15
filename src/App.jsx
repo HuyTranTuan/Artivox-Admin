@@ -1,8 +1,15 @@
 import { RouterProvider } from "react-router-dom";
-import { appRouter } from "@routes/index";
+import { ToastContainer } from "react-toastify";
+
+import AppRouter from "@/components/AppRouter";
 
 const App = () => {
-  return <RouterProvider router={appRouter} />;
+  return (
+    <>
+      <RouterProvider router={AppRouter} />
+      <ToastContainer />
+    </>
+  );
 };
 
 export default App;

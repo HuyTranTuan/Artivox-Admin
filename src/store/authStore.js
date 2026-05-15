@@ -1,33 +1,36 @@
+import { readStorage } from "@/utils/localStorage";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+
+const user = readStorage("artivox-auth").state;
 
 export const useAuthStore = create(
   persist(
     (set) => ({
-      user: null,
-      token: "",
-      refreshToken: "",
+      user: user?.user || null,
+      accessToken: user?.accessToken || "",
+      refreshToken: user?.refreshToken || "",
       signIn: (payload) => {
         const data = {
-          user: payload.user,
-          token: payload.token,
-          refreshToken: payload.refreshToken || "",
+          user: payload?.user || null,
+          accessToken: payload?.accessToken || "",
+          refreshToken: payload?.refreshToken || "",
         };
         set(data);
       },
       refreshAuth: (payload) => {
         set((state) => ({
           ...state,
-          token: payload.token,
-          refreshToken: payload.refreshToken || "",
+          accessToken: payload?.accessToken || "",
+          refreshToken: payload?.refreshToken || "",
         }));
       },
       signOut: () => {
-        set({ user: null, token: "", refreshToken: "" });
+        set({ user: null, accessToken: "", refreshToken: "" });
       },
     }),
     {
-      name: "artivox-admin-auth",
+      name: "artivox-auth",
       getStorage: () => sessionStorage,
     },
   ),

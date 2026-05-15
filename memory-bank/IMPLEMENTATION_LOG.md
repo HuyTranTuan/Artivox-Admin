@@ -7,7 +7,7 @@
 
 ## 🛠 RECENT WORK
 
-- **Routing:** Blog dead. Article live. Route: `/campaigns/article`.
+- **Routing:** Blog dead. Article live. Route: `/articles`.
 - **Sidebar:** Logo clicks home. 3D categories grouped. Footer added.
 - **Header:** Buttons bigger. Avatar round. User info visible.
 - **Tables:** Lines straight. Badges text-only. No clutter.

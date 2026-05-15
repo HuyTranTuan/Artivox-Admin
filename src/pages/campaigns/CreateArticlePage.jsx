@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 
 const locales = [
   { value: "VI", label: "VI" },
@@ -27,11 +25,11 @@ const CreateArticlePage = () => {
 
   const handleSave = () => {
     // Mock save - will integrate with service later
-    navigate("/campaigns/article");
+    navigate("/articles");
   };
 
   const handleCancel = () => {
-    navigate("/campaigns/article");
+    navigate("/articles");
   };
 
   return (
@@ -39,15 +37,10 @@ const CreateArticlePage = () => {
       <Card className="mx-4 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleCancel}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
-            >
+            <button onClick={handleCancel} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <h2 className="font-title text-xl font-bold text-slate-900">
-              Create article
-            </h2>
+            <h2 className="font-title text-xl font-bold text-slate-900">Create article</h2>
           </div>
           <Button onClick={handleSave} className="gap-2">
             <Save className="h-4 w-4" />
@@ -58,9 +51,7 @@ const CreateArticlePage = () => {
         <div className="space-y-5">
           {/* Title */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Title
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Title</label>
             <input
               type="text"
               value={title}
@@ -72,9 +63,7 @@ const CreateArticlePage = () => {
 
           {/* Locale */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Locale
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Locale</label>
             <select
               value={locale}
               onChange={(e) => setLocale(e.target.value)}
@@ -90,9 +79,7 @@ const CreateArticlePage = () => {
 
           {/* Status */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Status
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -108,17 +95,9 @@ const CreateArticlePage = () => {
 
           {/* Content */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Content
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Content</label>
             <div className="rounded-xl border border-slate-300 overflow-hidden">
-              <ReactQuill
-                theme="snow"
-                value={content}
-                onChange={setContent}
-                placeholder="Write your article content here..."
-                className="h-64"
-              />
+              {/* <ReactQuill theme="snow" value={content} onChange={setContent} placeholder="Write your article content here..." className="h-64" /> */}
             </div>
           </div>
         </div>

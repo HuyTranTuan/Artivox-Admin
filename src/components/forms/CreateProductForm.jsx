@@ -1,25 +1,34 @@
-import { useState } from "react";
-import { useAuth } from "@hooks/useAuth";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { signInSchema } from "@validators/auth.schema";
-import { PasswordInput } from "../ui/password-input";
-import { readStorage } from "@/utils/localStorage";
 
-const SignInForm = () => {
-  const { handleSignIn } = useAuth();
-  const user = readStorage("artivox-auth").state.user;
+export default CreateProductForm = () => {
+  const { t } = useTranslation();
+  const param = useParams();
+
+  const {
+    register,
+    handleSignIn,
+    formState: { errors },
+  } = useForm({ resolver: product.schema });
+
   const [form, setForm] = useState({
-    email: user?.email || "account@gmail.com",
-    password: "",
+    email: "account@gmail.com",
+    password: "123456",
   });
   const [error, setError] = useState("");
 
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    const parsed = signInSchema.safeParse(form);
+    const parsed = pr.safeParse(form);
 
     if (!parsed.success) {
       setError("Invalid credentials");
@@ -34,7 +43,7 @@ const SignInForm = () => {
     <Card className="w-full max-w-md p-8">
       <div className="mb-8">
         <div className="font-title text-3xl font-bold text-slate-950">Sign in</div>
-        <div className="mt-2 text-sm text-slate-500">Mock auth for admin dashboard flow.</div>
+        <div className="mt-2 text-sm text-slate-500">Create Model Form.</div>
       </div>
 
       <form className="space-y-4" onSubmit={onSubmit}>
@@ -44,15 +53,13 @@ const SignInForm = () => {
         </div>
         <div className="space-y-2">
           <label className="font-title text-sm font-semibold text-slate-800">Password</label>
-          <PasswordInput type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} />
+          <Input type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} />
         </div>
         {error ? <div className="text-sm text-rose-600">{error}</div> : null}
         <Button className="w-full" type="submit">
-          Access Dashboard
+          Create
         </Button>
       </form>
     </Card>
   );
 };
-
-export default SignInForm;

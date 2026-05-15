@@ -1,28 +1,20 @@
-import { http } from "@services/httpService";
+import http from "@api/axios";
 import { ROLES } from "@constants/appCode";
 
 export const authService = {
   signIn: async (payload) => {
-    return http.post({
-      token: "mock-jwt-token",
-      refreshToken: "mock-refresh-token",
-      user: {
-        id: "admin-01",
-        name: "Artivox Admin",
-        email: payload.email,
-        role: ROLES.ADMIN,
-      },
-    });
+    const user = await http.post("/auth/admin/login", { email: payload.email, password: payload.password }, null);
+    if (!user) return null;
+    return user;
   },
 
   refreshToken: async (refreshToken) => {
-    return http.post({
-      token: "mock-jwt-token-refreshed",
-      refreshToken: "mock-refresh-token-rotated",
-    });
+    return http.post("/auth/refresh-token", { refreshToken }, null);
   },
 
   getCurrentUser: async (payload) => {
-    return "";
+    const me = await http.post("/auth/me", token, null);
+    if (!me) return null;
+    return me;
   },
 };

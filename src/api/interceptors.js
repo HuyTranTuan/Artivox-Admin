@@ -1,5 +1,4 @@
 import { useAuthStore } from "@store/authStore";
-import axiosClient from "@api/axios";
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -17,7 +16,7 @@ const processQueue = (error, token = null) => {
 
 export const applyAxiosInterceptors = (axiosClient) => {
   axiosClient.interceptors.request.use((config) => {
-    const token = useAuthStore.getState().token;
+    const token = useAuthStore.getState().accessToken;
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -58,27 +57,24 @@ export const applyAxiosInterceptors = (axiosClient) => {
       isRefreshing = true;
 
       try {
-        const response = await fetch(
-          `${axiosClient.defaults.baseURL}/auth/refresh`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refreshToken }),
-          },
-        );
+        const response = await fetch(`${axiosClient.defaults.baseURL}/auth/refresh-token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken }),
+        });
 
         if (!response.ok) throw new Error("Refresh failed");
 
         const data = await response.json();
 
         useAuthStore.getState().refreshAuth({
-          token: data.token,
+          accessToken: data.accessToken,
           refreshToken: data.refreshToken || refreshToken,
         });
 
-        processQueue(null, data.token);
+        processQueue(null, data.accessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);

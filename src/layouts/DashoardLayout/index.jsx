@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { Header } from "@components/shared/header";
-import { Sidebar } from "@components/shared/sidebar";
+import { Header } from "@layouts/DashoardLayout/components/Header";
+import { Sidebar } from "@layouts/DashoardLayout/components/Sidebar";
 import { useUiStore } from "@store/uiStore";
 
 const DashboardLayout = () => {

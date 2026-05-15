@@ -1,14 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  Eye,
-  FilePenLine,
-  Languages,
-  Plus,
-  Pencil,
-  Trash2,
-  RefreshCw,
-} from "lucide-react";
+import { Eye, FilePenLine, Languages, Plus, Pencil, Trash2, RefreshCw } from "lucide-react";
 import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
@@ -28,25 +20,11 @@ const normalizeArticle = (rawItem, index = 0) => {
   return {
     id,
     slug: rawItem?.slug || String(id),
-    title:
-      rawItem?.title ||
-      rawItem?.name ||
-      rawItem?.headline ||
-      `Article ${index + 1}`,
+    title: rawItem?.title || rawItem?.name || rawItem?.headline || `Article ${index + 1}`,
     locale: rawItem?.locale || rawItem?.language || rawItem?.lang || "EN",
-    author:
-      rawItem?.author?.name ||
-      rawItem?.authorName ||
-      rawItem?.author ||
-      "Unknown",
-    status:
-      rawItem?.status ||
-      (rawItem?.publishedAt || rawItem?.publishDate ? "Published" : "Draft"),
-    publishedAt:
-      rawItem?.publishedAt ||
-      rawItem?.publishDate ||
-      rawItem?.createdAt ||
-      null,
+    author: rawItem?.author?.name || rawItem?.authorName || rawItem?.author || "Unknown",
+    status: rawItem?.status || (rawItem?.publishedAt || rawItem?.publishDate ? "Published" : "Draft"),
+    publishedAt: rawItem?.publishedAt || rawItem?.publishDate || rawItem?.createdAt || null,
     views: Number(rawItem?.views ?? rawItem?.viewCount ?? 0),
   };
 };
@@ -64,9 +42,7 @@ const ArticleCampaignsPage = () => {
     setLoading(true);
     try {
       const data = await articleService.getArticles();
-      const normalized = (Array.isArray(data) ? data : []).map(
-        normalizeArticle,
-      );
+      const normalized = (Array.isArray(data) ? data : []).map(normalizeArticle);
       setCampaigns(normalized);
     } catch {
       setCampaigns([]);
@@ -138,9 +114,7 @@ const ArticleCampaignsPage = () => {
                 <Icon className="h-5 w-5" />
               </div>
               <div>
-                <div className="font-title text-2xl font-bold text-slate-900">
-                  {item.value}
-                </div>
+                <div className="font-title text-2xl font-bold text-slate-900">{item.value}</div>
                 <div className="text-xs text-slate-500">{item.label}</div>
               </div>
             </Card>
@@ -151,35 +125,21 @@ const ArticleCampaignsPage = () => {
       <Card className="p-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <div className="font-title text-xl font-bold text-slate-950">
-              Campaign list
-            </div>
-            <div className="mt-1 text-sm text-slate-500">
-              Side-by-side locale publishing overview
-            </div>
+            <div className="font-title text-xl font-bold text-slate-950">Campaign list</div>
+            <div className="mt-1 text-sm text-slate-500">Side-by-side locale publishing overview</div>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="h-10 w-10 p-0"
-              onClick={loadCampaigns}
-            >
+            <Button variant="ghost" className="h-10 w-10 p-0" onClick={loadCampaigns}>
               <RefreshCw className="h-4 w-4" />
             </Button>
-            <Button
-              className="gap-2"
-              onClick={() => navigate("/campaigns/article/create")}
-            >
+            <Button className="gap-2" onClick={() => navigate("/articles/create")}>
               <Plus className="h-4 w-4" />
               New
             </Button>
           </div>
         </div>
 
-        <div
-          className="overflow-x-auto"
-          style={{ maxHeight: "calc(100vh - 340px)" }}
-        >
+        <div className="overflow-x-auto" style={{ maxHeight: "calc(100vh - 340px)" }}>
           <div className="min-w-[800px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
@@ -191,18 +151,11 @@ const ArticleCampaignsPage = () => {
                 <div>Actions</div>
               </div>
 
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 420px)" }}
-              >
+              <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 420px)" }}>
                 {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">
-                    Loading campaigns...
-                  </div>
+                  <div className="px-4 py-8 text-sm text-slate-500">Loading campaigns...</div>
                 ) : campaigns.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">
-                    No campaigns found
-                  </div>
+                  <div className="px-4 py-8 text-sm text-slate-500">No campaigns found</div>
                 ) : (
                   campaigns.map((item, idx) => (
                     <div
@@ -210,13 +163,8 @@ const ArticleCampaignsPage = () => {
                       className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
                     >
                       <div>
-                        <div className="font-title text-base font-semibold text-slate-900">
-                          {item.title}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          {toSafeNumber(item.views).toLocaleString("en-US")}{" "}
-                          views
-                        </div>
+                        <div className="font-title text-base font-semibold text-slate-900">{item.title}</div>
+                        <div className="mt-1 text-xs text-slate-500">{toSafeNumber(item.views).toLocaleString("en-US")} views</div>
                       </div>
                       <div>{item.locale}</div>
                       <div>{item.author}</div>
@@ -257,53 +205,29 @@ const ArticleCampaignsPage = () => {
 
         {openDialog && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-            <div
-              ref={dialogRef}
-              className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-            >
+            <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
               {openDialog === "view" && (
                 <>
-                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                    View Campaign
-                  </h2>
+                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">View Campaign</h2>
                   <div className="space-y-3">
                     <div>
-                      <div className="text-xs text-slate-500 uppercase">
-                        Title
-                      </div>
-                      <div className="text-sm text-slate-900">
-                        {selectedItem?.title}
-                      </div>
+                      <div className="text-xs text-slate-500 uppercase">Title</div>
+                      <div className="text-sm text-slate-900">{selectedItem?.title}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500 uppercase">
-                        Author
-                      </div>
-                      <div className="text-sm text-slate-900">
-                        {selectedItem?.author}
-                      </div>
+                      <div className="text-xs text-slate-500 uppercase">Author</div>
+                      <div className="text-sm text-slate-900">{selectedItem?.author}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500 uppercase">
-                        Status
-                      </div>
+                      <div className="text-xs text-slate-500 uppercase">Status</div>
                       <Badge>{selectedItem?.status}</Badge>
                     </div>
                     <div>
-                      <div className="text-xs text-slate-500 uppercase">
-                        Views
-                      </div>
-                      <div className="text-sm text-slate-900">
-                        {toSafeNumber(selectedItem?.views).toLocaleString(
-                          "en-US",
-                        )}
-                      </div>
+                      <div className="text-xs text-slate-500 uppercase">Views</div>
+                      <div className="text-sm text-slate-900">{toSafeNumber(selectedItem?.views).toLocaleString("en-US")}</div>
                     </div>
                   </div>
-                  <Button
-                    className="w-full mt-6"
-                    onClick={() => setOpenDialog(null)}
-                  >
+                  <Button className="w-full mt-6" onClick={() => setOpenDialog(null)}>
                     Close
                   </Button>
                 </>
@@ -311,25 +235,15 @@ const ArticleCampaignsPage = () => {
 
               {openDialog === "edit" && (
                 <>
-                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                    Edit Campaign
-                  </h2>
+                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">Edit Campaign</h2>
                   <p className="text-sm text-slate-600">
-                    Edit functionality coming soon for:{" "}
-                    <strong>{selectedItem?.title}</strong>
+                    Edit functionality coming soon for: <strong>{selectedItem?.title}</strong>
                   </p>
                   <div className="flex gap-3 mt-6">
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => setOpenDialog(null)}
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
                       Cancel
                     </Button>
-                    <Button
-                      className="flex-1"
-                      onClick={() => setOpenDialog(null)}
-                    >
+                    <Button className="flex-1" onClick={() => setOpenDialog(null)}>
                       Save
                     </Button>
                   </div>
@@ -338,27 +252,15 @@ const ArticleCampaignsPage = () => {
 
               {openDialog === "delete" && (
                 <>
-                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-                    Delete Campaign
-                  </h2>
+                  <h2 className="font-title text-xl font-bold text-slate-900 mb-4">Delete Campaign</h2>
                   <p className="text-sm text-slate-600 mb-4">
-                    Are you sure you want to delete{" "}
-                    <strong>{selectedItem?.title}</strong>? This action cannot
-                    be undone.
+                    Are you sure you want to delete <strong>{selectedItem?.title}</strong>? This action cannot be undone.
                   </p>
                   <div className="flex gap-3">
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => setOpenDialog(null)}
-                    >
+                    <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
                       Cancel
                     </Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1"
-                      onClick={confirmDelete}
-                    >
+                    <Button variant="destructive" className="flex-1" onClick={confirmDelete}>
                       Delete
                     </Button>
                   </div>

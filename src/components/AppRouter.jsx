@@ -1,44 +1,34 @@
 import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
+
 import AuthLayout from "@/layouts/AuthLayout/index.jsx";
 import DashboardLayout from "@/layouts/DashoardLayout";
-import ProtectedRoute from "@routes/ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import SignInPage from "@pages/auth/SignInPage";
 import DashboardPage from "@pages/dashboard/DashboardPage";
+import Loading from "@components/Loading";
 
 const RegisterPage = lazy(() => import("@pages/auth/RegisterPage"));
-const ArticleCampaignsPage = lazy(
-  () => import("@pages/campaigns/ArticleCampaignsPage"),
-);
-const CreateArticlePage = lazy(
-  () => import("@pages/campaigns/CreateArticlePage"),
-);
-const DiscountCampaignsPage = lazy(
-  () => import("@pages/campaigns/DiscountCampaignsPage"),
-);
+const ArticleCampaignsPage = lazy(() => import("@pages/campaigns/ArticleCampaignsPage"));
+const CreateArticlePage = lazy(() => import("@pages/campaigns/CreateArticlePage"));
+const DiscountCampaignsPage = lazy(() => import("@pages/campaigns/DiscountCampaignsPage"));
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
 const ModelsPage = lazy(() => import("@pages/products/ModelsPage"));
 const MaterialsPage = lazy(() => import("@pages/products/MaterialsPage"));
 const ToolsPage = lazy(() => import("@pages/products/ToolsPage"));
-const PersonalSettingsPage = lazy(
-  () => import("@pages/settings/PersonalSettingsPage"),
-);
+const PersonalSettingsPage = lazy(() => import("@pages/settings/PersonalSettingsPage"));
 const ChatPage = lazy(() => import("@pages/support/ChatPage"));
 const CustomersPage = lazy(() => import("@pages/customers/CustomersPage"));
-const CustomerDetailPage = lazy(
-  () => import("@pages/customers/CustomerDetailPage"),
-);
+const CustomerDetailPage = lazy(() => import("@pages/customers/CustomerDetailPage"));
 
 const withLazyLoad = (Component) => (
-  <Suspense
-    fallback={<div className="p-6 text-sm text-slate-500">Loading page...</div>}
-  >
+  <Suspense fallback={<Loading />}>
     <Component />
   </Suspense>
 );
 
-export const appRouter = createBrowserRouter([
+const AppRouter = createBrowserRouter([
   {
     path: "/",
     element: <ProtectedRoute />,
@@ -51,15 +41,15 @@ export const appRouter = createBrowserRouter([
             element: <DashboardPage />,
           },
           {
-            path: "campaigns/article",
+            path: "articles",
             element: withLazyLoad(ArticleCampaignsPage),
           },
           {
-            path: "campaigns/article/:slug",
+            path: "articles/:slug",
             element: withLazyLoad(ArticleCampaignsPage),
           },
           {
-            path: "campaigns/article/create",
+            path: "articles/create",
             element: withLazyLoad(CreateArticlePage),
           },
           {
@@ -124,3 +114,5 @@ export const appRouter = createBrowserRouter([
     ],
   },
 ]);
+
+export default AppRouter;

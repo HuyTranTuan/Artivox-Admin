@@ -1,15 +1,4 @@
-import {
-  BookText,
-  CircleDollarSign,
-  Cuboid,
-  LayoutDashboard,
-  MessageCircleMore,
-  ShoppingCart,
-  Users,
-  Box,
-  Layers,
-  Wrench,
-} from "lucide-react";
+import { BookText, CircleDollarSign, Cuboid, LayoutDashboard, MessageCircleMore, ShoppingCart, Users, Box, Layers, Wrench } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@utils/cn";
 import { useUiStore } from "@store/uiStore";
@@ -42,26 +31,15 @@ export const Sidebar = ({ forcedOpen }) => {
   };
 
   return (
-    <aside
-      className={cn(
-        "sticky top-0 h-screen border-r border-slate-200/70 bg-white p-5 transition-all flex flex-col",
-        isOpen ? "w-72" : "w-24",
-      )}
-    >
+    <aside className={cn("sticky top-0 h-screen border-r border-slate-200/70 bg-white p-5 transition-all flex flex-col", isOpen ? "w-72" : "w-24")}>
       <div className="mb-8 flex items-center gap-3">
-        <NavLink
-          to="/"
-          onClick={handleNavClick}
-          className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition"
-        >
+        <NavLink to="/" onClick={handleNavClick} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-slate-950">
             <LayoutDashboard className="h-6 w-6" />
           </div>
           {isOpen ? (
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
-                Artivox
-              </div>
+              <div className="font-title text-lg font-bold text-slate-900">Artivox</div>
             </div>
           ) : null}
         </NavLink>
@@ -77,9 +55,7 @@ export const Sidebar = ({ forcedOpen }) => {
               <div key={item.label}>
                 <div className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-600">
                   <Icon className="h-5 w-5 shrink-0" />
-                  {isOpen ? (
-                    <span className="font-title font-medium">{item.label}</span>
-                  ) : null}
+                  {isOpen ? <span className="font-title font-medium">{item.label}</span> : null}
                 </div>
                 {isOpen && (
                   <div className="space-y-1 pl-4">
@@ -93,18 +69,12 @@ export const Sidebar = ({ forcedOpen }) => {
                           className={({ isActive }) =>
                             cn(
                               "flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition",
-                              isActive
-                                ? "bg-amber-500 text-white font-semibold"
-                                : "text-slate-600 hover:bg-gray-200",
+                              isActive ? "bg-amber-500 text-white font-semibold" : "text-slate-600 hover:bg-gray-200",
                             )
                           }
                         >
-                          {ChildIcon && (
-                            <ChildIcon className="h-4 w-4 shrink-0" />
-                          )}
-                          <span className="font-title font-medium">
-                            {child.label}
-                          </span>
+                          {ChildIcon && <ChildIcon className="h-4 w-4 shrink-0" />}
+                          <span className="font-title font-medium">{child.label}</span>
                         </NavLink>
                       );
                     })}
@@ -121,18 +91,11 @@ export const Sidebar = ({ forcedOpen }) => {
               end={item.end}
               onClick={handleNavClick}
               className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition",
-                  isActive
-                    ? "bg-amber-500 text-white font-semibold"
-                    : "text-slate-600 hover:bg-gray-200",
-                )
+                cn("flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition", isActive ? "bg-amber-500 text-white font-semibold" : "text-slate-600 hover:bg-gray-200")
               }
             >
               <Icon className="h-5 w-5 shrink-0" />
-              {isOpen ? (
-                <span className="font-title font-medium">{item.label}</span>
-              ) : null}
+              {isOpen ? <span className="font-title font-medium">{item.label}</span> : null}
             </NavLink>
           );
         })}

@@ -1,50 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@components/ui/card";
-import {
-  TrendingUp,
-  TrendingDown,
-  ShoppingCart,
-  Users,
-  DollarSign,
-  Box,
-  ArrowUpRight,
-  ArrowUpDown,
-  Package,
-  CreditCard,
-  Activity,
-  Clock,
-  BarChart3,
-  PieChart,
-} from "lucide-react";
-
-const fmtDate = (d) => {
-  if (!d) return "—";
-  try {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return d;
-    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
-  } catch {
-    return d;
-  }
-};
+import { TrendingUp, TrendingDown, ShoppingCart, Users, DollarSign, Box, ArrowUpRight, ArrowUpDown, Package, CreditCard, Activity, Clock, BarChart3, PieChart } from "lucide-react";
 
 const stats = [
   {
     label: "Total Revenue",
     value: "₫248.5M",
     change: "+12.5%",
-    // up: true,
+    up: true,
     icon: DollarSign,
     color: "from-amber-500 to-orange-500",
-  },
-  {
-    label: "Models Sold",
-    value: "1,847",
-    change: "+8.2%",
-    up: true,
-    icon: Box,
-    color: "from-blue-500 to-indigo-500",
   },
   {
     label: "Total Orders",
@@ -61,14 +27,6 @@ const stats = [
     up: false,
     icon: Users,
     color: "from-purple-500 to-pink-500",
-  },
-  {
-    label: "Active Products",
-    value: "156",
-    change: "+4.1%",
-    up: true,
-    icon: Package,
-    color: "from-cyan-500 to-sky-500",
   },
   {
     label: "Pending Orders",
@@ -211,8 +169,7 @@ const buildLinePath = (data, width, height, padding = 20, key = "value") => {
   return data
     .map((d, i) => {
       const x = padding + i * stepX;
-      const y =
-        height - padding - ((d[key] - minV) / range) * (height - padding * 2);
+      const y = height - padding - ((d[key] - minV) / range) * (height - padding * 2);
       return `${i === 0 ? "M" : "L"} ${x} ${y}`;
     })
     .join(" ");
@@ -224,56 +181,6 @@ const buildAreaPath = (data, width, height, padding = 20, key = "value") => {
   const lastX = padding + (data.length - 1) * stepX;
   const firstX = padding;
   return `${linePath} L ${lastX} ${height - padding} L ${firstX} ${height - padding} Z`;
-};
-
-const MiniChart = ({
-  data,
-  height = 60,
-  color = "#f59e0b",
-  key: dataKey = "value",
-}) => {
-  const w = 200;
-  const maxV = Math.max(...data.map((d) => d[dataKey]));
-  const minV = Math.min(...data.map((d) => d[dataKey]));
-  const range = maxV - minV || 1;
-  const stepX = (w - 10) / (data.length - 1);
-
-  return (
-    <svg width={w} height={height} className="w-full h-auto">
-      <defs>
-        <linearGradient
-          id={`areaGrad-${color.replace("#", "")}`}
-          x1="0"
-          y1="0"
-          x2="0"
-          y2="1"
-        >
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.02" />
-        </linearGradient>
-      </defs>
-      {data.map((d, i) => {
-        const x = 5 + i * stepX;
-        const y = height - 5 - ((d[dataKey] - minV) / range) * (height - 10);
-        return <circle key={i} cx={x} cy={y} r="2.5" fill={color} />;
-      })}
-      <path
-        d={data
-          .map((d, i) => {
-            const x = 5 + i * stepX;
-            const y =
-              height - 5 - ((d[dataKey] - minV) / range) * (height - 10);
-            return `${i === 0 ? "M" : "L"} ${x} ${y}`;
-          })
-          .join(" ")}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
 };
 
 const DashboardPage = () => {
@@ -304,41 +211,33 @@ const DashboardPage = () => {
     [],
   );
 
+  useEffect(function getDashboard() {
+    async function fetchDashboard() {
+      return true;
+    }
+    fetchDashboard();
+  }, []);
+
   return (
     <section className="space-y-6">
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
             <Card key={s.label} className="p-5 flex items-center gap-5">
-              <div
-                className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${s.color} text-white`}
-              >
+              <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${s.color} text-white`}>
                 <Icon className="h-7 w-7" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">
-                  {s.label}
-                </div>
-                <div className="font-title text-2xl font-bold text-slate-900 mt-1">
-                  {s.value}
-                </div>
-                <div
-                  className={`flex items-center gap-1 mt-1 text-xs font-semibold ${s.up ? "text-emerald-600" : "text-rose-500"}`}
-                >
-                  {s.up ? (
-                    <TrendingUp className="h-3 w-3" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3" />
-                  )}
+                <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{s.label}</div>
+                <div className="font-title text-2xl font-bold text-slate-900 mt-1">{s.value}</div>
+                <div className={`flex items-center gap-1 mt-1 text-xs font-semibold ${s.up ? "text-emerald-600" : "text-rose-500"}`}>
+                  {s.up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                   {s.change} vs last month
                 </div>
               </div>
-              <MiniChart
-                data={chartView === "weekly" ? weeklyRevenue : monthlyRevenue}
-                color={s.up ? "#10b981" : "#f43f5e"}
-              />
+              {/* <MiniChart data={chartView === "weekly" ? weeklyRevenue : monthlyRevenue} color={s.up ? "#10b981" : "#f43f5e"} /> */}
             </Card>
           );
         })}
@@ -347,52 +246,28 @@ const DashboardPage = () => {
       {/* Summary Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-4">
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Avg Order Value
-          </div>
-          <div className="font-title text-lg font-bold text-slate-900 mt-1">
-            {summaryStats.avgOrderValue}
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Avg Order Value</div>
+          <div className="font-title text-lg font-bold text-slate-900 mt-1">{summaryStats.avgOrderValue}</div>
         </Card>
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Conversion
-          </div>
-          <div className="font-title text-lg font-bold text-emerald-600 mt-1">
-            {summaryStats.conversionRate}
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Conversion</div>
+          <div className="font-title text-lg font-bold text-emerald-600 mt-1">{summaryStats.conversionRate}</div>
         </Card>
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Churn Rate
-          </div>
-          <div className="font-title text-lg font-bold text-rose-500 mt-1">
-            {summaryStats.churnRate}
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Churn Rate</div>
+          <div className="font-title text-lg font-bold text-rose-500 mt-1">{summaryStats.churnRate}</div>
         </Card>
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Growth Rate
-          </div>
-          <div className="font-title text-lg font-bold text-emerald-600 mt-1">
-            {summaryStats.growthRate}
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Growth Rate</div>
+          <div className="font-title text-lg font-bold text-emerald-600 mt-1">{summaryStats.growthRate}</div>
         </Card>
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Active Products
-          </div>
-          <div className="font-title text-lg font-bold text-slate-900 mt-1">
-            156
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Active Products</div>
+          <div className="font-title text-lg font-bold text-slate-900 mt-1">156</div>
         </Card>
         <Card className="p-4 text-center">
-          <div className="text-xs text-slate-500 uppercase tracking-wider">
-            Total Customers
-          </div>
-          <div className="font-title text-lg font-bold text-slate-900 mt-1">
-            1,284
-          </div>
+          <div className="text-xs text-slate-500 uppercase tracking-wider">Total Customers</div>
+          <div className="font-title text-lg font-bold text-slate-900 mt-1">1,284</div>
         </Card>
       </div>
 
@@ -401,20 +276,12 @@ const DashboardPage = () => {
         <Card className="xl:col-span-2 p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
-                Revenue Overview
-              </div>
-              <div className="text-sm text-slate-500 mt-1">
-                {chartView === "weekly"
-                  ? "This week"
-                  : "Monthly revenue for 2026"}
-              </div>
+              <div className="font-title text-lg font-bold text-slate-900">Revenue Overview</div>
+              <div className="text-sm text-slate-500 mt-1">{chartView === "weekly" ? "This week" : "Monthly revenue for 2026"}</div>
             </div>
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <div className="font-title text-2xl font-bold text-slate-900">
-                  ₫248.5M
-                </div>
+                <div className="font-title text-2xl font-bold text-slate-900">₫248.5M</div>
                 <div className="flex items-center gap-1 text-xs text-emerald-600 font-semibold justify-end">
                   <TrendingUp className="h-3 w-3" /> +12.5% YoY
                 </div>
@@ -436,11 +303,7 @@ const DashboardPage = () => {
             </div>
           </div>
           <div className="w-full overflow-hidden">
-            <svg
-              viewBox={`0 0 ${chartW} ${chartH}`}
-              className="w-full h-auto"
-              preserveAspectRatio="none"
-            >
+            <svg viewBox={`0 0 ${chartW} ${chartH}`} className="w-full h-auto" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
@@ -449,61 +312,24 @@ const DashboardPage = () => {
               </defs>
               {[0, 1, 2, 3, 4].map((i) => {
                 const y = 20 + (i / 4) * (chartH - 40);
-                return (
-                  <line
-                    key={i}
-                    x1="20"
-                    y1={y}
-                    x2={chartW - 20}
-                    y2={y}
-                    stroke="#e2e8f0"
-                    strokeWidth="1"
-                  />
-                );
+                return <line key={i} x1="20" y1={y} x2={chartW - 20} y2={y} stroke="#e2e8f0" strokeWidth="1" />;
               })}
-              <path
-                d={buildAreaPath(revenueData, chartW, chartH)}
-                fill="url(#areaGrad)"
-              />
-              <path
-                d={buildLinePath(revenueData, chartW, chartH)}
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+              <path d={buildAreaPath(revenueData, chartW, chartH)} fill="url(#areaGrad)" />
+              <path d={buildLinePath(revenueData, chartW, chartH)} fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
               {revenueData.map((d, i) => {
                 const maxV = Math.max(...revenueData.map((r) => r.value));
                 const minV = Math.min(...revenueData.map((r) => r.value));
                 const range = maxV - minV || 1;
                 const stepX = (chartW - 40) / (revenueData.length - 1);
                 const x = 20 + i * stepX;
-                const y =
-                  chartH - 20 - ((d.value - minV) / range) * (chartH - 40);
-                return (
-                  <circle
-                    key={d[chartKey]}
-                    cx={x}
-                    cy={y}
-                    r="4"
-                    fill="#fff"
-                    stroke="#f59e0b"
-                    strokeWidth="2"
-                  />
-                );
+                const y = chartH - 20 - ((d.value - minV) / range) * (chartH - 40);
+                return <circle key={d[chartKey]} cx={x} cy={y} r="4" fill="#fff" stroke="#f59e0b" strokeWidth="2" />;
               })}
               {revenueData.map((d, i) => {
                 const stepX = (chartW - 40) / (revenueData.length - 1);
                 const x = 20 + i * stepX;
                 return (
-                  <text
-                    key={d[chartKey]}
-                    x={x}
-                    y={chartH - 4}
-                    textAnchor="middle"
-                    className="text-[10px] fill-slate-500"
-                  >
+                  <text key={d[chartKey]} x={x} y={chartH - 4} textAnchor="middle" className="text-[10px] fill-slate-500">
                     {d[chartKey]}
                   </text>
                 );
@@ -514,12 +340,8 @@ const DashboardPage = () => {
 
         {/* Category Breakdown */}
         <Card className="p-6">
-          <div className="font-title text-lg font-bold text-slate-900 mb-1">
-            Category Sales
-          </div>
-          <div className="text-sm text-slate-500 mb-6">
-            Revenue by product category
-          </div>
+          <div className="font-title text-lg font-bold text-slate-900 mb-1">Category Sales</div>
+          <div className="text-sm text-slate-500 mb-6">Revenue by product category</div>
           <div className="space-y-5">
             {categoryBreakdown.map((c) => (
               <div key={c.name}>
@@ -528,42 +350,29 @@ const DashboardPage = () => {
                   <span className="font-semibold text-slate-900">{c.pct}%</span>
                 </div>
                 <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${c.color} transition-all`}
-                    style={{ width: `${c.pct}%` }}
-                  />
+                  <div className={`h-full rounded-full ${c.color} transition-all`} style={{ width: `${c.pct}%` }} />
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-6 pt-6 border-t border-slate-100">
-            <div className="font-title text-sm font-semibold text-slate-900 mb-3">
-              Quick Stats
-            </div>
+            <div className="font-title text-sm font-semibold text-slate-900 mb-3">Quick Stats</div>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-slate-50 rounded-xl p-3">
                 <div className="text-xs text-slate-500">Avg Order</div>
-                <div className="font-title text-base font-bold text-slate-900">
-                  ₫76.1K
-                </div>
+                <div className="font-title text-base font-bold text-slate-900">₫76.1K</div>
               </div>
               <div className="bg-slate-50 rounded-xl p-3">
                 <div className="text-xs text-slate-500">Repeat Rate</div>
-                <div className="font-title text-base font-bold text-slate-900">
-                  42%
-                </div>
+                <div className="font-title text-base font-bold text-slate-900">42%</div>
               </div>
               <div className="bg-slate-50 rounded-xl p-3">
                 <div className="text-xs text-slate-500">Retention</div>
-                <div className="font-title text-base font-bold text-emerald-600">
-                  78%
-                </div>
+                <div className="font-title text-base font-bold text-emerald-600">78%</div>
               </div>
               <div className="bg-slate-50 rounded-xl p-3">
                 <div className="text-xs text-slate-500">Satisfaction</div>
-                <div className="font-title text-base font-bold text-amber-600">
-                  4.8★
-                </div>
+                <div className="font-title text-base font-bold text-amber-600">4.8★</div>
               </div>
             </div>
           </div>
@@ -575,36 +384,23 @@ const DashboardPage = () => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
-                Top Selling Models
-              </div>
-              <div className="text-sm text-slate-500 mt-1">
-                Best performers this month
-              </div>
+              <div className="font-title text-lg font-bold text-slate-900">Top Selling Models</div>
+              <div className="text-sm text-slate-500 mt-1">Best performers this month</div>
             </div>
             <BarChart3 className="h-5 w-5 text-slate-400" />
           </div>
           <div className="space-y-3">
             {topModels.map((m, i) => (
-              <div
-                key={m.name}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-xl shrink-0">
-                  {m.img}
-                </div>
+              <div key={m.name} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-xl shrink-0">{m.img}</div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                    {m.name}
-                  </div>
+                  <div className="font-title text-sm font-semibold text-slate-900 truncate">{m.name}</div>
                   <div className="text-xs text-slate-500">
                     {m.sales} orders · {m.qty} qty sold
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-title text-sm font-bold text-slate-900">
-                    {m.revenue}
-                  </div>
+                  <div className="font-title text-sm font-bold text-slate-900">{m.revenue}</div>
                   <div className="text-xs text-emerald-600 font-semibold flex items-center gap-0.5 justify-end">
                     <ArrowUpRight className="h-3 w-3" />
                     {m.trend}
@@ -619,17 +415,11 @@ const DashboardPage = () => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
-                Recent Orders
-              </div>
-              <div className="text-sm text-slate-500 mt-1">
-                Latest transactions
-              </div>
+              <div className="font-title text-lg font-bold text-slate-900">Recent Orders</div>
+              <div className="text-sm text-slate-500 mt-1">Latest transactions</div>
             </div>
             <button
-              onClick={() =>
-                setSortOrder(sortOrder === "desc" ? "asc" : "desc")
-              }
+              onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
               className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-500 hover:bg-slate-50 transition"
               title="Sort by date"
             >
@@ -652,24 +442,16 @@ const DashboardPage = () => {
                     onClick={() => navigate(`/orders/${o.id.replace("#", "")}`)}
                   >
                     <div className="min-w-0">
-                      <div className="font-title text-sm font-semibold text-slate-900 hover:text-amber-600 transition truncate">
-                        {o.id}
-                      </div>
+                      <div className="font-title text-sm font-semibold text-slate-900 hover:text-amber-600 transition truncate">{o.id}</div>
                       <div className="text-xs text-slate-500 mt-0.5 truncate">
                         {o.customer} · {o.model}
                       </div>
                     </div>
                     <div className="text-xs text-slate-500">{o.createdAt}</div>
                     <div>
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${o.statusColor}`}
-                      >
-                        {o.status}
-                      </span>
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${o.statusColor}`}>{o.status}</span>
                     </div>
-                    <div className="font-title text-sm font-bold text-slate-900 text-right">
-                      {o.amount}
-                    </div>
+                    <div className="font-title text-sm font-bold text-slate-900 text-right">{o.amount}</div>
                   </div>
                 ))}
               </div>

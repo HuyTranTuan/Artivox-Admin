@@ -1,40 +1,25 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+
 import { useAuthStore } from "@store/authStore";
 import { authService } from "@services/authService";
-
-// Safe JWT decode: reads base64 payload from a JWT string
-const decodeToken = (token) => {
-  try {
-    const payloadBase64 = token.split(".")[1];
-    if (!payloadBase64) return null;
-    const json = atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(json);
-  } catch {
-    return null;
-  }
-};
-
-const isTokenExpired = (token) => {
-  const decoded = decodeToken(token);
-  if (!decoded?.exp) return false; // no exp claim → assume valid
-  return Date.now() >= decoded.exp * 1000;
-};
+import { isTokenExpired } from "@/utils/token";
+import VerifyingSession from "@components/VerifyingSession";
 
 const ProtectedRoute = () => {
   const [checking, setChecking] = useState(true);
-  const { token, refreshToken, signOut, refreshAuth } = useAuthStore();
+  const { accessToken, refreshToken, signOut, refreshAuth } = useAuthStore();
 
   useEffect(() => {
     const verify = async () => {
       // no token at all → redirect
-      if (!token) {
+      if (!accessToken) {
         setChecking(false);
         return;
       }
 
       // token not expired → proceed
-      if (!isTokenExpired(token)) {
+      if (!isTokenExpired(accessToken)) {
         setChecking(false);
         return;
       }
@@ -60,15 +45,11 @@ const ProtectedRoute = () => {
   }, []);
 
   if (checking) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="text-sm text-slate-500">Verifying session...</div>
-      </div>
-    );
+    return <VerifyingSession />;
   }
 
   const stored = useAuthStore.getState();
-  if (!stored.token) {
+  if (!stored.accessToken) {
     return <Navigate replace to="/signin" />;
   }
 
