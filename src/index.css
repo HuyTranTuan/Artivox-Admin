@@ -16,6 +16,20 @@
   --radius-card: 12px;
 }
 
+.dark {
+  --color-primary: #fbbf24;
+  --color-secondary: #94a3b8;
+  --color-background: #020617;
+  --color-surface: #0f172a;
+  --color-surface-soft: #1e293b;
+  --color-border: #1e293b;
+  --color-title: #f8fafc;
+  --color-text: #cbd5e1;
+  --color-muted: #64748b;
+  --color-success: #22c55e;
+  --shadow-card: none;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -28,11 +42,17 @@ body,
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(245, 158, 11, 0.14), transparent 25%),
-    linear-gradient(180deg, #fffaf2 0%, var(--color-background) 30%, #eef4fb 100%);
+  background: var(--color-background);
   color: var(--color-text);
   font-family: "Merriweather", serif;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.dark body,
+body.dark {
+  background: var(--color-background);
 }
 
 button,

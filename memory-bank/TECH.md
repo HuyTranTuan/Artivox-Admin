@@ -1,253 +1,100 @@
-# TECH: Artivox Admin Frontend Setup
+# 🛠 TECH: ARTIVOX ADMIN (AMBER-CORE)
 
-## Title
+## 🏗 RUNTIME & STACK
 
-Artivox Admin Frontend Setup
+- **Env:** Node v20+, npm, Vite.
+- **UI:** React 18, Tailwind CSS, Shadcn/UI.
+- **State:** - **Server:** TanStack Query v5 (Data fetching/caching).
+- **Client:** Zustand (Auth, Sidebar, UI persistence).
+- **Forms:** React Hook Form + Zod (Validation).
+- **Network:** Axios (Base + Interceptors).
+- **Icons:** Lucide React (Size 20).
 
-## Content
+## 📂 STRUCTURE (CORE)
 
-Technical guide for the Artivox Admin Dashboard frontend.
+- `src/api/`: Axios config & Interceptors.
+- `src/components/ui/`: Shadcn primitives.
+- `src/components/forms/`: Project form using Shadcn primitives .
+- `src/components/`: Components re-use for project
+- `src/constants/`: Constants like http code, app code,
+- `src/hooks/`: Custom hooks (React Query logic).
+- `src/layouts/`: Layouts, include AuthLayout and MainLayout .
+- `src/pages/`: Project page, separate by function.
+- `src/services/`: API endpoint calls (Raw data).
+- `src/store/`: Zustand stores.
+- `src/utils/`: Ultilities.
+- `src/validators/`: Zod schemas.
 
-Primary scope:
+## 🎨 THEME CONFIG
 
-- Local development setup
-- Core libraries and responsibilities
-- Suggested folder structure
-- Feature implementation rules
-- Common patterns for state, forms, and API access
+- **Light (Default):**
+  - Primary: `amber-500`. Surface: `white`. Border: `slate-200`.
+- **Dark:**
+  - Primary: `amber-400`. Surface: `slate-900`. BG: `slate-950`. Border: `slate-800`.
+- **UI:** `rounded-xl` (12px). Sans (Inter), Content (Merriweather).
 
-## Runtime
+## 💻 CODE RULES
 
-- Node.js: v20+
-- Package Manager: npm
-- App Type: SPA admin dashboard
-- Build Tool: Vite
+- **Exports:** **Named only**. No `default`.
+- **Imports:** Clean ESM. No CJS.
+- **Fetching:** Component -> Hook -> Service -> Axios.
 
-## Core Libraries
+## ⚖️ DATA RULES
 
-- React 18
-- Tailwind CSS
-- Shadcn/UI
-- TanStack Query v5
-- Zustand
-- React Hook Form
-- Zod
-- Axios
-- React Router DOM
-- Lucide React
+1. **API:** No direct Axios in components. Use `services/`.
+2. **State:**
+   - Fetching -> TanStack Query.
+   - Global UI -> Zustand.
+   - Form temporary data -> React Hook Form.
 
-## Suggested Install
+3. **Exports:** **Named Exports only** (`export const ...`). No `default`.
+4. **Validation:** Zod schema for every form.
 
-```bash
-npm create vite@latest artivox-admin -- --template react
-cd artivox-admin
-npm install
-```
-
-## Suggested Dependencies
-
-```bash
-npm install axios zod zustand @tanstack/react-query react-hook-form react-router-dom lucide-react
-npm install tailwindcss @tailwindcss/vite
-```
-
-## Suggested Environment
-
-```env
-VITE_API_BASE_URL=http://localhost:3000/api/v1
-VITE_APP_NAME=Artivox Admin
-VITE_DEFAULT_LOCALE=vi
-```
-
-## Project Structure
-
-```text
-memory-bank/
-  activeContext.md
-  ARCH.md
-  REFERENCE.md
-  RULES.md
-  STATE.md
-  TECH.md
-  IMPLEMENTATION_LOG.md
-src/
-  api/
-    axios.js           # Base axios instance
-    interceptors.js    # Auth token + 401 handling
-  components/
-    ui/                # Shadcn/UI primitives
-    forms/             # Feature forms
-    shared/            # Sidebar, Header, Table blocks
-  constants/
-    roles.js
-    product-types.js
-    order-status.js
-  hooks/
-    useAuth.js
-    use-orders.js
-    use-products.js
-  layouts/
-    AuthLayout.jsx
-    DashboardLayout.jsx
-  pages/
-    auth/
-    campaigns/
-    orders/
-    products/
-    settings/
-  routes/
-    index.jsx
-    ProtectedRoute.jsx
-  services/
-    authService.js
-    articleService.js
-    material.service.js
-    model.service.js
-    orderService.js
-    tool.service.js
-  store/
-    authStore.js
-    uiStore.js
-  utils/
-    bigint.js
-    formatUtils.js
-  validators/
-    auth.schema.js
-    article.schema.js
-    product.schema.js
-```
-
-## Data Rules
-
-### API Layer
-
-- `api/axios.js`: base config only
-- `services/*.service.js`: endpoint calls only
-- Components do not call Axios directly
-
-### Server State
-
-- Use TanStack Query for all fetch flows
-- Use query keys per resource and filter set
-- Invalidate queries after create, update, delete, restore
-
-### UI State
-
-- Use Zustand for auth state, sidebar state, filters that must persist across screens
-- Keep transient form state inside React Hook Form
-
-### Validation
-
-- Use Zod for all form schemas
-- Split schema by feature
-- Use conditional schema branches for polymorphic products
-
-## Feature Patterns
-
-### Product Management
-
-- Shared product shell
-- Dynamic subtype fields for model, material, tool
-- Reusable list + form pattern across product modules
-
-### Multi-language CMS
-
-- Store translation values by locale
-- UI supports tabbed or parallel locale editing
-- Separate title/content/slug fields per locale
-
-### Orders
-
-- Focus states: `PENDING`, `PAID`, `REFUND_PENDING`
-- Approval actions must update cache immediately after mutation
-
-### Auth
-
-- Store JWT in local storage
-- Inject token through Axios interceptor
-- Redirect unauthorized users to `/login`
-
-## Code Pattern
+## 📝 CODE PATTERNS (ESM ONLY)
 
 ### Service
 
 ```javascript
-const axiosClient = require("@/api/axios");
+import { axiosClient } from "@/api/axios";
 
-function getArticles(params) {
-  return axiosClient.get("/articles", { params });
-}
-
-module.exports = {
-  getArticles,
-};
+export const getArticles = (params) => axiosClient.get("/articles", { params });
 ```
 
-### Hook
+### Custom Hooks
 
 ```javascript
-const { useQuery } = require("@tanstack/react-query");
-const articleService = require("@/services/articleService");
+import { useQuery } from "@tanstack/react-query";
+import { getArticles } from "@/services/articleService";
 
-function useArticles(params) {
-  return useQuery({
+export const useArticles = (params) =>
+  useQuery({
     queryKey: ["articles", params],
-    queryFn: () => articleService.getArticles(params),
+    queryFn: () => getArticles(params),
   });
-}
-
-module.exports = {
-  useArticles,
-};
 ```
 
-### Form Schema
+### Schema
 
 ```javascript
-const { z } = require("zod");
+import { z } from "zod";
 
-const articleSchema = z.object({
+export const articleSchema = z.object({
   locale: z.string().min(2),
   title: z.string().min(1),
   content: z.string().min(1),
 });
-
-module.exports = {
-  articleSchema,
-};
 ```
 
-## UI Rules
+## 🚀 PRIORITIES
 
-- Tailwind only
-- Use root color variables
-- Title font: Inter
-- Content font: Merriweather
-- Title size: 18px or 20px
-- Content size: 14px
-- Border radius: 8px or 12px
-
-## Current Implementation Priority
-
-1. Admin shell layout
-2. Blog campaign management UI
-3. Discount campaign list UI
-4. Product CRUD screens
-5. Order approval flow
-
-## Common Risks
-
-### Stale Backend Doc Drift
-
-- Do not document backend-only setup here
-- This file is frontend-only unless repo scope changes
-
-### Query Key Drift
-
-- Keep query keys centralized or consistent per feature
-- Mismatched keys cause stale UI after mutation
-
-### Dynamic Form Complexity
-
-- Product subtype switching can leak invalid values
-- Reset subtype-only fields when product type changes
+**Admin Shell (Sidebar + Layout).**
+**Notification.**
+**Admin profile setting.**
+**UI setting(sidebar toggele, theme change, ...).**
+**Articles CRUD.**
+**Discount CRUD.**
+**Product Management (Subtype logic).**
+**Customers Management.**
+**Orders Management.**
+**Order Flow (Approval states).**
+**Customer chat (Approval states).**

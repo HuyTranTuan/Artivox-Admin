@@ -1,39 +1,40 @@
-# STATE: Current Progress
+# STATE: PROGRESS
 
-## Focus: UI Polish + Auth Protected Routes
+## 🟢 COMPLETED
 
-- **Current task**: ProtectedRoute covers all app routes. Orders/Tools/Materials/Models pages fixed with mock data, DD/MM/YYYY dates, Name/Date/Author columns, Add New toggle forms. Header revamped.
+- [x] Vite/Tailwind Foundation.
+- [x] Auth Store (Persistence + Refresh Token).
+- [x] Axios Interceptor (401 queue).
+- [x] Protected Routes logic.
+- [x] CRUD UI (Models, Tools, Materials) with mock data.
+- [x] MainLayout Header responsive - compact horizontal layout, dark mode.
+- [x] Theme persistence (browser preference + localStorage).
+- [x] Dark mode connected to uiStore — Sidebar, Header, MainLayout all react.
+- [x] Real API integration for dashboard (/admin/dashboard, /staff/dashboard).
+- [x] Socket service for notifications (staffId-userId, staffId-notification channels).
+- [x] Notification detail page (/notifications/:id).
+- [x] Socket integration in notification components (useNotificationSocket fixed).
+- [x] Admin Dashboard rewritten with real API structure (widgets, charts, top staff, top products).
+- [x] Staff Dashboard created with personal stats.
+- [x] Role-based sidebar (Admin sees Staff Dashboard, Staff does not).
+- [x] Role-based index route (Admin → DashboardPage, Staff → StaffDashboardPage).
+- [x] Article routes fixed: /articles, /articles/:slug, /articles/create (no /campaigns/article).
+- [x] Article Detail page (/articles/:slug) with full meta + content.
+- [x] Tailwind dark mode properly connected via CSS variables + uiStore theme.
+- [x] Overlay modals removed from ArticleCampaignsPage, CreateArticlePage, OrderApprovalPage.
+- [x] Order Approval page with Approve/Reject actions for Staff (PENDING → PAID / REFUND_PENDING).
+- [x] DashboardService cleaned up (removed unused imports).
+- [x] SettingsService created.
 
-## Completed Checklist
+## 🟡 DOING
 
-- [x] **Project Foundation:** Vite + React + Tailwind setup.
-- [x] **Auth:** Sign-in / Register mock pages.
-- [x] **Navigation:** Article and discount campaign routes active.
-- [x] **Sidebar:** Orders link now points to `/orders`.
-- [x] **Routes:** Lazy-loaded all route pages except `DashboardLayout`, `AuthLayout`, `SignInPage`, `DashboardPage`.
-- [x] **Protected Route:** All app routes wrapped. On mount: check token expiry → auto-refresh if expired → redirect to /signin if no token.
-- [x] **Auth Store:** Added `refreshToken` state + `refreshAuth` action. Persisted to localStorage.
-- [x] **Auth Service:** Added `refreshToken()` mock endpoint returning refreshed tokens.
-- [x] **useAuth Hook:** Exposes `handleRefreshToken` that calls service + updates store.
-- [x] **Axios Interceptors:** On 401, attempt refresh via fetch. Queues concurrent requests until refresh completes.
-- [x] **Orders Page:** Switched to mock data, added Date column with DD/MM/YYYY format.
-- [x] **Header:** Removed "A" badge, added email under avatar, theme toggle (light/dark), bigger Search/Notification icons.
-- [x] **Tools Page:** Bigger "Add New +" button, toggle form (modal) with Cancel/Create, table columns: Name, Category, Status, Created At, Author, Actions. DD/MM/YYYY dates.
-- [x] **Materials Page:** Same pattern as Tools: Add New + toggle form, Name/Type/Status/Created At/Author columns, DD/MM/YYYY.
-- [x] **Models Page:** Same pattern: Add New + toggle form, Name/Category/Status/Created At/Author columns, DD/MM/YYYY.
-- [x] **Dashboard:** 6 stats cards (added Active Products, Pending Orders), mini sparkline charts per card, summary metrics row (Avg Order, Conversion, Churn, Growth, Active Products, Total Customers), Week/Month chart toggle.
-- [x] **Build Validation:** Production build passes with zero errors.
+- [ ] Real backend API endpoints testing.
+- [ ] Staff dashboard BE endpoint (create if missing).
 
-## Remaining Checklist
+## 🔴 TODO
 
-- [ ] Replace static campaign stats with live summary metrics.
-- [ ] Add dedicated article/discount detail pages for slug routes.
-- [ ] Connect Real API (Prisma/Node.js).
-
-## UI Standard
-
-- **Radius:** 16px (`rounded-2xl`).
-- **Table Buttons:** h-8 w-8, 5px radius, thin border.
-- **Colors:** Blue (View), Emerald (Edit), Rose (Delete), Orange (Hover).
-- **Dates:** DD/MM/YYYY throughout.
-- **Table Columns:** Name, [Type/Category/Status], Created At, Author, Actions.
+- [ ] Deployment setup.
+- [ ] Notification list page with filtering.
+- [ ] Chat UI integration with socket service.
+- [ ] Mobile responsive refinement.
+- [ ] Analytics and reporting dashboard.

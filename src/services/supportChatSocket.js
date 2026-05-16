@@ -1,3 +1,5 @@
+import { getAutoReply } from "./aiChatService";
+
 const SUPPORT_CHAT_WS_URL = import.meta.env.VITE_SUPPORT_CHAT_WS_URL || "";
 const SUPPORT_CHAT_CHANNEL = import.meta.env.VITE_SUPPORT_CHAT_CHANNEL || "support-chat-demo";
 
@@ -85,6 +87,28 @@ export const createSupportChatSocket = ({ onMessage, onStatusChange }) => {
         return;
       }
 
+      if (payload.sender === "customer") {
+        // AI Auto-Reply for customer messages
+        const aiReply = getAutoReply(payload.content);
+        if (aiReply) {
+          clearTimeout(mockReplyTimeout);
+          mockReplyTimeout = window.setTimeout(() => {
+            const aiMessage = {
+              id: `ai-${Date.now()}`,
+              conversationId: payload.conversationId,
+              sender: "ai",
+              type: "text",
+              content: aiReply.reply,
+              intent: aiReply.intent,
+              confidence: aiReply.confidence,
+              timestamp: new Date().toISOString(),
+            };
+            emitMockMessage(aiMessage);
+          }, 600);
+        }
+        return;
+      }
+
       if (payload.sender === "admin") {
         clearTimeout(mockReplyTimeout);
         mockReplyTimeout = window.setTimeout(() => {
@@ -93,7 +117,7 @@ export const createSupportChatSocket = ({ onMessage, onStatusChange }) => {
             conversationId: payload.conversationId,
             sender: "customer",
             type: "text",
-            content: "Received. Support will continue here.",
+            content: "Thank you for your help! I'll check that.",
             timestamp: new Date().toISOString(),
           });
         }, 900);
