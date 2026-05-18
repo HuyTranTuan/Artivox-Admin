@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
 /**
@@ -14,6 +14,10 @@ import { useSearchParams } from "react-router-dom";
 export const usePaginatedApi = (fetchFn, options = {}) => {
   const { defaultLimit = 20, defaultPage = 1, pageParam = "page" } = options;
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Store fetchFn in a ref to avoid infinite re-renders from inline arrow functions
+  const fetchFnRef = useRef(fetchFn);
+  fetchFnRef.current = fetchFn;
 
   // Read page from URL
   const currentPage = Math.max(1, parseInt(searchParams.get(pageParam)) || defaultPage);
@@ -52,7 +56,7 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
     setError(null);
     try {
       const skip = (currentPage - 1) * limit;
-      const result = await fetchFn({ limit, skip });
+      const result = await fetchFnRef.current({ limit, skip });
       // Support both { data: [...], total: N } and direct array returns
       if (Array.isArray(result)) {
         setData(result);
@@ -70,7 +74,7 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [fetchFn, currentPage, limit]);
+  }, [currentPage, limit]);
 
   useEffect(() => {
     refetch();

@@ -1,5 +1,4 @@
 import http from "@api/axios";
-import { ROLES } from "@constants/appCode";
 
 export const authService = {
   signIn: async (payload) => {

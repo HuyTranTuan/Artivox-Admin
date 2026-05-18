@@ -7,12 +7,8 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
-
-const stats = [
-  { label: "Active campaigns", value: "12", icon: FilePenLine },
-  { label: "Locale coverage", value: "VI / EN", icon: Languages },
-  { label: "Total views", value: "24.3K", icon: Eye },
-];
+import { useUiStore } from "@store/uiStore";
+import { useTranslation } from "react-i18next";
 
 const normalizeArticle = (rawItem, index = 0) => {
   const id = rawItem?.id || rawItem?._id || rawItem?.slug || `article-${index}`;
@@ -30,8 +26,10 @@ const normalizeArticle = (rawItem, index = 0) => {
 
 const ArticleCampaignsPage = () => {
   const navigate = useNavigate();
+  const { currentLanguage: lang } = useUiStore();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   const loadCampaigns = useCallback(async () => {
     setLoading(true);
@@ -57,7 +55,11 @@ const ArticleCampaignsPage = () => {
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {stats.map((item) => {
+        {[
+          { label: t("articles.activeCampaigns"), value: "12", icon: FilePenLine },
+          { label: t("articles.localeCoverage"), value: "VI / EN", icon: Languages },
+          { label: t("articles.totalViews"), value: "24.3K", icon: Eye },
+        ].map((item) => {
           const Icon = item.icon;
           return (
             <Card key={item.label} className="flex items-center gap-4 p-5">
@@ -76,8 +78,8 @@ const ArticleCampaignsPage = () => {
       <Card className="p-6">
         <div className="mb-5 flex items-center justify-between">
           <div>
-            <div className="font-title text-xl font-bold text-slate-950">Campaign list</div>
-            <div className="mt-1 text-sm text-slate-500">Side-by-side locale publishing overview</div>
+            <div className="font-title text-xl font-bold text-slate-950">{t("articles.title")}</div>
+            <div className="mt-1 text-sm text-slate-500">{t("articles.subtitle")}</div>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" className="h-10 w-10 p-0" onClick={loadCampaigns}>
@@ -85,28 +87,28 @@ const ArticleCampaignsPage = () => {
             </Button>
             <Button className="gap-2" onClick={() => navigate("/articles/create")}>
               <Plus className="h-4 w-4" />
-              New
+              {t("articles.new")}
             </Button>
           </div>
         </div>
 
         <div className="overflow-x-auto" style={{ maxHeight: "calc(100vh - 340px)" }}>
-          <div className="min-w-[800px]">
+          <div className="min-w-200">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                <div>Title</div>
-                <div>Locale</div>
-                <div>Author</div>
-                <div>Status</div>
-                <div>Published</div>
-                <div>Actions</div>
+                <div>{t("articles.titleLabel")}</div>
+                <div>{t("articles.locale")}</div>
+                <div>{t("articles.author")}</div>
+                <div>{t("articles.status")}</div>
+                <div>{t("articles.published")}</div>
+                <div>{t("articles.actions")}</div>
               </div>
 
               <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 420px)" }}>
                 {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">Loading campaigns...</div>
+                  <div className="px-4 py-8 text-sm text-slate-500">{t("articles.loading")}</div>
                 ) : campaigns.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">No campaigns found</div>
+                  <div className="px-4 py-8 text-sm text-slate-500">{t("articles.empty")}</div>
                 ) : (
                   campaigns.map((item, idx) => (
                     <div
@@ -117,7 +119,9 @@ const ArticleCampaignsPage = () => {
                         <div className="font-title text-base font-semibold text-slate-900 cursor-pointer hover:text-amber-600" onClick={() => navigate(`/articles/${item.slug}`)}>
                           {item.title}
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">{toSafeNumber(item.views).toLocaleString("en-US")} views</div>
+                        <div className="mt-1 text-xs text-slate-500">
+                          {toSafeNumber(item.views).toLocaleString("en-US")} {t("articles.views")}
+                        </div>
                       </div>
                       <div>{item.locale}</div>
                       <div>{item.author}</div>

@@ -18,12 +18,21 @@ const initializeTheme = () => {
   return "light";
 };
 
+// Initialize language from localStorage
+const initializeLanguage = () => {
+  const savedLang = localStorage.getItem("language");
+  if (savedLang === "en" || savedLang === "vi") {
+    return savedLang;
+  }
+  return "en";
+};
+
 export const useUiStore = create(
   persist(
     (set) => ({
       sidebarOpen: true,
       sidebarMobileOpen: false,
-      currentLanguage: "en",
+      currentLanguage: initializeLanguage(),
       theme: initializeTheme(),
       toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -39,12 +48,13 @@ export const useUiStore = create(
       setCurrentLanguage: (lang) => {
         if (typeof lang === "string" && (lang === "en" || lang === "vi")) {
           set({ currentLanguage: lang });
+          localStorage.setItem("language", lang);
         }
       },
     }),
     {
       name: "artivox-ui",
-      getStorage: () => sessionStorage,
+      getStorage: () => localStorage,
     },
   ),
 );

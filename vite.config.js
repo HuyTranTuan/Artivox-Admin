@@ -19,6 +19,7 @@ export default defineConfig({
       "@store": path.resolve(__dirname, "./src/store"),
       "@utils": path.resolve(__dirname, "./src/utils"),
       "@validators": path.resolve(__dirname, "./src/validators"),
+      "@i18n": path.resolve(__dirname, "./src/i18n"),
     },
   },
   server: {

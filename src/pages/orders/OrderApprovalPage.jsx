@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Eye, CheckCircle, XCircle, Search, Filter, ChevronLeft, ChevronRight, X, ArrowUpDown, Loader2 } from "lucide-react";
 import { Card } from "@components/ui/card";
-import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { orderService } from "@services/orderService";
@@ -10,6 +9,8 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useAuth } from "@hooks/useAuth";
+import { useUiStore } from "@store/uiStore";
+import { useTranslation } from "react-i18next";
 
 const statusOptions = ["PENDING", "PAID", "REFUND_PENDING"];
 
@@ -20,6 +21,7 @@ const formatPrice = (amount) => {
 
 const OrderApprovalPage = () => {
   const { user } = useAuth();
+  const { currentLanguage: lang } = useUiStore();
   const {
     data: orders,
     loading,
@@ -41,11 +43,9 @@ const OrderApprovalPage = () => {
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
+  const { t } = useTranslation();
 
   const isAdmin = user?.role === "ADMIN";
-
-  // Reset to page 1 on filter/search change
-  const resetPage = () => setPage(1);
 
   const filtered = useMemo(() => {
     let result = [...orders];
@@ -67,7 +67,7 @@ const OrderApprovalPage = () => {
       });
     }
     return result;
-  }, [orders, debouncedSearch, selectedStatus, sortField, sortDir, resetPage]);
+  }, [orders, debouncedSearch, selectedStatus, sortField, sortDir]);
 
   const paginated = filtered;
 
@@ -109,9 +109,9 @@ const OrderApprovalPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-center py-8">
-            <div className="text-rose-500 font-semibold mb-2">Failed to load orders</div>
+            <div className="text-rose-500 font-semibold mb-2">{t("approval.failedToLoad")}</div>
             <div className="text-sm text-slate-500 mb-4">{error}</div>
-            <Button onClick={refetch}>Retry</Button>
+            <Button onClick={refetch}>{t("approval.retry")}</Button>
           </div>
         </Card>
       </section>
@@ -123,8 +123,8 @@ const OrderApprovalPage = () => {
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h1 className="font-title text-2xl font-bold text-slate-950">Order approval</h1>
-            <p className="mt-1 text-sm text-slate-500">Lifecycle: PENDING - PAID - REFUND_PENDING</p>
+            <h1 className="font-title text-2xl font-bold text-slate-950">{t("approval.title")}</h1>
+            <p className="mt-1 text-sm text-slate-500">{t("approval.subtitle")}</p>
           </div>
           <div className="flex items-center gap-2">
             <div ref={search.containerRef} className="flex items-center gap-2">
@@ -133,7 +133,7 @@ const OrderApprovalPage = () => {
                   <Input
                     ref={search.inputRef}
                     className="pl-4 pr-10"
-                    placeholder="Search orders..."
+                    placeholder={t("approval.searchPlaceholder") || "Search orders..."}
                     value={search.value}
                     onChange={(e) => search.setValue(e.target.value)}
                     onKeyDown={(e) => {
@@ -159,7 +159,7 @@ const OrderApprovalPage = () => {
                 <div ref={filterRef} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10">
                   <div className="space-y-4">
                     <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">Status</div>
+                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("orders.filterStatus")}</div>
                       {statusOptions.map((st) => (
                         <label key={st} className="flex items-center gap-2 cursor-pointer">
                           <input type="checkbox" checked={selectedStatus === st} onChange={() => setSelectedStatus(selectedStatus === st ? null : st)} className="rounded" />
@@ -176,7 +176,7 @@ const OrderApprovalPage = () => {
                         setFilterOpen(false);
                       }}
                     >
-                      Clear Filters
+                      {t("orders.clearFilters")}
                     </Button>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ const OrderApprovalPage = () => {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-            <span className="ml-3 text-sm text-slate-500">Loading orders...</span>
+            <span className="ml-3 text-sm text-slate-500">{t("approval.loading")}</span>
           </div>
         ) : (
           <>
@@ -197,23 +197,23 @@ const OrderApprovalPage = () => {
                 <div className="overflow-hidden rounded-2xl border border-slate-200">
                   <div className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => toggleSort("id")}>
-                      Code <ArrowUpDown className="h-3 w-3" />
+                      {t("orders.code")} <ArrowUpDown className="h-3 w-3" />
                     </div>
                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => toggleSort("customer")}>
-                      Customer <ArrowUpDown className="h-3 w-3" />
+                      {t("orders.customer")} <ArrowUpDown className="h-3 w-3" />
                     </div>
                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => toggleSort("amount")}>
-                      Amount <ArrowUpDown className="h-3 w-3" />
+                      {t("orders.amount")} <ArrowUpDown className="h-3 w-3" />
                     </div>
                     <div className="flex items-center gap-1 cursor-pointer" onClick={() => toggleSort("status")}>
-                      Status <ArrowUpDown className="h-3 w-3" />
+                      {t("orders.status")} <ArrowUpDown className="h-3 w-3" />
                     </div>
-                    <div>Actions</div>
+                    <div>{t("orders.actions")}</div>
                   </div>
 
                   <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 420px)" }}>
                     {paginated.length === 0 ? (
-                      <div className="px-4 py-8 text-center text-sm text-slate-500">No orders found</div>
+                      <div className="px-4 py-8 text-center text-sm text-slate-500">{t("approval.noOrders")}</div>
                     ) : (
                       paginated.map((item) => (
                         <div key={item.id} className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center">
@@ -236,7 +236,7 @@ const OrderApprovalPage = () => {
                                   onClick={() => handleApprove(item.id)}
                                   className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                                   style={{ padding: 5 }}
-                                  title="Approve"
+                                  title={t("approval.approve")}
                                 >
                                   <CheckCircle style={{ width: 18, height: 18 }} />
                                 </button>
@@ -244,7 +244,7 @@ const OrderApprovalPage = () => {
                                   onClick={() => handleReject(item.id)}
                                   className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
                                   style={{ padding: 5 }}
-                                  title="Reject"
+                                  title={t("approval.reject")}
                                 >
                                   <XCircle style={{ width: 18, height: 18 }} />
                                 </button>
@@ -261,17 +261,11 @@ const OrderApprovalPage = () => {
 
             <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
               <div className="text-sm text-slate-600">
-                {totalItems > 0 ? (
-                  <>
-                    Page {currentPage} of {totalPages} ({totalItems} total)
-                  </>
-                ) : (
-                  "No results"
-                )}
+                {totalItems > 0 ? t("approval.pageOf", { page: currentPage, total: totalPages, count: totalItems }) : t("approval.noResults")}
               </div>
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={prevPage} disabled={currentPage === 1 || loading}>
-                  <ChevronLeft className="h-4 w-4" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> {t("orders.previous")}
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
@@ -288,7 +282,7 @@ const OrderApprovalPage = () => {
                   })}
                 </div>
                 <Button variant="ghost" size="sm" onClick={nextPage} disabled={currentPage === totalPages || loading}>
-                  Next <ChevronRight className="h-4 w-4" />
+                  {t("orders.next")} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>

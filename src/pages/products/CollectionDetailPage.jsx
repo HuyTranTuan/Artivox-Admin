@@ -45,11 +45,7 @@ const CollectionDetailPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-sm text-slate-500">Collection not found</div>
-          <Button
-            variant="ghost"
-            className="mt-4"
-            onClick={() => navigate("/products/collections")}
-          >
+          <Button variant="ghost" className="mt-4" onClick={() => navigate("/catalog/collections")}>
             Back to Collections
           </Button>
         </Card>
@@ -61,17 +57,11 @@ const CollectionDetailPage = () => {
     <section className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          className="h-10 w-10 p-0 rounded-lg"
-          onClick={() => navigate("/products/collections")}
-        >
+        <Button variant="ghost" className="h-10 w-10 p-0 rounded-lg" onClick={() => navigate("/catalog/collections")}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="font-title text-2xl font-bold text-slate-950">
-            {collection.name}
-          </h1>
+          <h1 className="font-title text-2xl font-bold text-slate-950">{collection.name}</h1>
           <p className="text-sm text-slate-500 font-mono">{collection.slug}</p>
         </div>
       </div>
@@ -84,31 +74,21 @@ const CollectionDetailPage = () => {
               <Package className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
-                Collection Info
-              </h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">Collection Info</h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
               <div className="text-xs text-slate-500 uppercase">Name</div>
-              <div className="text-sm font-medium text-slate-900 mt-1">
-                {collection.name}
-              </div>
+              <div className="text-sm font-medium text-slate-900 mt-1">{collection.name}</div>
             </div>
             <div>
               <div className="text-xs text-slate-500 uppercase">Slug</div>
-              <div className="text-sm font-mono text-slate-700 mt-1">
-                {collection.slug}
-              </div>
+              <div className="text-sm font-mono text-slate-700 mt-1">{collection.slug}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                Description
-              </div>
-              <div className="text-sm text-slate-700 mt-1">
-                {collection.description || "—"}
-              </div>
+              <div className="text-xs text-slate-500 uppercase">Description</div>
+              <div className="text-sm text-slate-700 mt-1">{collection.description || "—"}</div>
             </div>
             {collection.status && (
               <div>
@@ -128,12 +108,8 @@ const CollectionDetailPage = () => {
               <Eye className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
-                Products
-              </h2>
-              <p className="text-xs text-slate-500">
-                {collection.products?.length || 0} items
-              </p>
+              <h2 className="font-title text-lg font-semibold text-slate-900">Products</h2>
+              <p className="text-xs text-slate-500">{collection.products?.length || 0} items</p>
             </div>
           </div>
 
@@ -144,18 +120,14 @@ const CollectionDetailPage = () => {
               <div>Price</div>
             </div>
             {(collection.products || []).length === 0 ? (
-              <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                No products in this collection
-              </div>
+              <div className="px-4 py-8 text-sm text-slate-500 text-center">No products in this collection</div>
             ) : (
               collection.products.map((product) => (
                 <div
                   key={product.id || product.slug}
                   className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition"
                 >
-                  <div className="font-medium text-slate-900">
-                    {product.name}
-                  </div>
+                  <div className="font-medium text-slate-900">{product.name}</div>
                   <div>{product.type}</div>
                   <div>
                     {product.price

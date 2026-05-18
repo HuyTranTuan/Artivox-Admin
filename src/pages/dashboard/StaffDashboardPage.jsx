@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@components/ui/card";
 import { DollarSign, ShoppingCart, Clock, TrendingUp, TrendingDown, Package } from "lucide-react";
 import { useAuth } from "@hooks/useAuth";
 import { dashboardService } from "@services/dashboardService";
 import { useCountUp } from "@hooks/useCountUp";
+import { useUiStore } from "@store/uiStore";
+import { useTranslation } from "react-i18next";
 
 const formatCurrency = (amount) => {
   if (amount == null) return "₫0";
@@ -15,8 +17,10 @@ const formatCurrency = (amount) => {
 
 const StaffDashboardPage = () => {
   const { user } = useAuth();
+  const { currentLanguage: lang } = useUiStore();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     let mounted = true;
@@ -45,8 +49,8 @@ const StaffDashboardPage = () => {
   if (loading) {
     return (
       <section className="space-y-6">
-        <h1 className="font-title text-2xl font-bold text-slate-900">My Dashboard</h1>
-        <p className="text-sm text-slate-500">Loading your dashboard data...</p>
+        <h1 className="font-title text-2xl font-bold text-slate-900">{t("dashboard.staffTitle")}</h1>
+        <p className="text-sm text-slate-500">{t("dashboard.loading")}</p>
       </section>
     );
   }
@@ -54,8 +58,8 @@ const StaffDashboardPage = () => {
   return (
     <section className="space-y-6">
       <div>
-        <h1 className="font-title text-2xl font-bold text-slate-900">Welcome back, {user?.fullName || user?.name || "Staff"}</h1>
-        <p className="text-sm text-slate-500 mt-1">Your performance overview</p>
+        <h1 className="font-title text-2xl font-bold text-slate-900">{t("dashboard.staffTitle")}</h1>
+        <p className="text-sm text-slate-500 mt-1">{t("dashboard.loading")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -64,7 +68,7 @@ const StaffDashboardPage = () => {
             <DollarSign className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Total Revenue</div>
+            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t("dashboard.totalRevenue")}</div>
             <div className="font-title text-2xl font-bold text-slate-900 mt-1 font-mono">{totalRevenue ? formatCurrency(totalRevenue) : "₫0"}</div>
           </div>
         </Card>
@@ -74,7 +78,7 @@ const StaffDashboardPage = () => {
             <ShoppingCart className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Total Orders</div>
+            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t("dashboard.completedOrders")}</div>
             <div className="font-title text-2xl font-bold text-slate-900 mt-1 font-mono">{totalOrders || 0}</div>
           </div>
         </Card>
@@ -84,7 +88,7 @@ const StaffDashboardPage = () => {
             <Clock className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Pending Orders</div>
+            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t("dashboard.avgOrderValue")}</div>
             <div className="font-title text-2xl font-bold text-slate-900 mt-1 font-mono">{pendingOrders || 0}</div>
           </div>
         </Card>
@@ -94,28 +98,27 @@ const StaffDashboardPage = () => {
             <Package className="h-7 w-7" />
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">Customers Served</div>
+            <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{t("dashboard.activeCarts")}</div>
             <div className="font-title text-2xl font-bold text-slate-900 mt-1 font-mono">{totalCustomers || 0}</div>
           </div>
         </Card>
       </div>
 
-      {/* Recent Activity could go here */}
       <Card className="p-6">
-        <div className="font-title text-lg font-bold text-slate-900 mb-2">Quick Actions</div>
-        <p className="text-sm text-slate-500 mb-4">Manage your tasks from here</p>
+        <div className="font-title text-lg font-bold text-slate-900 mb-2">{t("dashboard.quickActions")}</div>
+        <p className="text-sm text-slate-500 mb-4">{t("dashboard.manageTasks")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="rounded-xl border border-slate-200 p-4 hover:border-amber-400 transition cursor-pointer">
-            <div className="font-title text-sm font-semibold text-slate-900">View Orders</div>
-            <div className="text-xs text-slate-500 mt-1">Approve or manage pending orders</div>
+            <div className="font-title text-sm font-semibold text-slate-900">{t("nav.orders")}</div>
+            <div className="text-xs text-slate-500 mt-1">{t("dashboard.approveOrders")}</div>
           </div>
           <div className="rounded-xl border border-slate-200 p-4 hover:border-amber-400 transition cursor-pointer">
-            <div className="font-title text-sm font-semibold text-slate-900">My Articles</div>
-            <div className="text-xs text-slate-500 mt-1">Create or edit published articles</div>
+            <div className="font-title text-sm font-semibold text-slate-900">{t("nav.articles")}</div>
+            <div className="text-xs text-slate-500 mt-1">{t("dashboard.createEditArticles")}</div>
           </div>
           <div className="rounded-xl border border-slate-200 p-4 hover:border-amber-400 transition cursor-pointer">
-            <div className="font-title text-sm font-semibold text-slate-900">Support Chat</div>
-            <div className="text-xs text-slate-500 mt-1">Respond to customer inquiries</div>
+            <div className="font-title text-sm font-semibold text-slate-900">{t("nav.supportChat")}</div>
+            <div className="text-xs text-slate-500 mt-1">{t("dashboard.respondToCustomers")}</div>
           </div>
         </div>
       </Card>
