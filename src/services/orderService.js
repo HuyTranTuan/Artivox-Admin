@@ -9,24 +9,24 @@ export const orderService = {
     if (skip) query.set("skip", skip);
     const qs = query.toString();
     const response = await axiosClient.get(`/orders${qs ? `?${qs}` : ""}`);
-    return response.data;
+    return response;
   },
 
   // Fetch a single order by ID
   getOrderById: async (id) => {
     const response = await axiosClient.get(`/orders/${id}`);
-    return response.data.data;
+    return response;
   },
 
   // Approve an order (PENDING -> PAID)
   approveOrder: async (orderId) => {
     const response = await axiosClient.patch(`/orders/${orderId}/approve`);
-    return response.data;
+    return response;
   },
 
   // Reject an order (PENDING -> REFUND_PENDING)
   rejectOrder: async (orderId) => {
     const response = await axiosClient.post(`/orders/${orderId}/cancel`);
-    return response.data;
+    return response;
   },
 };

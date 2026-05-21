@@ -54,3 +54,35 @@
 - Performance optimization (code splitting, lazy images).
 - Real backend API endpoints testing (all services).
 - Connect remaining pages (OrdersPage, CustomersPage, DiscountCampaignsPage) to real APIs.
+
+---
+
+## 🔴 BACKEND CRITICAL ISSUES (May 20)
+
+**Found during audit - affects Frontend integration:**
+
+### Issue 1: Missing `Order.assignedAdminId`
+
+- Problem: Admin dashboard queries fail (field doesn't exist in DB)
+- Impact: Can't track which staff approved orders
+- Fix: Add field to schema + migration needed
+
+### Issue 2: Wrong Order Status Queries
+
+- Problem: Code checks `status: "PAID"` but should check `paymentStatus`
+- Impact: Revenue calculations return 0
+- Fix: Update query locations in admin.service.js
+
+### Issue 3: Missing Email Verification Tokens
+
+- Problem: Can't implement token-based email verification
+- Impact: Verification flow limited
+- Fix: Add token fields to Customer model
+
+### Pending Features:
+
+- `GET /admin/staff/dashboard` - Staff personal stats
+- `GET /search?q=...` - Global search API
+- `GET /search/models|materials|tools?...` - Specific search endpoints
+
+**Action:** Wait for BE to fix schema issues, then update FE integrations

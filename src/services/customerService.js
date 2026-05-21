@@ -9,12 +9,12 @@ export const customerService = {
     if (skip) query.set("skip", skip);
     const qs = query.toString();
     const response = await axiosClient.get(`/customers${qs ? `?${qs}` : ""}`);
-    return response.data;
+    return response;
   },
 
   // Fetch a single customer by slug
   getCustomerBySlug: async (slug) => {
     const response = await axiosClient.get(`/customers/${slug}`);
-    return response.data.data;
+    return response;
   },
 };

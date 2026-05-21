@@ -18,7 +18,7 @@ const tabs = [
   { value: "en", labelKey: "articles.en" },
 ];
 
-const CreateArticlePage = () => {
+const CreateBlogPage = () => {
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
   const [activeTab, setActiveTab] = useState("vi");
@@ -26,6 +26,8 @@ const CreateArticlePage = () => {
   const [slug, setSlug] = useState("");
   const [status, setStatus] = useState("Draft");
   const [coverImage, setCoverImage] = useState("");
+  const [category, setCategory] = useState("general");
+  const [tags, setTags] = useState("");
   const [translations, setTranslations] = useState({
     vi: { title: "", content: "" },
     en: { title: "", content: "" },
@@ -33,11 +35,11 @@ const CreateArticlePage = () => {
   const { t } = useTranslation();
 
   const handleSave = () => {
-    navigate("/articles");
+    navigate("/blogs");
   };
 
   const handleCancel = () => {
-    navigate("/articles");
+    navigate("/blogs");
   };
 
   const handleTranslationChange = (locale, field, value) => {
@@ -83,6 +85,34 @@ const CreateArticlePage = () => {
             value={coverImage}
             onChange={(e) => setCoverImage(e.target.value)}
             placeholder={t("articles.coverImagePlaceholder")}
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+          />
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+          >
+            <option value="general">General</option>
+            <option value="technology">Technology</option>
+            <option value="design">Design</option>
+            <option value="materials">Materials</option>
+            <option value="news">News</option>
+          </select>
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">Tags</label>
+          <input
+            type="text"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="Enter tags separated by commas"
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
@@ -147,4 +177,4 @@ const CreateArticlePage = () => {
   );
 };
 
-export default CreateArticlePage;
+export default CreateBlogPage;

@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, Edit, Trash2, Grid3x3, List, Search, Filter, ChevronLeft, ChevronRight, X, Plus, ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -8,50 +9,43 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
+import { useTranslation } from "@hooks/useTranslation";
 import { toolsService } from "@services/toolsService";
 import ImageGalleryModal from "@components/ui/ImageGalleryModal";
-
-const fmtDate = (d) => {
-  if (!d) return "—";
-  try {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return d;
-    return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
-  } catch {
-    return d;
-  }
-};
+import { formatDate } from "@utils/formatUtils";
 
 const ToolsPage = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     data: items,
     loading,
     error,
-    page: cp,
-    totalPages: tp,
+    page: currentPage,
+    totalPages,
     totalItems: total,
     setPage,
     nextPage,
     prevPage,
     refetch,
   } = usePaginatedApi((params) => toolsService.getTools({ ...params }), { defaultLimit: 20, pageParam: "page" });
-  const [vm, setVm] = useState("table");
-  const [fo, setFo] = useState(false);
-  const [od, setOd] = useState(null);
-  const [si, setSi] = useState(null);
-  const [sf, setSf] = useState({ category: null, status: null });
+  const [viewMode, setViewMode] = useState("table");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedFilters, setSelectedFilters] = useState({ category: null, status: null });
   const [form, setForm] = useState({ name: "", category: "", status: "Active", stock: "", price: "" });
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const search = useExpandableSearch();
-  const ds = useDebounce(search.value, 300);
-  const dr = useClickOutsideClose(() => setOd(null));
-  const fr = useClickOutsideClose(() => setFo(false));
+  const debouncedSearch = useDebounce(search.value, 300);
+  const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
+  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
   useEffect(() => {
     setPage(1);
-  }, [ds]);
+  }, [debouncedSearch]);
 
   const openGallery = (images, index = 0) => {
     setGalleryImages(images || []);
@@ -59,18 +53,24 @@ const ToolsPage = () => {
     setGalleryOpen(true);
   };
 
-  const cats = [...new Set(items.map((m) => m.category).filter(Boolean))];
-  const sts = [...new Set(items.map((m) => m.status).filter(Boolean))];
+  const categories = [...new Set(items.map((item) => item.category).filter(Boolean))];
+  const statuses = [...new Set(items.map((item) => item.status).filter(Boolean))];
 
-  const f = useMemo(() => items.filter((m) => (!sf.category || m.category === sf.category) && (!sf.status || m.status === sf.status)), [items, sf]);
-  const pg = f;
+  const filteredItems = useMemo(
+    () => items.filter((item) => (!selectedFilters.category || item.category === selectedFilters.category) && (!selectedFilters.status || item.status === selectedFilters.status)),
+    [items, selectedFilters],
+  );
 
-  const ActionBtns = ({ item }) => (
+  const handleRowClick = (slug) => {
+    navigate(`/catalog/tools/${slug}`);
+  };
+
+  const ActionButtons = ({ item }) => (
     <div className="flex gap-1.5">
       <button
-        onClick={() => {
-          setSi(item);
-          setOd("view");
+        onClick={(e) => {
+          e.stopPropagation();
+          handleRowClick(item.slug);
         }}
         className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
         style={{ padding: 5 }}
@@ -78,9 +78,10 @@ const ToolsPage = () => {
         <Eye style={{ width: 18, height: 18 }} />
       </button>
       <button
-        onClick={() => {
-          setSi(item);
-          setOd("edit");
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedItem(item);
+          setOpenDialog("edit");
           setForm({ name: item.name, category: item.category, status: item.status, stock: String(item.stock ?? ""), price: String(item.price ?? "") });
         }}
         className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
@@ -89,9 +90,10 @@ const ToolsPage = () => {
         <Edit style={{ width: 18, height: 18 }} />
       </button>
       <button
-        onClick={() => {
-          setSi(item);
-          setOd("delete");
+        onClick={(e) => {
+          e.stopPropagation();
+          setSelectedItem(item);
+          setOpenDialog("delete");
         }}
         className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
         style={{ padding: 5 }}
@@ -134,9 +136,9 @@ const ToolsPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-center py-8">
-            <div className="text-rose-500 font-semibold mb-2">Failed to load tools</div>
+            <div className="text-rose-500 font-semibold mb-2">{t("catalog.errorLoading")}</div>
             <div className="text-sm text-slate-500 mb-4">{error}</div>
-            <Button onClick={refetch}>Retry</Button>
+            <Button onClick={refetch}>{t("catalog.retry")}</Button>
           </div>
         </Card>
       </section>
@@ -148,16 +150,16 @@ const ToolsPage = () => {
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="font-title text-2xl font-bold text-slate-950">Tools</h1>
+            <h1 className="font-title text-2xl font-bold text-slate-950">{t("catalog.tools")}</h1>
             <Button
               className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
               onClick={() => {
                 setForm({ name: "", category: "", status: "Active", stock: "", price: "" });
-                setSi(null);
-                setOd("create");
+                setSelectedItem(null);
+                setOpenDialog("create");
               }}
             >
-              <Plus className="h-5 w-5" /> Add New
+              <Plus className="h-5 w-5" /> {t("catalog.addNew")}
             </Button>
           </div>
           <div className="flex items-center gap-2">
@@ -167,7 +169,7 @@ const ToolsPage = () => {
                   <Input
                     ref={search.inputRef}
                     className="pr-10"
-                    placeholder="Search..."
+                    placeholder={t("catalog.searchPlaceholder")}
                     value={search.value}
                     onChange={(e) => search.setValue(e.target.value)}
                     onKeyDown={(e) => {
@@ -186,42 +188,52 @@ const ToolsPage = () => {
               </Button>
             </div>
             <div className="relative">
-              <Button variant={fo ? "default" : "ghost"} className="h-10 w-10 p-0" onClick={() => setFo(!fo)}>
+              <Button variant={filterOpen ? "default" : "ghost"} className="h-10 w-10 p-0" onClick={() => setFilterOpen(!filterOpen)}>
                 <Filter className="h-5 w-5" />
               </Button>
-              {fo && (
-                <div ref={fr} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10">
+              {filterOpen && (
+                <div ref={filterRef} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10">
                   <div className="space-y-4">
                     <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">Category</div>
-                      {cats.map((c) => (
-                        <label key={c} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={sf.category === c} onChange={() => setSf((p) => ({ ...p, category: p.category === c ? null : c }))} className="rounded" />
-                          <span className="text-sm">{c}</span>
+                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.category")}</div>
+                      {categories.map((category) => (
+                        <label key={category} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedFilters.category === category}
+                            onChange={() => setSelectedFilters((prev) => ({ ...prev, category: prev.category === category ? null : category }))}
+                            className="rounded"
+                          />
+                          <span className="text-sm">{category}</span>
                         </label>
                       ))}
                     </div>
                     <div className="border-t pt-4">
-                      <div className="text-xs font-semibold text-slate-900 mb-2">Status</div>
-                      {sts.map((s) => (
-                        <label key={s} className="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" checked={sf.status === s} onChange={() => setSf((p) => ({ ...p, status: p.status === s ? null : s }))} className="rounded" />
-                          <span className="text-sm">{s}</span>
+                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.status")}</div>
+                      {statuses.map((status) => (
+                        <label key={status} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedFilters.status === status}
+                            onChange={() => setSelectedFilters((prev) => ({ ...prev, status: prev.status === status ? null : status }))}
+                            className="rounded"
+                          />
+                          <span className="text-sm">{status}</span>
                         </label>
                       ))}
                     </div>
-                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setSf({ category: null, status: null })}>
-                      Clear
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setSelectedFilters({ category: null, status: null })}>
+                      {t("catalog.clearFilters")}
                     </Button>
                   </div>
                 </div>
               )}
             </div>
             <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <Button variant={vm === "table" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setVm("table")}>
+              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setViewMode("table")}>
                 <List className="h-4 w-4" />
               </Button>
-              <Button variant={vm === "grid" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setVm("grid")}>
+              <Button variant={viewMode === "grid" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setViewMode("grid")}>
                 <Grid3x3 className="h-4 w-4" />
               </Button>
             </div>
@@ -231,38 +243,48 @@ const ToolsPage = () => {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-            <span className="ml-3 text-sm text-slate-500">Loading tools...</span>
+            <span className="ml-3 text-sm text-slate-500">{t("catalog.loading")}</span>
           </div>
         ) : (
           <>
-            {vm === "table" && (
+            {viewMode === "table" && (
               <div className="overflow-x-auto" style={{ maxHeight: "calc(100vh - 300px)" }}>
                 <div className="min-w-[800px]">
                   <div className="overflow-hidden rounded-2xl border border-slate-200">
                     <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                      <div>Image</div>
-                      <div>Name</div>
-                      <div>Category</div>
-                      <div>Status</div>
-                      <div>Created At</div>
-                      <div>Author</div>
-                      <div>Actions</div>
+                      <div>{t("catalog.image")}</div>
+                      <div>{t("catalog.name")}</div>
+                      <div>{t("catalog.category")}</div>
+                      <div>{t("catalog.status")}</div>
+                      <div>{t("catalog.createdAt")}</div>
+                      <div>{t("catalog.author")}</div>
+                      <div>{t("catalog.actions")}</div>
                     </div>
                     <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 380px)" }}>
-                      {pg.length === 0 ? (
-                        <div className="px-4 py-8 text-sm text-slate-500 text-center">No tools found</div>
+                      {filteredItems.length === 0 ? (
+                        <div className="px-4 py-8 text-sm text-slate-500 text-center">{t("catalog.noTools")}</div>
                       ) : (
-                        pg.map((m) => (
-                          <div key={m.id} className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center">
-                            <ThumbnailPreview images={m.images} onClick={() => openGallery(m.images)} />
-                            <div className="font-title text-base font-semibold text-slate-900">{m.name}</div>
-                            <div>{m.category}</div>
+                        filteredItems.map((item) => (
+                          <div
+                            key={item.id}
+                            className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-100 cursor-pointer transition"
+                            onClick={() => handleRowClick(item.slug)}
+                          >
+                            <ThumbnailPreview
+                              images={item.images}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openGallery(item.images);
+                              }}
+                            />
+                            <div className="font-title text-base font-semibold text-slate-900">{item.name}</div>
+                            <div>{item.category}</div>
                             <div>
-                              <Badge>{m.status}</Badge>
+                              <Badge>{item.status}</Badge>
                             </div>
-                            <div className="text-xs text-slate-500">{fmtDate(m.createdAt)}</div>
-                            <div className="text-xs text-slate-500">{m.author || "—"}</div>
-                            <ActionBtns item={m} />
+                            <div className="text-xs text-slate-500">{formatDate(item.createdAt)}</div>
+                            <div className="text-xs text-slate-500">{item.author || "—"}</div>
+                            <ActionButtons item={item} />
                           </div>
                         ))
                       )}
@@ -271,16 +293,26 @@ const ToolsPage = () => {
                 </div>
               </div>
             )}
-            {vm === "grid" && (
+            {viewMode === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {pg.map((m) => (
-                  <div key={m.id} className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group">
-                    <div className="relative h-48 bg-slate-100 cursor-pointer overflow-hidden" onClick={() => openGallery(m.images)}>
-                      {m.images && m.images.length > 0 ? (
+                {filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group cursor-pointer"
+                    onClick={() => handleRowClick(item.slug)}
+                  >
+                    <div
+                      className="relative h-48 bg-slate-100 cursor-pointer overflow-hidden"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openGallery(item.images);
+                      }}
+                    >
+                      {item.images && item.images.length > 0 ? (
                         <>
                           <img
-                            src={m.images[0].url}
-                            alt={m.name}
+                            src={item.images[0].url}
+                            alt={item.name}
                             className="h-full w-full object-cover transition group-hover:scale-105"
                             onError={(e) => {
                               e.target.style.display = "none";
@@ -289,7 +321,7 @@ const ToolsPage = () => {
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                             <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 bg-white/90 rounded-full px-4 py-2 text-sm font-semibold text-slate-800">
                               <ImageIcon className="h-4 w-4" />
-                              View Gallery ({m.images.length})
+                              {t("catalog.viewGallery")} ({item.images.length})
                             </div>
                           </div>
                         </>
@@ -297,19 +329,19 @@ const ToolsPage = () => {
                         <div className="h-full w-full flex items-center justify-center text-slate-400">
                           <div className="text-center">
                             <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                            <span className="text-xs">No images</span>
+                            <span className="text-xs">{t("catalog.noImages")}</span>
                           </div>
                         </div>
                       )}
                     </div>
                     <div className="p-4">
-                      <div className="font-title text-base font-semibold text-slate-900 mb-1">{m.name}</div>
+                      <div className="font-title text-base font-semibold text-slate-900 mb-1">{item.name}</div>
                       <div className="text-xs text-slate-500 mb-3">
-                        {m.category} • Created {fmtDate(m.createdAt)}
+                        {item.category} • {t("catalog.createdAt")} {formatDate(item.createdAt)}
                       </div>
-                      <Badge className="mb-3">{m.status}</Badge>
+                      <Badge className="mb-3">{item.status}</Badge>
                       <div className="flex gap-2 mt-2">
-                        <ActionBtns item={m} />
+                        <ActionButtons item={item} />
                       </div>
                     </div>
                   </div>
@@ -318,34 +350,35 @@ const ToolsPage = () => {
             )}
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
               <div className="text-sm text-slate-600">
-                {total > 0 ? (
-                  <>
-                    Page {cp} of {tp} ({total} total)
-                  </>
-                ) : (
-                  "No results"
-                )}
+                {total > 0 ? <>{t("catalog.pageOf", { page: currentPage, total: totalPages, count: total })}</> : t("catalog.noResults")}
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={prevPage} disabled={cp === 1 || loading}>
-                  <ChevronLeft className="h-4 w-4" /> Prev
+                <Button variant="ghost" size="sm" onClick={prevPage} disabled={currentPage === 1 || loading}>
+                  <ChevronLeft className="h-4 w-4" /> {t("catalog.previous")}
                 </Button>
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, tp) }, (_, i) => {
-                    let p;
-                    if (tp <= 5) p = i + 1;
-                    else if (cp <= 3) p = i + 1;
-                    else if (cp >= tp - 2) p = tp - 4 + i;
-                    else p = cp - 2 + i;
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNumber;
+                    if (totalPages <= 5) pageNumber = i + 1;
+                    else if (currentPage <= 3) pageNumber = i + 1;
+                    else if (currentPage >= totalPages - 2) pageNumber = totalPages - 4 + i;
+                    else pageNumber = currentPage - 2 + i;
                     return (
-                      <Button key={p} variant={cp === p ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setPage(p)} disabled={loading}>
-                        {p}
+                      <Button
+                        key={pageNumber}
+                        variant={currentPage === pageNumber ? "default" : "ghost"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setPage(pageNumber)}
+                        disabled={loading}
+                      >
+                        {pageNumber}
                       </Button>
                     );
                   })}
                 </div>
-                <Button variant="ghost" size="sm" onClick={nextPage} disabled={cp === tp || loading}>
-                  Next <ChevronRight className="h-4 w-4" />
+                <Button variant="ghost" size="sm" onClick={nextPage} disabled={currentPage === totalPages || loading}>
+                  {t("catalog.next")} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -353,21 +386,21 @@ const ToolsPage = () => {
         )}
       </Card>
 
-      {(od === "create" || od === "edit") && (
+      {(openDialog === "create" || openDialog === "edit") && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div ref={dr} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{od === "create" ? "Add New Tool" : "Edit Tool"}</h2>
+          <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{openDialog === "create" ? t("catalog.addNewTool") : t("catalog.editTool")}</h2>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-700">Name</label>
+                <label className="text-xs font-semibold text-slate-700">{t("catalog.name")}</label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-700">Category</label>
+                <label className="text-xs font-semibold text-slate-700">{t("catalog.category")}</label>
                 <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
               </div>
               <div>
-                <label className="text-xs font-semibold text-slate-700">Status</label>
+                <label className="text-xs font-semibold text-slate-700">{t("catalog.status")}</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
                   <option>Active</option>
                   <option>Inactive</option>
@@ -376,98 +409,38 @@ const ToolsPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-semibold text-slate-700">Stock</label>
+                  <label className="text-xs font-semibold text-slate-700">{t("catalog.stock")}</label>
                   <Input value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-700">Price (VND)</label>
+                  <label className="text-xs font-semibold text-slate-700">{t("catalog.price")} (VND)</label>
                   <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
                 </div>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <Button variant="secondary" className="flex-1" onClick={() => setOd(null)}>
-                Cancel
+              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
+                {t("catalog.cancel")}
               </Button>
-              <Button className="flex-1" onClick={() => setOd(null)}>
-                {od === "create" ? "Create" : "Save"}
+              <Button className="flex-1" onClick={() => setOpenDialog(null)}>
+                {openDialog === "create" ? t("catalog.create") : t("catalog.save")}
               </Button>
             </div>
           </div>
         </div>
       )}
 
-      {od === "view" && si && (
+      {openDialog === "delete" && selectedItem && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div ref={dr} className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4">
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">Tool Detail</h2>
-            {si.images && si.images.length > 0 && (
-              <div className="mb-4">
-                <div className="relative h-48 rounded-xl overflow-hidden bg-slate-100 cursor-pointer group" onClick={() => openGallery(si.images)}>
-                  <img
-                    src={si.images[0].url}
-                    alt={si.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = "none";
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition text-white font-semibold bg-black/50 rounded-lg px-4 py-2">View all {si.images.length} images</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="space-y-3">
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Name</span>
-                <div className="text-sm">{si.name}</div>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Category</span>
-                <div className="text-sm">{si.category}</div>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Status</span>
-                <Badge>{si.status}</Badge>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Stock</span>
-                <div className="text-sm">{si.stock ?? "—"}</div>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Price</span>
-                <div className="text-sm">{si.price ? `₫${Number(si.price).toLocaleString()}` : "—"}</div>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Created</span>
-                <div className="text-sm">{fmtDate(si.createdAt)}</div>
-              </div>
-              <div>
-                <span className="text-xs text-slate-500 uppercase">Author</span>
-                <div className="text-sm">{si.author || "—"}</div>
-              </div>
-            </div>
-            <Button className="w-full mt-6" onClick={() => setOd(null)}>
-              Close
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {od === "delete" && si && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div ref={dr} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
-            <h2 className="font-title text-xl font-bold mb-4">Delete Tool</h2>
-            <p className="text-sm text-slate-600 mb-4">
-              Delete <strong>{si.name}</strong>?
-            </p>
+          <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{t("catalog.deleteTitle")}</h2>
+            <p className="text-sm text-slate-600 mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setOd(null)}>
-                Cancel
+              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
+                {t("catalog.cancel")}
               </Button>
-              <Button variant="destructive" className="flex-1" onClick={() => setOd(null)}>
-                Delete
+              <Button variant="destructive" className="flex-1" onClick={() => setOpenDialog(null)}>
+                {t("catalog.delete")}
               </Button>
             </div>
           </div>

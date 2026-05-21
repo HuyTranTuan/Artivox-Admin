@@ -1,26 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Filter, ChevronLeft, ChevronRight, X, Plus, Eye } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Plus, Eye } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
-import { Badge } from "@components/ui/badge";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
+import { useTranslation } from "@hooks/useTranslation";
 import { collectionService } from "@services/collectionService";
 
-const CollectionPage = () => {
+const ROWS_PER_PAGE = 20;
+
+const CollectionsPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [fo, setFo] = useState(false);
-  const [cp, setCp] = useState(1);
-  const [sf, setSf] = useState({ status: null });
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFilters, setSelectedFilters] = useState({ status: null });
   const search = useExpandableSearch();
-  const pp = 20;
-  const ds = useDebounce(search.value, 300);
-  const fr = useClickOutsideClose(() => setFo(false));
+  const debouncedSearch = useDebounce(search.value, 300);
+  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
   // Fetch collections from API
   useEffect(() => {
@@ -42,28 +44,30 @@ const CollectionPage = () => {
   }, []);
 
   useEffect(() => {
-    setCp(1);
-  }, [ds, sf]);
+    setCurrentPage(1);
+  }, [debouncedSearch, selectedFilters]);
 
   // Filter collections based on search
-  const f = useMemo(
+  const filteredItems = useMemo(
     () =>
-      items.filter((m) => {
-        const s = ds === "" || m.name?.toLowerCase().includes(ds.toLowerCase()) || m.description?.toLowerCase().includes(ds.toLowerCase());
-        return s && (!sf.status || m.status === sf.status);
+      items.filter((item) => {
+        const matchesSearch =
+          debouncedSearch === "" || item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) || item.description?.toLowerCase().includes(debouncedSearch.toLowerCase());
+        return matchesSearch && (!selectedFilters.status || item.status === selectedFilters.status);
       }),
-    [items, ds, sf],
+    [items, debouncedSearch, selectedFilters],
   );
-  const tp = Math.ceil(f.length / pp);
-  const si2 = (cp - 1) * pp;
-  const pg = f.slice(si2, si2 + pp);
+
+  const totalPages = Math.ceil(filteredItems.length / ROWS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
+  const paginatedItems = filteredItems.slice(startIndex, startIndex + ROWS_PER_PAGE);
 
   return (
     <section className="space-y-6">
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="font-title text-2xl font-bold text-slate-950">Collections</h1>
+            <h1 className="font-title text-2xl font-bold text-slate-950">{t("catalog.collections")}</h1>
             <Button className="h-8 w-8 p-0 rounded-lg">
               <Plus className="h-5 w-5" />
             </Button>
@@ -75,7 +79,7 @@ const CollectionPage = () => {
                   <Input
                     ref={search.inputRef}
                     className="pr-10"
-                    placeholder="Search..."
+                    placeholder={t("catalog.searchPlaceholder")}
                     value={search.value}
                     onChange={(e) => search.setValue(e.target.value)}
                     onKeyDown={(e) => {
@@ -101,33 +105,33 @@ const CollectionPage = () => {
           <div className="min-w-[700px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
               <div className="grid grid-cols-[2fr_1fr_2fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                <div>Name</div>
-                <div>Slug</div>
-                <div>Description</div>
-                <div>Actions</div>
+                <div>{t("catalog.name")}</div>
+                <div>{t("catalog.slug")}</div>
+                <div>{t("catalog.description")}</div>
+                <div>{t("catalog.actions")}</div>
               </div>
               <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 380px)" }}>
                 {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">Loading collections...</div>
-                ) : pg.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">No collections found</div>
+                  <div className="px-4 py-8 text-sm text-slate-500 text-center">{t("catalog.loading")}</div>
+                ) : paginatedItems.length === 0 ? (
+                  <div className="px-4 py-8 text-sm text-slate-500 text-center">{t("catalog.noResults")}</div>
                 ) : (
-                  pg.map((m) => (
+                  paginatedItems.map((item) => (
                     <div
-                      key={m.id || m.slug}
-                      className="grid grid-cols-[2fr_1fr_2fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 hover:bg-slate-50 transition cursor-pointer"
-                      onClick={() => navigate(`/catalog/collections/${m.slug}`)}
+                      key={item.id || item.slug}
+                      className="grid grid-cols-[2fr_1fr_2fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 hover:bg-orange-100 transition cursor-pointer"
+                      onClick={() => navigate(`/catalog/collections/${item.slug}`)}
                     >
                       <div>
-                        <div className="font-title text-base font-semibold text-slate-900">{m.name}</div>
+                        <div className="font-title text-base font-semibold text-slate-900">{item.name}</div>
                       </div>
-                      <div className="text-slate-500 font-mono text-xs self-center">{m.slug}</div>
-                      <div className="text-xs text-slate-500 truncate self-center">{m.description || "—"}</div>
+                      <div className="text-slate-500 font-mono text-xs self-center">{item.slug}</div>
+                      <div className="text-xs text-slate-500 truncate self-center">{item.description || "—"}</div>
                       <div className="flex gap-1.5">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/catalog/collections/${m.slug}`);
+                            navigate(`/catalog/collections/${item.slug}`);
                           }}
                           className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
                           style={{ padding: 5 }}
@@ -146,29 +150,29 @@ const CollectionPage = () => {
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
           <div className="text-sm text-slate-600">
-            Showing {si2 + 1}-{Math.min(si2 + pp, f.length)} of {f.length}
+            {filteredItems.length > 0 ? <>{t("catalog.pageOf", { page: currentPage, total: totalPages, count: filteredItems.length })}</> : t("catalog.noResults")}
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setCp(Math.max(1, cp - 1))} disabled={cp === 1}>
+            <Button variant="ghost" size="sm" onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1}>
               <ChevronLeft className="h-4 w-4" />
-              Prev
+              {t("catalog.previous")}
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, tp) }, (_, i) => {
-                let p;
-                if (tp <= 5) p = i + 1;
-                else if (cp <= 3) p = i + 1;
-                else if (cp >= tp - 2) p = tp - 4 + i;
-                else p = cp - 2 + i;
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNumber;
+                if (totalPages <= 5) pageNumber = i + 1;
+                else if (currentPage <= 3) pageNumber = i + 1;
+                else if (currentPage >= totalPages - 2) pageNumber = totalPages - 4 + i;
+                else pageNumber = currentPage - 2 + i;
                 return (
-                  <Button key={p} variant={cp === p ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setCp(p)}>
-                    {p}
+                  <Button key={pageNumber} variant={currentPage === pageNumber ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setCurrentPage(pageNumber)}>
+                    {pageNumber}
                   </Button>
                 );
               })}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setCp(Math.min(tp, cp + 1))} disabled={cp === tp}>
-              Next
+            <Button variant="ghost" size="sm" onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages}>
+              {t("catalog.next")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -178,4 +182,4 @@ const CollectionPage = () => {
   );
 };
 
-export default CollectionPage;
+export default CollectionsPage;

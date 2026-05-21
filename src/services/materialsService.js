@@ -10,12 +10,12 @@ export const materialsService = {
     if (skip) query.set("skip", skip);
     const qs = query.toString();
     const response = await axiosClient.get(`/catalog/materials${qs ? `?${qs}` : ""}`);
-    return response.data;
+    return response;
   },
 
   // Fetch a single material by slug
   getMaterialBySlug: async (slug) => {
     const response = await axiosClient.get(`/catalog/materials/${slug}`);
-    return response.data.data;
+    return response;
   },
 };

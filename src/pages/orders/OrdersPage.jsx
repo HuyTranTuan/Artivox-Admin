@@ -8,7 +8,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useUiStore } from "@store/uiStore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const fmtDate = (dateStr) => {
   if (!dateStr) return "—";

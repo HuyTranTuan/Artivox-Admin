@@ -8,45 +8,52 @@ import { Card } from "@components/ui/card";
 import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 import { useUiStore } from "@store/uiStore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
-const normalizeArticle = (rawItem, index = 0) => {
-  const id = rawItem?.id || rawItem?._id || rawItem?.slug || `article-${index}`;
+const normalizeArticle = (currentLang, rawItem, index = 0) => {
+  const translation = rawItem?.translations?.find((translate) => translate.locale === currentLang) || rawItem?.translations?.[0] || {};
+  const articleId = rawItem?.id || rawItem?._id || `article-${index}`;
+
   return {
-    id,
-    slug: rawItem?.slug || String(id),
-    title: rawItem?.title || rawItem?.name || rawItem?.headline || `Article ${index + 1}`,
-    locale: rawItem?.locale || rawItem?.language || rawItem?.lang || "EN",
-    author: rawItem?.author?.fullName || rawItem?.authorName || rawItem?.author || "Unknown",
+    id: articleId,
+    slug: rawItem?.slug || String(articleId),
+    title: translation.title || `Article ${index + 1}`,
+    summary: translation.summary || `Article ${index + 1} summary`,
+    content: translation.content || "", // Extracted from translations
+    coverImage: rawItem?.coverImage || null, // Extracted from root
+    locale: translation.locale || rawItem?.locale || rawItem?.language || "EN",
+    author: rawItem?.author?.fullName || rawItem?.authorName || "Unknown",
     status: rawItem?.status || (rawItem?.publishedAt || rawItem?.publishDate ? "Published" : "Draft"),
-    publishedAt: rawItem?.publishedAt || rawItem?.publishDate || rawItem?.createdAt || null,
+    publishedAt: rawItem?.publishedAt || rawItem?.publishDate || null,
+    createdAt: rawItem?.createdAt || null,
+    updatedAt: rawItem?.updatedAt || null,
     views: Number(rawItem?.views ?? rawItem?.viewCount ?? 0),
   };
 };
 
-const ArticleCampaignsPage = () => {
+const ArticlesPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
-  const [campaigns, setCampaigns] = useState([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation();
 
-  const loadCampaigns = useCallback(async () => {
+  const loadArticles = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await articleService.getArticles();
-      const normalized = (Array.isArray(data) ? data : []).map(normalizeArticle);
-      setCampaigns(normalized);
+      const articles = await articleService.getArticles();
+      const normalized = articles.map((article) => normalizeArticle(lang, article));
+      setArticles(normalized);
     } catch {
-      setCampaigns([]);
+      setArticles([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadCampaigns();
-  }, [loadCampaigns]);
+    loadArticles();
+  }, [loadArticles]);
 
   const handleView = (slug) => {
     navigate(`/articles/${slug}`);
@@ -77,17 +84,13 @@ const ArticleCampaignsPage = () => {
 
       <Card className="p-6">
         <div className="mb-5 flex items-center justify-between">
-          <div>
-            <div className="font-title text-xl font-bold text-slate-950">{t("articles.title")}</div>
-            <div className="mt-1 text-sm text-slate-500">{t("articles.subtitle")}</div>
-          </div>
+          <div className="font-title text-xl font-bold text-slate-950">{t("articles.title")}</div>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" className="h-10 w-10 p-0" onClick={loadCampaigns}>
+            <Button variant="ghost" className="h-10 w-10 p-0!" onClick={loadArticles}>
               <RefreshCw className="h-4 w-4" />
             </Button>
             <Button className="gap-2" onClick={() => navigate("/articles/create")}>
               <Plus className="h-4 w-4" />
-              {t("articles.new")}
             </Button>
           </div>
         </div>
@@ -107,10 +110,10 @@ const ArticleCampaignsPage = () => {
               <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 420px)" }}>
                 {loading ? (
                   <div className="px-4 py-8 text-sm text-slate-500">{t("articles.loading")}</div>
-                ) : campaigns.length === 0 ? (
+                ) : articles.length === 0 ? (
                   <div className="px-4 py-8 text-sm text-slate-500">{t("articles.empty")}</div>
                 ) : (
-                  campaigns.map((item, idx) => (
+                  articles.map((item, idx) => (
                     <div
                       key={item.id}
                       className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
@@ -162,4 +165,4 @@ const ArticleCampaignsPage = () => {
   );
 };
 
-export default ArticleCampaignsPage;
+export default ArticlesPage;

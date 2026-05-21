@@ -1,24 +1,25 @@
-import { BookText, CircleDollarSign, Cuboid, LayoutDashboard, MessageCircleMore, ShoppingCart, Users, Box, Layers, Wrench } from "lucide-react";
+import { BookText, Bot, CircleDollarSign, Cuboid, LayoutDashboard, MessageCircleMore, ShoppingCart, Users, Box, Layers, Wrench } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@utils/cn";
 import { useUiStore } from "@store/uiStore";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/articles", label: "Article Campaigns", icon: BookText },
-  { to: "/campaigns/discount", label: "Discounts", icon: CircleDollarSign },
+  { to: "/articles", label: "Articles", icon: BookText },
+  { to: "/discounts", label: "Discounts", icon: CircleDollarSign },
   {
-    label: "Products",
+    label: "Catalog",
     icon: Cuboid,
     children: [
-      { to: "/products/models", label: "Models", icon: Box },
-      { to: "/products/materials", label: "Materials", icon: Layers },
-      { to: "/products/tools", label: "Tools", icon: Wrench },
+      { to: "/catalog/models", label: "Models", icon: Box },
+      { to: "/catalog/materials", label: "Materials", icon: Layers },
+      { to: "/catalog/tools", label: "Tools", icon: Wrench },
     ],
   },
   { to: "/orders", label: "Orders", icon: ShoppingCart },
   { to: "/customers", label: "Customers", icon: Users },
   { to: "/support/chat", label: "Support Chat", icon: MessageCircleMore },
+  { to: "/support/ai-chat", label: "AI Chat", icon: Bot },
 ];
 
 export const Sidebar = ({ forcedOpen }) => {

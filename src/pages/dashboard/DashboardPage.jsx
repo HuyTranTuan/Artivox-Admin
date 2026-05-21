@@ -6,7 +6,7 @@ import { useAuth } from "@hooks/useAuth";
 import { dashboardService } from "@services/dashboardService";
 import { PieChart as PieChartComponent } from "@components/ui/PieChart";
 import { useUiStore } from "@store/uiStore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const buildLinePath = (data, width, height, padding = 20, key = "value") => {
   if (!data || data.length === 0) return "";

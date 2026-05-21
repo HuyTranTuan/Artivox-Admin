@@ -5,7 +5,7 @@ import { useAuth } from "@hooks/useAuth";
 import { dashboardService } from "@services/dashboardService";
 import { useCountUp } from "@hooks/useCountUp";
 import { useUiStore } from "@store/uiStore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const formatCurrency = (amount) => {
   if (amount == null) return "₫0";
@@ -57,12 +57,9 @@ const StaffDashboardPage = () => {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h1 className="font-title text-2xl font-bold text-slate-900">{t("dashboard.staffTitle")}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t("dashboard.loading")}</p>
-      </div>
+      <h1 className="font-title text-2xl font-bold text-slate-900 dark:text-amber-50">{t("dashboard.staffTitle")}</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
         <Card className="p-5 flex items-center gap-5">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-amber-500 to-orange-500 text-white">
             <DollarSign className="h-7 w-7" />

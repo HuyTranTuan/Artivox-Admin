@@ -6,9 +6,11 @@ import { Input } from "@components/ui/input";
 import { signInSchema } from "@validators/auth.schema";
 import { PasswordInput } from "../ui/password-input";
 import { readStorage } from "@/utils/localStorage";
+import { useTranslation } from "react-i18next";
 
 const SignInForm = () => {
   const { handleSignIn } = useAuth();
+  const { t } = useTranslation();
   const user = readStorage("artivox-auth").state.user;
   const [form, setForm] = useState({
     email: user?.email || "account@gmail.com",
@@ -33,8 +35,8 @@ const SignInForm = () => {
   return (
     <Card className="w-full max-w-md p-8">
       <div className="mb-8">
-        <div className="font-title text-3xl font-bold text-slate-950">Sign in</div>
-        <div className="mt-2 text-sm text-slate-500">Mock auth for admin dashboard flow.</div>
+        <div className="font-title text-3xl font-bold text-slate-950 text-center">Sign in</div>
+        <div className="mt-2 text-sm text-slate-500 text-center">{t("")}</div>
       </div>
 
       <form className="space-y-4" onSubmit={onSubmit}>
@@ -44,7 +46,15 @@ const SignInForm = () => {
         </div>
         <div className="space-y-2">
           <label className="font-title text-sm font-semibold text-slate-800">Password</label>
-          <PasswordInput type="password" value={form.password} onChange={(event) => setForm((current) => ({ ...current, password: event.target.value }))} />
+          <PasswordInput
+            value={form.password}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                password: event.target.value,
+              }))
+            }
+          />
         </div>
         {error ? <div className="text-sm text-rose-600">{error}</div> : null}
         <Button className="w-full" type="submit">

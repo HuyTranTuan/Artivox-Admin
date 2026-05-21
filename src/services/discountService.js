@@ -9,12 +9,12 @@ export const discountService = {
     if (skip) query.set("skip", skip);
     const qs = query.toString();
     const response = await axiosClient.get(`/discounts${qs ? `?${qs}` : ""}`);
-    return response.data;
+    return response;
   },
 
   // Fetch a single discount by slug
   getDiscountBySlug: async (slug) => {
     const response = await axiosClient.get(`/discounts/${slug}`);
-    return response.data.data;
+    return response;
   },
 };

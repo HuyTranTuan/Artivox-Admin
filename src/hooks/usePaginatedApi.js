@@ -1,18 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 
-/**
- * Hook for paginated API calls with URL query param sync.
- *
- * @param {Function} fetchFn - The service function to call, receives { limit, skip }.
- * @param {Object} options
- * @param {number} options.defaultLimit - Items per page (default 20).
- * @param {number} options.defaultPage - Starting page (default 1).
- * @param {string} options.pageParam - URL param name for page (default "page").
- * @returns {{ data, loading, error, page, totalPages, totalItems, setPage, nextPage, prevPage, refetch }}
- */
 export const usePaginatedApi = (fetchFn, options = {}) => {
-  const { defaultLimit = 20, defaultPage = 1, pageParam = "page" } = options;
+  const { defaultLimit = 20, defaultPage = 1, pageParam = "page", refreshDeps = [] } = options;
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Store fetchFn in a ref to avoid infinite re-renders from inline arrow functions
@@ -51,23 +41,41 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
     if (currentPage > 1) setPage(currentPage - 1);
   }, [currentPage, setPage]);
 
+  const extractData = (result) => {
+    // Case 1: Direct array
+    if (Array.isArray(result)) {
+      return { data: result, total: result.length };
+    }
+
+    // Case 2: { data: [...], total: N } or { data: { data: [...] } } (double-wrapped)
+    const rawData = result?.data?.data ?? result?.data ?? result;
+    if (Array.isArray(rawData)) {
+      const total = result?.total ?? result?.data?.total ?? rawData.length;
+      return { data: rawData, total };
+    }
+
+    // Case 3: { data: {...} } with pagination metadata
+    if (rawData && typeof rawData === "object") {
+      const items = rawData.items ?? rawData.rows ?? rawData.records ?? rawData.results ?? Object.values(rawData).find(Array.isArray);
+      console.log(items);
+      if (Array.isArray(items)) {
+        return { data: items, total: rawData.total ?? rawData.count ?? items.length };
+      }
+    }
+
+    // Fallback
+    return { data: [], total: 0 };
+  };
+
   const refetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const skip = (currentPage - 1) * limit;
-      const result = await fetchFnRef.current({ limit, skip });
-      // Support both { data: [...], total: N } and direct array returns
-      if (Array.isArray(result)) {
-        setData(result);
-        setTotalItems(result.length);
-      } else if (result?.data) {
-        setData(result.data);
-        setTotalItems(result.total ?? result.data?.length ?? 0);
-      } else {
-        setData([]);
-        setTotalItems(0);
-      }
+      const result = await fetchFnRef.current({ limit, skip: (currentPage - 1) * limit });
+      const extracted = extractData(result);
+
+      setData(extracted.data);
+      setTotalItems(extracted.total);
     } catch (err) {
       setError(err?.response?.data?.message || err.message || "Failed to fetch data");
       setData([]);
@@ -78,7 +86,7 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
 
   useEffect(() => {
     refetch();
-  }, [refetch]);
+  }, [refetch, ...refreshDeps]);
 
   return {
     data,

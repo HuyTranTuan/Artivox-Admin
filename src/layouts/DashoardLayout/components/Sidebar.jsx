@@ -1,56 +1,68 @@
 import { useState } from "react";
-import { BookText, CircleDollarSign, Cuboid, LayoutDashboard, MessageCircleMore, ShoppingCart, Users, Box, Layers, Wrench, UserCog, ClipboardCheck } from "lucide-react";
+import {
+  BookText,
+  Bot,
+  CircleDollarSign,
+  Cuboid,
+  LayoutDashboard,
+  MessageCircleMore,
+  ShoppingCart,
+  Users,
+  Box,
+  Layers,
+  Wrench,
+  UserCog,
+  ClipboardCheck,
+  Container,
+} from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@utils/cn";
 import { useUiStore } from "@store/uiStore";
 import { useAuth } from "@hooks/useAuth";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
+import artivoxLogo from "@/assets/artivox-logo.png";
+import artivoxSquareLogo from "@/assets/artivox-square-logo.png";
 
 const adminNavItems = [
   { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
-  { to: "/staff/dashboard", labelKey: "nav.staffDashboard", icon: UserCog },
+  { to: "/articles", labelKey: "nav.articles", icon: BookText },
+  { to: "/discounts", labelKey: "nav.discounts", icon: CircleDollarSign },
   {
-    labelKey: "nav.articles",
-    icon: BookText,
-    children: [{ to: "/articles", labelKey: "nav.allArticles", icon: BookText }],
-  },
-  { to: "/campaigns/discount", labelKey: "nav.discounts", icon: CircleDollarSign },
-  {
-    labelKey: "nav.products",
+    labelKey: "nav.catalog",
     icon: Cuboid,
     children: [
-      { to: "/products/models", labelKey: "nav.models", icon: Box },
-      { to: "/products/materials", labelKey: "nav.materials", icon: Layers },
-      { to: "/products/tools", labelKey: "nav.tools", icon: Wrench },
+      { to: "/catalog/collections", labelKey: "nav.collections", icon: Container },
+      { to: "/catalog/models", labelKey: "nav.models", icon: Box },
+      { to: "/catalog/materials", labelKey: "nav.materials", icon: Layers },
+      { to: "/catalog/tools", labelKey: "nav.tools", icon: Wrench },
     ],
   },
   { to: "/orders", labelKey: "nav.orders", icon: ShoppingCart, end: true },
   { to: "/orders/approval", labelKey: "nav.orderApproval", icon: ClipboardCheck },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
+  { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },
 ];
 
 const staffNavItems = [
-  { to: "/staff/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/", labelKey: "nav.dashboard", icon: LayoutDashboard, end: true },
+  { to: "/articles", labelKey: "nav.articles", icon: BookText },
+  { to: "/discounts", labelKey: "nav.discounts", icon: CircleDollarSign },
   {
-    labelKey: "nav.articles",
-    icon: BookText,
-    children: [{ to: "/articles", labelKey: "nav.allArticles", icon: BookText }],
-  },
-  { to: "/campaigns/discount", labelKey: "nav.discounts", icon: CircleDollarSign },
-  {
-    labelKey: "nav.products",
+    labelKey: "nav.catalog",
     icon: Cuboid,
     children: [
-      { to: "/products/models", labelKey: "nav.models", icon: Box },
-      { to: "/products/materials", labelKey: "nav.materials", icon: Layers },
-      { to: "/products/tools", labelKey: "nav.tools", icon: Wrench },
+      { to: "/catalog/collections", labelKey: "nav.collections", icon: Container },
+      { to: "/catalog/models", labelKey: "nav.models", icon: Box },
+      { to: "/catalog/materials", labelKey: "nav.materials", icon: Layers },
+      { to: "/catalog/tools", labelKey: "nav.tools", icon: Wrench },
     ],
   },
   { to: "/orders/approval", labelKey: "nav.orderApproval", icon: ClipboardCheck },
   { to: "/orders", labelKey: "nav.orders", icon: ShoppingCart, end: true },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
+  { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },
 ];
 
 const resolveLabel = (item, t) => {
@@ -99,17 +111,11 @@ export const Sidebar = ({ forcedOpen }) => {
       )}
     >
       {/* Logo */}
-      <div className="mb-8 flex items-center gap-3">
-        <NavLink to="/" onClick={handleNavClick} className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 overflow-hidden">
-            <img src="/artivox-logo.png" alt="Artivox" className="h-full w-full object-cover" />
+      <div className="h-18 mb-8">
+        <NavLink to="/" onClick={handleNavClick} className="block cursor-pointer hover:opacity-80 transition">
+          <div className=" h-full w-full bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 overflow-hidden">
+            <img src={isOpen ? artivoxLogo : artivoxSquareLogo} alt="Artivox" className="h-full w-full object-center object-contain bg-transparent" />
           </div>
-          {isOpen ? (
-            <div>
-              <div className={cn("font-title text-lg font-bold", theme === "dark" ? "text-slate-50" : "text-slate-900")}>Artivox</div>
-              <div className="text-xs text-slate-500">{isAdmin ? t("sidebar.admin") : t("sidebar.staff")}</div>
-            </div>
-          ) : null}
         </NavLink>
       </div>
 
@@ -124,7 +130,7 @@ export const Sidebar = ({ forcedOpen }) => {
               <div key={item.label}>
                 <button
                   onClick={() => toggleGroup(item.label)}
-                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-500 hover:text-slate-700 transition cursor-pointer"
+                  className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:text-white/80" : "text-slate-500 hover:text-slate-700"}`}
                 >
                   <Icon className="h-6 w-6 shrink-0" />
                   {isOpen ? (
@@ -148,7 +154,7 @@ export const Sidebar = ({ forcedOpen }) => {
                           className={({ isActive }) =>
                             cn(
                               "flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition",
-                              isActive ? "bg-amber-500 text-white font-semibold" : theme === "dark" ? "text-slate-400 hover:bg-slate-800" : "text-slate-600 hover:bg-gray-200",
+                              isActive ? "bg-amber-500 text-white font-semibold" : theme === "dark" ? "text-white hover:bg-slate-800" : "text-slate-600 hover:bg-gray-200",
                             )
                           }
                         >
@@ -172,7 +178,7 @@ export const Sidebar = ({ forcedOpen }) => {
               className={({ isActive }) =>
                 cn(
                   "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition",
-                  isActive ? "bg-amber-500 text-white font-semibold" : theme === "dark" ? "text-slate-400 hover:bg-slate-800" : "text-slate-600 hover:bg-gray-200",
+                  isActive ? "bg-amber-500 text-white font-semibold" : theme === "dark" ? "text-white hover:bg-slate-800" : "text-slate-600 hover:bg-gray-200",
                 )
               }
             >
@@ -185,7 +191,7 @@ export const Sidebar = ({ forcedOpen }) => {
 
       {isOpen && (
         <div className={cn("border-t pt-4 mt-4", theme === "dark" ? "border-slate-800" : "border-slate-200")}>
-          <div className="text-xs text-slate-500 text-center">
+          <div className={`text-xs text-center ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}>
             <p>{t("footer.copyright")}</p>
           </div>
         </div>

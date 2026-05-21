@@ -10,7 +10,7 @@ import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useAuth } from "@hooks/useAuth";
 import { useUiStore } from "@store/uiStore";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const statusOptions = ["PENDING", "PAID", "REFUND_PENDING"];
 

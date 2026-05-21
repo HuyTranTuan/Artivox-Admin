@@ -23,12 +23,12 @@ const parseIncomingMessage = (rawMessage) => {
 /**
  * Create a socket connection for notifications
  * Channel format: "staffId-notification" for notifications
- * Channel format: "staffId-userId" for chat messages
+ * Channel format: "customerId" for chat messages
  */
 export const createNotificationSocket = ({ staffId, userId, onMessage, onStatusChange }) => {
   let socket = null;
   let isClosed = false;
-  const chatChannel = `${staffId}-${userId}`;
+  const chatChannel = `customerId`;
   const notificationChannel = `${staffId}-notification`;
 
   const handleIncoming = (message) => {
@@ -157,7 +157,7 @@ export const setupNotificationListener = ({ staffId, userId, onNotification, onC
 
     if (channel.includes("notification")) {
       onNotification?.(message);
-    } else if (channel.includes(`${staffId}-${userId}`)) {
+    } else if (channel === "customerId" || channel.includes("customerId")) {
       onChatMessage?.(message);
     }
   };

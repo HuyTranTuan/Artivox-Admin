@@ -9,12 +9,12 @@ export const toolsService = {
     if (skip) query.set("skip", skip);
     const qs = query.toString();
     const response = await axiosClient.get(`/catalog/tools${qs ? `?${qs}` : ""}`);
-    return response.data;
+    return response;
   },
 
   // Fetch a single tool by slug
   getToolBySlug: async (slug) => {
     const response = await axiosClient.get(`/catalog/tools/${slug}`);
-    return response.data.data;
+    return response;
   },
 };

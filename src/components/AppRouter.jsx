@@ -12,20 +12,26 @@ import { useAuth } from "@hooks/useAuth";
 
 const RegisterPage = lazy(() => import("@pages/auth/RegisterPage"));
 const ArticleDetailPage = lazy(() => import("@pages/articles/ArticleDetailPage"));
-const ArticleCampaignsPage = lazy(() => import("@pages/campaigns/ArticleCampaignsPage"));
+const ArticlesPage = lazy(() => import("@/pages/campaigns/ArticlesPage"));
 const CreateArticlePage = lazy(() => import("@pages/campaigns/CreateArticlePage"));
-const DiscountCampaignsPage = lazy(() => import("@pages/campaigns/DiscountCampaignsPage"));
+const DiscountsPage = lazy(() => import("@/pages/campaigns/DiscountsPage"));
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
-const ModelsPage = lazy(() => import("@pages/products/ModelsPage"));
-const MaterialsPage = lazy(() => import("@pages/products/MaterialsPage"));
-const ToolsPage = lazy(() => import("@pages/products/ToolsPage"));
+const ModelsPage = lazy(() => import("@/pages/catalog/ModelsPage"));
+const ModelDetailPage = lazy(() => import("@/pages/catalog/ModelDetailPage"));
+const MaterialsPage = lazy(() => import("@/pages/catalog/MaterialsPage"));
+const MaterialDetailPage = lazy(() => import("@/pages/catalog/MaterialDetailPage"));
+const ToolsPage = lazy(() => import("@/pages/catalog/ToolsPage"));
+const ToolDetailPage = lazy(() => import("@/pages/catalog/ToolDetailPage"));
+const CollectionsPage = lazy(() => import("@/pages/catalog/CollectionsPage"));
+const CollectionDetailPage = lazy(() => import("@/pages/catalog/CollectionDetailPage"));
 const PersonalSettingsPage = lazy(() => import("@pages/settings/PersonalSettingsPage"));
 const ChatPage = lazy(() => import("@pages/support/ChatPage"));
 const CustomersPage = lazy(() => import("@pages/customers/CustomersPage"));
 const CustomerDetailPage = lazy(() => import("@pages/customers/CustomerDetailPage"));
 const NotificationDetailPage = lazy(() => import("@pages/notifications/NotificationDetailPage"));
 const OrderApprovalPage = lazy(() => import("@pages/orders/OrderApprovalPage"));
+const StaffAiChatPage = lazy(() => import("@pages/support/StaffAiChatPage"));
 
 const withLazyLoad = (Component) => (
   <Suspense fallback={<Loading />}>
@@ -54,15 +60,15 @@ const AppRouter = createBrowserRouter([
             index: true,
             element: <DashboardRedirect />,
           },
-          // Staff dashboard
+          // Dashboard
           {
-            path: "staff/dashboard",
-            element: withLazyLoad(StaffDashboardPage),
+            path: "dashboard",
+            element: <DashboardRedirect />,
           },
-          // Articles (no more /campaigns/article)
+          // Articles
           {
             path: "articles",
-            element: withLazyLoad(ArticleCampaignsPage),
+            element: withLazyLoad(ArticlesPage),
           },
           {
             path: "articles/create",
@@ -74,12 +80,12 @@ const AppRouter = createBrowserRouter([
           },
           // Discounts
           {
-            path: "campaigns/discount",
-            element: withLazyLoad(DiscountCampaignsPage),
+            path: "discounts",
+            element: withLazyLoad(DiscountsPage),
           },
           {
-            path: "campaigns/discount/:slug",
-            element: withLazyLoad(DiscountCampaignsPage),
+            path: "discount/:slug",
+            element: withLazyLoad(DiscountsPage),
           },
           // Orders
           {
@@ -94,28 +100,57 @@ const AppRouter = createBrowserRouter([
             path: "orders/:orderId",
             element: withLazyLoad(OrderDetailPage),
           },
-          // Products
+          // Catalog
           {
-            path: "products/models",
+            path: "catalog",
+            element: withLazyLoad(CollectionsPage),
+          },
+          {
+            path: "catalog/models",
             element: withLazyLoad(ModelsPage),
           },
           {
-            path: "products/materials",
+            path: "catalog/models/:slug",
+            element: withLazyLoad(ModelDetailPage),
+          },
+          {
+            path: "catalog/materials",
             element: withLazyLoad(MaterialsPage),
           },
           {
-            path: "products/tools",
+            path: "catalog/materials/:slug",
+            element: withLazyLoad(MaterialDetailPage),
+          },
+          {
+            path: "catalog/tools",
             element: withLazyLoad(ToolsPage),
+          },
+          {
+            path: "catalog/tools/:slug",
+            element: withLazyLoad(ToolDetailPage),
+          },
+          {
+            path: "catalog/collections",
+            element: withLazyLoad(CollectionsPage),
+          },
+          {
+            path: "catalog/collections/:slug",
+            element: withLazyLoad(CollectionDetailPage),
           },
           // Settings
           {
             path: "settings/personal",
             element: withLazyLoad(PersonalSettingsPage),
           },
-          // Support
+          // Support Chat
           {
             path: "support/chat",
             element: withLazyLoad(ChatPage),
+          },
+          // Staff AI Chat
+          {
+            path: "support/ai-chat",
+            element: withLazyLoad(StaffAiChatPage),
           },
           // Customers
           {
