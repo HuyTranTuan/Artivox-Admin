@@ -51,7 +51,10 @@ const OrderApprovalPage = () => {
     let result = [...orders];
     const keyword = debouncedSearch.toLowerCase();
     if (keyword) {
-      result = result.filter((o) => (o.id && o.id.toLowerCase().includes(keyword)) || (o.customer && o.customer.toLowerCase().includes(keyword)));
+      result = result.filter((o) => {
+        const custStr = typeof o.customer === "object" ? (o.customer?.fullName || o.customer?.name || "") : (o.customer || "");
+        return (o.id && o.id.toLowerCase().includes(keyword)) || (custStr.toLowerCase().includes(keyword));
+      });
     }
     if (selectedStatus) {
       result = result.filter((o) => o.status === selectedStatus);
@@ -218,7 +221,7 @@ const OrderApprovalPage = () => {
                       paginated.map((item) => (
                         <div key={item.id} className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center">
                           <div className="font-title text-sm font-semibold text-slate-900">{item.id}</div>
-                          <div className="text-sm text-slate-700">{item.customer}</div>
+                          <div className="text-sm text-slate-700">{typeof item.customer === "object" ? (item.customer?.fullName || item.customer?.name || "—") : (item.customer || "—")}</div>
                           <div className="font-semibold text-slate-900">{formatPrice(item.amount)}</div>
                           <div>
                             <span className={`text-xs font-medium ${statusColor[item.status] || "text-slate-500"}`}>{item.status}</span>

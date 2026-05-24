@@ -57,7 +57,6 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
     // Case 3: { data: {...} } with pagination metadata
     if (rawData && typeof rawData === "object") {
       const items = rawData.items ?? rawData.rows ?? rawData.records ?? rawData.results ?? Object.values(rawData).find(Array.isArray);
-      console.log(items);
       if (Array.isArray(items)) {
         return { data: items, total: rawData.total ?? rawData.count ?? items.length };
       }

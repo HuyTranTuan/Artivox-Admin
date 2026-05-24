@@ -9,11 +9,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 
-const stats = [
-  { label: "Active campaigns", value: "8", icon: Percent },
-  { label: "Total redeemed", value: "3,240", icon: Gift },
-  { label: "Avg. discount", value: "22%", icon: Clock },
-];
+// Stats are calculated dynamically inside the component
 const formatDateLabel = (value) => {
   if (!value) return "—";
   const date = new Date(value);
@@ -149,11 +145,24 @@ const DiscountsPage = () => {
     </div>
   );
 
+  const dynamicStats = useMemo(() => {
+    const active = items.filter(i => i.status === "ACTIVE" || i.status === "active").length;
+    const totalRedeemed = items.reduce((acc, i) => acc + (Number(i.usage) || 0), 0);
+    const percentItems = items.filter(i => String(i.discount).includes("%"));
+    const avgDiscount = percentItems.length ? Math.round(percentItems.reduce((acc, i) => acc + parseInt(i.discount), 0) / percentItems.length) : 0;
+
+    return [
+      { label: "Active campaigns", value: active.toString(), icon: Percent },
+      { label: "Total redeemed", value: totalRedeemed.toLocaleString(), icon: Gift },
+      { label: "Avg. discount", value: `${avgDiscount}%`, icon: Clock },
+    ];
+  }, [items]);
+
   return (
     <section className="space-y-6">
       {/* Horizontal Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {stats.map((item) => {
+        {dynamicStats.map((item) => {
           const Icon = item.icon;
           return (
             <Card key={item.label} className="flex items-center gap-4 p-5">
