@@ -18,10 +18,13 @@ const DiscountsPage = lazy(() => import("@/pages/campaigns/DiscountsPage"));
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
 const ModelsPage = lazy(() => import("@/pages/catalog/ModelsPage"));
+const CreateModelPage = lazy(() => import("@/pages/catalog/CreateModelPage"));
 const ModelDetailPage = lazy(() => import("@/pages/catalog/ModelDetailPage"));
 const MaterialsPage = lazy(() => import("@/pages/catalog/MaterialsPage"));
+const CreateMaterialPage = lazy(() => import("@/pages/catalog/CreateMaterialPage"));
 const MaterialDetailPage = lazy(() => import("@/pages/catalog/MaterialDetailPage"));
 const ToolsPage = lazy(() => import("@/pages/catalog/ToolsPage"));
+const CreateToolPage = lazy(() => import("@/pages/catalog/CreateToolPage"));
 const ToolDetailPage = lazy(() => import("@/pages/catalog/ToolDetailPage"));
 const CollectionsPage = lazy(() => import("@/pages/catalog/CollectionsPage"));
 const CollectionDetailPage = lazy(() => import("@/pages/catalog/CollectionDetailPage"));
@@ -110,6 +113,10 @@ const AppRouter = createBrowserRouter([
             element: withLazyLoad(ModelsPage),
           },
           {
+            path: "catalog/models/create",
+            element: withLazyLoad(CreateModelPage),
+          },
+          {
             path: "catalog/models/:slug",
             element: withLazyLoad(ModelDetailPage),
           },
@@ -118,12 +125,20 @@ const AppRouter = createBrowserRouter([
             element: withLazyLoad(MaterialsPage),
           },
           {
+            path: "catalog/materials/create",
+            element: withLazyLoad(CreateMaterialPage),
+          },
+          {
             path: "catalog/materials/:slug",
             element: withLazyLoad(MaterialDetailPage),
           },
           {
             path: "catalog/tools",
             element: withLazyLoad(ToolsPage),
+          },
+          {
+            path: "catalog/tools/create",
+            element: withLazyLoad(CreateToolPage),
           },
           {
             path: "catalog/tools/:slug",

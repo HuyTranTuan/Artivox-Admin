@@ -17,4 +17,12 @@ export const modelsService = {
     const response = await axiosClient.get(`/catalog/models/${slug}`);
     return response;
   },
+
+  // Create a new model
+  createModel: async (formData) => {
+    const response = await axiosClient.post(`/catalog/models`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };

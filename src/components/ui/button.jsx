@@ -6,6 +6,7 @@ export const Button = ({ className, variant = "primary", ...props }) => {
     ghost: "bg-transparent text-slate-600 hover:bg-slate-100",
     secondary: "bg-slate-900 text-white hover:bg-slate-800",
     destructive: "bg-rose-600 text-white hover:bg-rose-500",
+    "outline-orange": "bg-white text-orange-500 border border-orange-400 hover:bg-orange-500 hover:text-white",
   };
 
   return (

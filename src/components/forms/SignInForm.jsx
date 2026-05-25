@@ -11,10 +11,14 @@ import { useTranslation } from "react-i18next";
 const SignInForm = () => {
   const { handleSignIn } = useAuth();
   const { t } = useTranslation();
-  const user = readStorage("artivox-auth").state.user;
+  let storedUser = null;
+  try {
+    storedUser = JSON.parse(sessionStorage.getItem("artivox-auth"))?.state?.user;
+  } catch (e) {}
+
   const [form, setForm] = useState({
-    email: user?.email || "account@gmail.com",
-    password: "",
+    email: storedUser?.email || "admin1@gmail.com",
+    password: "123456",
   });
   const [error, setError] = useState("");
 

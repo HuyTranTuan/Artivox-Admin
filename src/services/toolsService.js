@@ -17,4 +17,12 @@ export const toolsService = {
     const response = await axiosClient.get(`/catalog/tools/${slug}`);
     return response;
   },
+
+  // Create a new tool
+  createTool: async (formData) => {
+    const response = await axiosClient.post(`/catalog/tools`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };

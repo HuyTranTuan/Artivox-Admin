@@ -18,4 +18,12 @@ export const materialsService = {
     const response = await axiosClient.get(`/catalog/materials/${slug}`);
     return response;
   },
+
+  // Create a new material
+  createMaterial: async (formData) => {
+    const response = await axiosClient.post(`/catalog/materials`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };
