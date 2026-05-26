@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { setupNotificationListener } from "@services/notificationSocket";
 import { notificationService } from "@services/notificationService";
+import { io } from "socket.io-client";
 
 export const useNotificationSocket = (staffId, userId, enabled = true) => {
   const [notifications, setNotifications] = useState([]);
@@ -50,7 +51,7 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
     fetchInitialNotifications();
   }, [enabled, staffId, userId]);
 
-  // Setup socket listener
+  // Setup socket listener (existing mock/ws)
   useEffect(() => {
     if (!enabled || !staffId || !userId || !fetchedRef.current) return;
 
@@ -75,6 +76,29 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
       }
     };
   }, [enabled, staffId, userId, handleNewNotification, handleNewChatMessage]);
+
+  // Socket.io real-time notifications (for chat_notification etc.)
+  useEffect(() => {
+    if (!enabled || !staffId) return;
+
+    const socket = io(`${import.meta.env.VITE_SOCKET_URL || "http://localhost:3600"}/notifications`, {
+      transports: ["websocket"],
+    });
+
+    socket.on("chat_notification", (data) => {
+      handleNewNotification({
+        id: `chat-${Date.now()}`,
+        title: data.title,
+        description: data.message,
+        type: "CHAT_MESSAGE",
+        read: false,
+        createdAt: data.createdAt,
+        metadata: { chatRoomId: data.chatRoomId, customerId: data.customerId },
+      });
+    });
+
+    return () => { socket.disconnect(); };
+  }, [enabled, staffId, handleNewNotification]);
 
   return {
     notifications,

@@ -25,22 +25,31 @@ const ModelsPage = () => {
   const [selectedFilters, setSelectedFilters] = useState({ category: null, status: null });
   const [form, setForm] = useState({
     name: "",
-    category: "",
-    status: "Published",
+    slug: "",
+    description: "",
+    basePrice: "0",
+    stock: "0",
+    isActive: true,
+    previewFileUrl: "",
+    sourceFileUrl: "",
   });
+  const [thumbnailBefore, setThumbnailBefore] = useState(null);
+  const [thumbnailAfter, setThumbnailAfter] = useState(null);
+  const [formGalleryImages, setFormGalleryImages] = useState([]);
+  
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
-  const [formImages, setFormImages] = useState([]);
-  const [formThumbnailPreview, setFormThumbnailPreview] = useState(null);
-  const thumbnailInputRef = useRef(null);
-  const detailImageInputRef = useRef(null);
+  
+  const thumbnailBeforeRef = useRef(null);
+  const thumbnailAfterRef = useRef(null);
+  const galleryInputRef = useRef(null);
+  
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
-  // IMPORTANT: Pass a callback function, NOT the result of calling modelsService.getModels()
   const fetchModels = useCallback((params) => modelsService.getModels({ ...params, search: debouncedSearch || undefined }), [debouncedSearch]);
 
   const {
@@ -56,7 +65,6 @@ const ModelsPage = () => {
     refetch,
   } = usePaginatedApi(fetchModels, { defaultLimit: 20, pageParam: "page" });
 
-  // Reset to page 1 when search/filter changes
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
@@ -67,63 +75,102 @@ const ModelsPage = () => {
     setGalleryOpen(true);
   };
 
-  const categories = [...new Set(items.map((item) => item.category).filter(Boolean))];
-  const statuses = [...new Set(items.map((item) => item.status).filter(Boolean))];
+  const statuses = ["Active", "Inactive"];
 
   const filteredItems = useMemo(
     () =>
       items.filter((item) => {
-        return (!selectedFilters.category || item.category === selectedFilters.category) && (!selectedFilters.status || item.status === selectedFilters.status);
+        const itemStatus = item.isActive ? "Active" : "Inactive";
+        return (!selectedFilters.status || itemStatus === selectedFilters.status);
       }),
     [items, selectedFilters],
   );
 
   const paginatedItems = filteredItems;
 
-  const resetForm = () => {
-    setForm({ name: "", category: "", status: "Published" });
-    setFormImages([]);
-    setFormThumbnailPreview(null);
-  };
-
-  const handleCreate = () => {
-    resetForm();
-    setSelectedItem(null);
-    setOpenDialog("create");
-  };
-
   const handleEdit = (item) => {
     setSelectedItem(item);
     setOpenDialog("edit");
-    setForm({ name: item.name, category: item.category, status: item.status });
-    setFormThumbnailPreview(item.images?.[0]?.thumb || item.images?.[0]?.url || null);
-    setFormImages(item.images || []);
+    setForm({
+      name: item.name || "",
+      slug: item.slug || "",
+      description: item.description || "",
+      basePrice: item.basePrice?.toString() || "0",
+      stock: item.stock?.toString() || "0",
+      isActive: item.isActive,
+      previewFileUrl: item.model3D?.previewFileUrl || "",
+      sourceFileUrl: item.model3D?.sourceFileUrl || "",
+    });
+    
+    const thumbBefore = item.images?.find(img => img.role === "THUMBNAIL_BEFORE");
+    const thumbAfter = item.images?.find(img => img.role === "THUMBNAIL_AFTER");
+    const gallery = item.images?.filter(img => img.role === "GALLERY") || [];
+
+    setThumbnailBefore(thumbBefore ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true } : null);
+    setThumbnailAfter(thumbAfter ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true } : null);
+    setFormGalleryImages(gallery.map(img => ({ preview: img.url, id: img.id, isExisting: true, alt: img.altText || "Gallery Image", file: null })));
   };
 
-  const handleSubmit = () => setOpenDialog(null);
+  const [saving, setSaving] = useState(false);
+  const handleSubmit = async () => {
+    if (openDialog === "edit" && selectedItem) {
+      setSaving(true);
+      try {
+        const formData = new FormData();
+        formData.append("name", form.name);
+        formData.append("description", form.description);
+        formData.append("basePrice", form.basePrice);
+        formData.append("stock", form.stock);
+        formData.append("isActive", form.isActive);
+        formData.append("previewFileUrl", form.previewFileUrl);
+        formData.append("sourceFileUrl", form.sourceFileUrl);
 
-  const handleThumbnailChange = (e) => {
+        if (thumbnailBefore?.file) {
+          const ext = thumbnailBefore.file.name.split(".").pop();
+          formData.append("thumbnail_before", thumbnailBefore.file, `thumbnail_before.${ext}`);
+        }
+        if (thumbnailAfter?.file) {
+          const ext = thumbnailAfter.file.name.split(".").pop();
+          formData.append("thumbnail_after", thumbnailAfter.file, `thumbnail_after.${ext}`);
+        }
+        formGalleryImages.forEach((img) => {
+          if (img.file) {
+            formData.append("gallery", img.file);
+          }
+        });
+
+        await modelsService.updateModel(selectedItem.slug, formData);
+        setOpenDialog(null);
+        refetch();
+      } catch (err) {
+        console.error("Update model failed:", err);
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  const handleImageChange = (setter) => (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setFormThumbnailPreview(URL.createObjectURL(file));
+    setter({ file, preview: URL.createObjectURL(file), isExisting: false });
     e.target.value = "";
   };
 
-  const handleDetailImageAdd = (e) => {
+  const handleGalleryAdd = (e) => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
-    const newImages = files.map((file, idx) => ({
-      url: URL.createObjectURL(file),
-      thumb: URL.createObjectURL(file),
-      alt: `Image ${formImages.length + idx + 1}`,
-      _file: file,
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      isExisting: false,
     }));
-    setFormImages((prev) => [...prev, ...newImages]);
+    setFormGalleryImages((prev) => [...prev, ...newImages]);
     e.target.value = "";
   };
 
-  const removeFormImage = (idx) => {
-    setFormImages((prev) => prev.filter((_, i) => i !== idx));
+  const removeGalleryImage = (idx) => {
+    setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleRowClick = (slug) => {
@@ -195,117 +242,149 @@ const ModelsPage = () => {
     );
   };
 
+  const ImageUploadBox = ({ label, value, onClear, inputRef, onChange, recommended }) => (
+    <div>
+      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{label}</label>
+      <div className="flex items-center gap-3">
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 transition overflow-hidden shrink-0 bg-slate-50"
+        >
+          {value?.preview ? (
+            <img src={value.preview} alt={label} className="h-full w-full object-cover" />
+          ) : (
+            <div className="text-center">
+              <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
+              <span className="text-[10px] text-slate-400">{t("catalog.upload")}</span>
+            </div>
+          )}
+        </div>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} />
+        <div className="text-xs text-slate-400">
+          <p className="font-medium text-slate-600">{label}</p>
+          <p>{recommended}</p>
+        </div>
+        {value && (
+          <button type="button" onClick={onClear} className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto">
+            {t("catalog.remove")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   const FormModal = () => (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-      <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{openDialog === "create" ? t("catalog.addNewModel") : t("catalog.editModel")}</h2>
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-700">{t("catalog.name")}</label>
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-700">{t("catalog.category")}</label>
-            <select
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
-            >
-              <option value="">{t("catalog.selectCategory")}</option>
-              <option>Electronics</option>
-              <option>Furniture</option>
-              <option>Accessories</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-700">{t("catalog.status")}</label>
-            <select
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value })}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
-            >
-              <option>Published</option>
-              <option>Draft</option>
-              <option>Review</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{t("catalog.thumbnail")}</label>
-            <div className="flex items-center gap-3">
-              <div
-                onClick={() => thumbnailInputRef.current?.click()}
-                className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 transition overflow-hidden"
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="font-title text-xl font-bold text-slate-900 mb-6">{t("catalog.editModel")}</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-4">
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">Information</h3>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">{t("catalog.name")}</label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-500">Slug (Read-only)</label>
+              <Input value={form.slug} readOnly className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">{t("catalog.description")}</label>
+              <textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows={3}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-700">{t("catalog.price")} (VND)</label>
+                <Input type="number" value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700">{t("catalog.stock")}</label>
+                <Input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">{t("catalog.status")}</label>
+              <select
+                value={form.isActive ? "active" : "inactive"}
+                onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
               >
-                {formThumbnailPreview ? (
-                  <img src={formThumbnailPreview} alt="thumbnail" className="h-full w-full object-cover" />
-                ) : (
-                  <div className="text-center">
-                    <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-                    <span className="text-[10px] text-slate-400">{t("catalog.upload")}</span>
-                  </div>
-                )}
-              </div>
-              <input ref={thumbnailInputRef} type="file" accept="image/*" className="hidden" onChange={handleThumbnailChange} />
-              <div className="text-xs text-slate-400">
-                <p>{t("catalog.upload")}</p>
-                <p>Recommended 150x150</p>
-              </div>
-              {formThumbnailPreview && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setFormThumbnailPreview(null);
-                  }}
-                  className="text-rose-500 hover:text-rose-700 text-xs font-semibold"
-                >
-                  {t("catalog.remove")}
-                </button>
-              )}
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">3D Model Files</h3>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">Preview File URL</label>
+              <Input value={form.previewFileUrl} onChange={(e) => setForm({ ...form, previewFileUrl: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">Source File URL</label>
+              <Input value={form.sourceFileUrl} onChange={(e) => setForm({ ...form, sourceFileUrl: e.target.value })} />
             </div>
           </div>
-          <div>
-            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-              {t("catalog.detailImages")} ({formImages.length})
-            </label>
-            <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2">
-              {formImages.length === 0 ? (
-                <div className="text-center py-4 text-xs text-slate-400">{t("catalog.noImages")}</div>
-              ) : (
-                formImages.map((img, idx) => {
-                  const src = img?.thumb || img?.url || img;
-                  return (
-                    <div key={idx} className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5">
+
+          <div className="space-y-4">
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">Images</h3>
+            <ImageUploadBox
+              label="Thumbnail Before"
+              value={thumbnailBefore}
+              onClear={() => setThumbnailBefore(null)}
+              inputRef={thumbnailBeforeRef}
+              onChange={handleImageChange(setThumbnailBefore)}
+              recommended="150x150"
+            />
+            <ImageUploadBox
+              label="Thumbnail After"
+              value={thumbnailAfter}
+              onClear={() => setThumbnailAfter(null)}
+              inputRef={thumbnailAfterRef}
+              onChange={handleImageChange(setThumbnailAfter)}
+              recommended="150x150"
+            />
+            <div>
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+                Gallery ({formGalleryImages.length})
+              </label>
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-slate-50/50">
+                {formGalleryImages.length === 0 ? (
+                  <div className="text-center py-4 text-xs text-slate-400">{t("catalog.noImages")}</div>
+                ) : (
+                  formGalleryImages.map((img, idx) => (
+                    <div key={idx} className="flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-slate-100 shadow-sm">
                       <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
-                      <img
-                        src={typeof src === "string" ? src : ""}
-                        alt=""
-                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                      <span className="flex-1 text-xs text-slate-600 truncate">{img.alt || `Image ${idx + 1}`}</span>
-                      <button type="button" onClick={() => removeFormImage(idx)} className="text-rose-500 hover:text-rose-700 shrink-0">
+                      <img src={img.preview} alt={img.alt || `Gallery ${idx+1}`} className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0" />
+                      <span className="flex-1 text-xs text-slate-600 truncate">{img.file?.name || img.alt || `Image ${idx + 1}`}</span>
+                      <button type="button" onClick={() => removeGalleryImage(idx)} className="text-rose-500 hover:text-rose-700 shrink-0">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
-                  );
-                })
-              )}
+                  ))
+                )}
+              </div>
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryAdd} />
+              <Button type="button" variant="ghost" size="sm" className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300" onClick={() => galleryInputRef.current?.click()}>
+                <Plus className="h-3.5 w-3.5" />
+                {t("catalog.addImages")}
+              </Button>
             </div>
-            <input ref={detailImageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleDetailImageAdd} />
-            <Button type="button" variant="ghost" size="sm" className="mt-2 gap-1.5 text-xs" onClick={() => detailImageInputRef.current?.click()}>
-              <Plus className="h-3.5 w-3.5" />
-              {t("catalog.addImages")}
-            </Button>
           </div>
         </div>
-        <div className="flex gap-3 mt-6">
-          <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
+
+        <div className="flex gap-3 pt-4 border-t border-slate-100">
+          <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)} disabled={saving}>
             {t("catalog.cancel")}
           </Button>
-          <Button className="flex-1" onClick={handleSubmit}>
-            {openDialog === "create" ? t("catalog.create") : t("catalog.save")}
+          <Button className="flex-1 gap-2" onClick={handleSubmit} disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("catalog.save")}
           </Button>
         </div>
       </div>
@@ -369,20 +448,6 @@ const ModelsPage = () => {
                 <div ref={filterRef} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10">
                   <div className="space-y-4">
                     <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.category")}</div>
-                      {categories.map((category) => (
-                        <label key={category} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedFilters.category === category}
-                            onChange={() => setSelectedFilters((prev) => ({ ...prev, category: prev.category === category ? null : category }))}
-                            className="rounded"
-                          />
-                          <span className="text-sm text-slate-600">{category}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <div className="border-t border-slate-200 pt-4">
                       <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.status")}</div>
                       {statuses.map((status) => (
                         <label key={status} className="flex items-center gap-2 cursor-pointer">
@@ -396,7 +461,7 @@ const ModelsPage = () => {
                         </label>
                       ))}
                     </div>
-                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setSelectedFilters({ category: null, status: null })}>
+                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setSelectedFilters({ status: null })}>
                       {t("catalog.clearFilters")}
                     </Button>
                   </div>
@@ -428,10 +493,10 @@ const ModelsPage = () => {
                     <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_150px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
                       <div>{t("catalog.image")}</div>
                       <div>{t("catalog.name")}</div>
-                      <div>{t("catalog.category")}</div>
+                      <div>{t("catalog.price")}</div>
                       <div>{t("catalog.status")}</div>
                       <div>{t("catalog.createdAt")}</div>
-                      <div>{t("catalog.author")}</div>
+                      <div>{t("catalog.stock")}</div>
                       <div>{t("catalog.actions")}</div>
                     </div>
                     <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 380px)" }}>
@@ -454,12 +519,12 @@ const ModelsPage = () => {
                             <div>
                               <div className="font-title text-base font-semibold text-slate-900">{item.name}</div>
                             </div>
-                            <div>{item.category}</div>
+                            <div>{item.basePrice?.toLocaleString()} VND</div>
                             <div>
-                              <Badge>{item.status}</Badge>
+                              <Badge>{item.isActive ? "Active" : "Inactive"}</Badge>
                             </div>
                             <div className="text-xs text-slate-500">{formatDate(item.createdAt)}</div>
-                            <div className="text-xs text-slate-500">{item.author || "—"}</div>
+                            <div className="text-xs text-slate-500">{item.stock}</div>
                             <ActionButtons item={item} />
                           </div>
                         ))
@@ -523,10 +588,10 @@ const ModelsPage = () => {
                       <div className="p-4">
                         <div className="font-title text-base font-semibold text-slate-900 mb-1">{item.name}</div>
                         <div className="text-xs text-slate-500 mb-3">
-                          {item.category} • {t("catalog.createdAt")} {formatDate(item.createdAt)}
+                          {item.basePrice?.toLocaleString()} VND • {t("catalog.createdAt")} {formatDate(item.createdAt)}
                         </div>
                         <div className="flex items-center justify-between">
-                          <Badge className="mb-0">{item.status}</Badge>
+                          <Badge className="mb-0">{item.isActive ? "Active" : "Inactive"}</Badge>
                           <div className="flex gap-1">
                             <ActionButtons item={item} />
                           </div>

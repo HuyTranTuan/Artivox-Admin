@@ -25,4 +25,12 @@ export const toolsService = {
     });
     return response;
   },
+
+  // Update a tool by slug
+  updateTool: async (slug, formData) => {
+    const response = await axiosClient.put(`/catalog/tools/${slug}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };

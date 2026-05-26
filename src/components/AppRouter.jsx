@@ -15,6 +15,7 @@ const ArticleDetailPage = lazy(() => import("@pages/articles/ArticleDetailPage")
 const ArticlesPage = lazy(() => import("@/pages/campaigns/ArticlesPage"));
 const CreateArticlePage = lazy(() => import("@pages/campaigns/CreateArticlePage"));
 const DiscountsPage = lazy(() => import("@/pages/campaigns/DiscountsPage"));
+const CreateDiscountPage = lazy(() => import("@/pages/campaigns/CreateDiscountPage"));
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
 const ModelsPage = lazy(() => import("@/pages/catalog/ModelsPage"));
@@ -27,6 +28,7 @@ const ToolsPage = lazy(() => import("@/pages/catalog/ToolsPage"));
 const CreateToolPage = lazy(() => import("@/pages/catalog/CreateToolPage"));
 const ToolDetailPage = lazy(() => import("@/pages/catalog/ToolDetailPage"));
 const CollectionsPage = lazy(() => import("@/pages/catalog/CollectionsPage"));
+const CreateCollectionPage = lazy(() => import("@/pages/catalog/CreateCollectionPage"));
 const CollectionDetailPage = lazy(() => import("@/pages/catalog/CollectionDetailPage"));
 const PersonalSettingsPage = lazy(() => import("@pages/settings/PersonalSettingsPage"));
 const ChatPage = lazy(() => import("@pages/support/ChatPage"));
@@ -87,8 +89,12 @@ const AppRouter = createBrowserRouter([
             element: withLazyLoad(DiscountsPage),
           },
           {
+            path: "discounts/create",
+            element: withLazyLoad(CreateDiscountPage),
+          },
+          {
             path: "discount/:slug",
-            element: withLazyLoad(DiscountsPage),
+            element: withLazyLoad(CreateDiscountPage),
           },
           // Orders
           {
@@ -147,6 +153,14 @@ const AppRouter = createBrowserRouter([
           {
             path: "catalog/collections",
             element: withLazyLoad(CollectionsPage),
+          },
+          {
+            path: "catalog/collections/create",
+            element: withLazyLoad(CreateCollectionPage),
+          },
+          {
+            path: "catalog/collections/edit/:slug",
+            element: withLazyLoad(CreateCollectionPage),
           },
           {
             path: "catalog/collections/:slug",

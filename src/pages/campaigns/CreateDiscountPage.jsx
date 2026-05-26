@@ -1,41 +1,107 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import { Input } from "@components/ui/input";
 import { useTranslation } from "@hooks/useTranslation";
+import { discountService } from "@services/discountService";
 
 const discountTypes = [
-  { value: "percentage", label: "Percentage (%)" },
-  { value: "fixed", label: "Fixed Amount (₫)" },
-];
-
-const statuses = [
-  { value: "Active", labelKey: "articles.publishedStatus" },
-  { value: "Scheduled", labelKey: "articles.review" },
-  { value: "Inactive", labelKey: "articles.draft" },
+  { value: "PERCENT", label: "Percentage (%)" },
+  { value: "FIXED", label: "Fixed Amount (₫)" },
 ];
 
 const CreateDiscountPage = () => {
+  const { slug } = useParams();
+  const isEditMode = !!slug;
   const navigate = useNavigate();
-  const [code, setCode] = useState("");
-  const [discountType, setDiscountType] = useState("percentage");
-  const [value, setValue] = useState("");
-  const [minOrder, setMinOrder] = useState("");
-  const [maxUsage, setMaxUsage] = useState("");
-  const [status, setStatus] = useState("Active");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [description, setDescription] = useState("");
   const { t } = useTranslation();
+  
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditMode);
 
-  const handleSave = () => {
-    navigate("/discounts");
+  const [form, setForm] = useState({
+    code: "",
+    name: "",
+    slug: "",
+    type: "PERCENT",
+    value: "",
+    minOrderAmount: "",
+    maxUses: "",
+    isActive: true,
+    startsAt: "",
+    expiresAt: "",
+  });
+
+  useEffect(() => {
+    if (isEditMode) {
+      const fetchDiscount = async () => {
+        try {
+          const res = await discountService.getDiscountBySlug(slug);
+          if (res.data?.data) {
+            const data = res.data.data;
+            setForm({
+              code: data.code || "",
+              name: data.name || "",
+              slug: data.slug || "",
+              type: data.type || "PERCENT",
+              value: data.value?.toString() || "",
+              minOrderAmount: data.minOrderAmount?.toString() || "",
+              maxUses: data.maxUses?.toString() || "",
+              isActive: data.isActive ?? true,
+              startsAt: data.startsAt ? data.startsAt.split('T')[0] : "",
+              expiresAt: data.expiresAt ? data.expiresAt.split('T')[0] : "",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch discount:", error);
+        } finally {
+          setInitialLoading(false);
+        }
+      };
+      fetchDiscount();
+    }
+  }, [slug, isEditMode]);
+
+  const handleChange = (field, val) => {
+    setForm((prev) => ({ ...prev, [field]: val }));
+    if (field === "name" && !isEditMode && !form.slug) {
+      setForm((prev) => ({
+        ...prev,
+        [field]: val,
+        slug: val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+      }));
+    }
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      if (isEditMode) {
+        await discountService.updateDiscount(slug, form);
+      } else {
+        await discountService.createDiscount(form);
+      }
+      navigate("/discounts");
+    } catch (error) {
+      console.error("Save discount failed:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
     navigate("/discounts");
   };
+
+  if (initialLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
 
   return (
     <section className="space-y-6">
@@ -44,36 +110,42 @@ const CreateDiscountPage = () => {
           <button onClick={handleCancel} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">Create Discount</h2>
+          <h2 className="font-title text-xl font-bold text-slate-900">
+            {isEditMode ? "Edit Discount" : "Create Discount"}
+          </h2>
         </div>
-        <Button onClick={handleSave} className="gap-2">
-          <Save className="h-4 w-4" />
-          {t("articles.save")}
+        <Button onClick={handleSave} disabled={loading} className="gap-2">
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {isEditMode ? "Save Changes" : t("articles.save")}
         </Button>
       </div>
 
       <Card className="p-6 space-y-5">
-        {/* Discount Code */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Discount Code</label>
-          <input
-            type="text"
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="e.g. SUMMER20"
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Discount Code (ex. SUMMER20)</label>
+            <Input
+              value={form.code}
+              onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
+              placeholder="SUMMER20"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Campaign Name (Internal)</label>
+            <Input
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder="Summer Sale 2026"
+            />
+          </div>
         </div>
 
-        {/* Description */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Description</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe the discount offer..."
-            rows={3}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">Slug</label>
+          <Input
+            value={form.slug}
+            onChange={(e) => handleChange("slug", e.target.value)}
+            placeholder="summer-sale-2026"
           />
         </div>
 
@@ -82,8 +154,8 @@ const CreateDiscountPage = () => {
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Discount Type</label>
             <select
-              value={discountType}
-              onChange={(e) => setDiscountType(e.target.value)}
+              value={form.type}
+              onChange={(e) => handleChange("type", e.target.value)}
               className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             >
               {discountTypes.map((opt) => (
@@ -95,14 +167,15 @@ const CreateDiscountPage = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Value {discountType === "percentage" ? "(%)" : "(₫)"}</label>
-            <input
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Value {form.type === "PERCENT" ? "(%)" : "(₫)"}
+            </label>
+            <Input
               type="number"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder={discountType === "percentage" ? "e.g. 20" : "e.g. 50000"}
+              value={form.value}
+              onChange={(e) => handleChange("value", e.target.value)}
+              placeholder={form.type === "PERCENT" ? "e.g. 20" : "e.g. 50000"}
               min="0"
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
         </div>
@@ -111,25 +184,23 @@ const CreateDiscountPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Minimum Order (₫)</label>
-            <input
+            <Input
               type="number"
-              value={minOrder}
-              onChange={(e) => setMinOrder(e.target.value)}
+              value={form.minOrderAmount}
+              onChange={(e) => handleChange("minOrderAmount", e.target.value)}
               placeholder="e.g. 100000"
               min="0"
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Max Usage Limit</label>
-            <input
+            <Input
               type="number"
-              value={maxUsage}
-              onChange={(e) => setMaxUsage(e.target.value)}
+              value={form.maxUses}
+              onChange={(e) => handleChange("maxUses", e.target.value)}
               placeholder="e.g. 100"
               min="1"
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
         </div>
@@ -138,21 +209,19 @@ const CreateDiscountPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Start Date</label>
-            <input
+            <Input
               type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              value={form.startsAt}
+              onChange={(e) => handleChange("startsAt", e.target.value)}
             />
           </div>
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">End Date</label>
-            <input
+            <Input
               type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              value={form.expiresAt}
+              onChange={(e) => handleChange("expiresAt", e.target.value)}
             />
           </div>
         </div>
@@ -161,15 +230,12 @@ const CreateDiscountPage = () => {
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Status</label>
           <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            value={form.isActive ? "active" : "inactive"}
+            onChange={(e) => handleChange("isActive", e.target.value === "active")}
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
-            {statuses.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
-              </option>
-            ))}
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
           </select>
         </div>
       </Card>

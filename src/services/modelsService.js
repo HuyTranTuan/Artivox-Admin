@@ -25,4 +25,12 @@ export const modelsService = {
     });
     return response;
   },
+
+  // Update a model by slug
+  updateModel: async (slug, formData) => {
+    const response = await axiosClient.put(`/catalog/models/${slug}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };

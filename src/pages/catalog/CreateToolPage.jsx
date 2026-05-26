@@ -19,8 +19,6 @@ const CreateToolPage = () => {
     basePrice: "",
     stock: "0",
     collectionId: "",
-    brand: "",
-    modelName: "",
     specifications: "",
     isActive: true,
   });
@@ -77,8 +75,7 @@ const CreateToolPage = () => {
       formData.append("stock", form.stock);
       formData.append("isActive", form.isActive);
       
-      if (form.brand) formData.append("brand", form.brand);
-      if (form.modelName) formData.append("modelName", form.modelName);
+
       if (form.specifications) {
         try {
           const parsed = JSON.parse(form.specifications);
@@ -209,16 +206,6 @@ const CreateToolPage = () => {
         </div>
 
         <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">Tool Properties</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Brand</label>
-            <Input value={form.brand} onChange={(e) => handleChange("brand", e.target.value)} placeholder="Brand Name" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Model Name</label>
-            <Input value={form.modelName} onChange={(e) => handleChange("modelName", e.target.value)} placeholder="X-1000" />
-          </div>
-        </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Specifications (JSON or text)</label>
           <textarea

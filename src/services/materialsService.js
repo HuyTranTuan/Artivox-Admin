@@ -26,4 +26,12 @@ export const materialsService = {
     });
     return response;
   },
+
+  // Update a material by slug
+  updateMaterial: async (slug, formData) => {
+    const response = await axiosClient.put(`/catalog/materials/${slug}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response;
+  },
 };

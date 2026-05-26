@@ -75,6 +75,7 @@ const ChatPage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [customerListOpen, setCustomerListOpen] = useState(true);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [chatToast, setChatToast] = useState({ message: "", roomId: null, visible: false });
 
   // ── Load all staff rooms once ──
   useEffect(() => {
@@ -109,6 +110,10 @@ const ChatPage = () => {
 
     chatSocket.on("connect", () => {
       setConnectionStatus("connected");
+      // Join all existing rooms so admin receives messages from all customers
+      rooms.forEach((room) => {
+        chatSocket.emit("chat:join", { customerId: String(room.customerId) });
+      });
     });
 
     chatSocket.on("chat:message", (msg) => {
@@ -119,16 +124,17 @@ const ChatPage = () => {
     chatSocket.on("disconnect", () => setConnectionStatus("disconnected"));
     chatSocket.on("connect_error", () => setConnectionStatus("error"));
 
-    notifSocket.on("new_order", (data) => {
-      // In a real app we might use toast here
-      alert(`New order #${data.orderId} from Customer ${data.customerId} - ${data.total}`);
+    // Listen for chat notifications from customers
+    notifSocket.on("chat_notification", (data) => {
+      setChatToast({ message: `💬 ${data.title}: ${data.message}`, roomId: data.chatRoomId, visible: true });
+      setTimeout(() => setChatToast((prev) => ({ ...prev, visible: false })), 6000);
     });
 
     return () => {
       chatSocket.disconnect();
       notifSocket.disconnect();
     };
-  }, []);
+  }, [rooms]);
 
   // ── Join active room, leave others ──
   useEffect(() => {
@@ -217,6 +223,21 @@ const ChatPage = () => {
           <X className="h-4 w-4 text-red-500 shrink-0" />
           <span className="text-sm text-red-700">{uploadError}</span>
           <Button type="button" variant="ghost" className="h-6 w-6 p-0 ml-2" onClick={() => setUploadError(null)}><X className="h-3.5 w-3.5 text-red-400" /></Button>
+        </div>
+      )}
+
+      {chatToast.visible && (
+        <div
+          className="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg bg-blue-600 px-5 py-3 text-white shadow-xl cursor-pointer animate-in slide-in-from-top-2 hover:bg-blue-700 transition-colors"
+          onClick={() => {
+            if (chatToast.roomId) setActiveRoomId(chatToast.roomId);
+            setChatToast((prev) => ({ ...prev, visible: false }));
+          }}
+        >
+          <span className="text-sm font-medium">{chatToast.message}</span>
+          <button onClick={(e) => { e.stopPropagation(); setChatToast((prev) => ({ ...prev, visible: false })); }} className="text-white/70 hover:text-white ml-2">
+            <X className="h-4 w-4" />
+          </button>
         </div>
       )}
 

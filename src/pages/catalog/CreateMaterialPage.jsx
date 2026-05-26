@@ -19,11 +19,9 @@ const CreateMaterialPage = () => {
     basePrice: "",
     stock: "0",
     collectionId: "",
-    type: "",
+    type: "FDM",
     color: "",
-    textureFileUrl: "",
-    roughness: "0.5",
-    metalness: "0.0",
+    unit: "GRAM",
     isActive: true,
   });
 
@@ -78,12 +76,9 @@ const CreateMaterialPage = () => {
       formData.append("basePrice", form.basePrice);
       formData.append("stock", form.stock);
       formData.append("isActive", form.isActive);
-      
       formData.append("type", form.type);
       if (form.color) formData.append("color", form.color);
-      if (form.textureFileUrl) formData.append("textureFileUrl", form.textureFileUrl);
-      if (form.roughness) formData.append("roughness", form.roughness);
-      if (form.metalness) formData.append("metalness", form.metalness);
+      formData.append("unit", form.unit);
       if (form.collectionId) formData.append("collectionId", form.collectionId);
 
       if (thumbnailBefore?.file) {
@@ -206,28 +201,34 @@ const CreateMaterialPage = () => {
         </div>
 
         <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">Material Properties</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Type (e.g., leather, wood)</label>
-            <Input value={form.type} onChange={(e) => handleChange("type", e.target.value)} placeholder="leather" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Type</label>
+            <select
+              value={form.type}
+              onChange={(e) => handleChange("type", e.target.value)}
+              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+            >
+              <option value="FDM">FDM</option>
+              <option value="RESIN">RESIN</option>
+            </select>
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">Color (Hex/Name)</label>
             <Input value={form.color} onChange={(e) => handleChange("color", e.target.value)} placeholder="#FF0000" />
           </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Texture File URL</label>
-            <Input value={form.textureFileUrl} onChange={(e) => handleChange("textureFileUrl", e.target.value)} placeholder="https://..." />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Roughness (0.0 - 1.0)</label>
-            <Input type="number" step="0.1" min="0" max="1" value={form.roughness} onChange={(e) => handleChange("roughness", e.target.value)} placeholder="0.5" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Metalness (0.0 - 1.0)</label>
-            <Input type="number" step="0.1" min="0" max="1" value={form.metalness} onChange={(e) => handleChange("metalness", e.target.value)} placeholder="0.0" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">Unit</label>
+            <select
+              value={form.unit}
+              onChange={(e) => handleChange("unit", e.target.value)}
+              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+            >
+              <option value="GRAM">Gram</option>
+              <option value="PIECE">Piece</option>
+              <option value="ROLL">Roll</option>
+              <option value="BOX">Box</option>
+            </select>
           </div>
         </div>
       </Card>

@@ -193,7 +193,12 @@ export const Header = () => {
                       key={item.id}
                       onClick={() => {
                         setNotifications((cur) => cur.map((n) => (n.id === item.id ? { ...n, read: true } : n)));
-                        navigate(`/notifications/${item.id}`);
+                        // Navigate to chat page for chat notifications
+                        if (item.type === "CHAT_MESSAGE") {
+                          navigate("/support/chat");
+                        } else {
+                          navigate(`/notifications/${item.id}`);
+                        }
                         setNotificationOpen(false);
                       }}
                       className={`rounded-lg px-4 py-2.5 transition cursor-pointer ${item.read ? "hover:bg-slate-50" : "bg-amber-50 hover:bg-amber-100/80"}`}
