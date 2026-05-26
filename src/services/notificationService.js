@@ -7,7 +7,7 @@ export const notificationService = {
       const response = await axiosClient.get("/notifications", {
         params: { limit, offset },
       });
-      return response.data.data || [];
+      return response?.data?.data || response?.data || response;
     } catch (error) {
       console.warn("Failed to fetch notifications:", error);
       return [];
@@ -18,7 +18,7 @@ export const notificationService = {
   getNotificationById: async (id) => {
     try {
       const response = await axiosClient.get(`/notifications/${id}`);
-      return response.data.data;
+      return response?.data?.data || response?.data || response;
     } catch (error) {
       console.warn("Failed to fetch notification:", error);
       return null;

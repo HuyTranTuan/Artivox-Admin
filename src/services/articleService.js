@@ -2,12 +2,12 @@ import axiosClient from "@api/axios";
 
 const getArticles = async () => {
   const response = await axiosClient.get("/articles");
-  return response;
+  return response || [];
 };
 
 const getArticleBySlug = async (slug) => {
   const response = await axiosClient.get(`/articles/${slug}`);
-  return response;
+  return response?.data?.data || response?.data || response;
 };
 
 export const articleService = {
