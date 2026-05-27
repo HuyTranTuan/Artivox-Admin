@@ -34,4 +34,10 @@ export const materialsService = {
     });
     return response;
   },
+
+  // Delete a material by slug
+  deleteMaterial: async (slug) => {
+    const response = await axiosClient.delete(`/catalog/materials/${slug}`);
+    return response;
+  },
 };

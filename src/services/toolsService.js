@@ -33,4 +33,10 @@ export const toolsService = {
     });
     return response;
   },
+
+  // Delete a tool by slug
+  deleteTool: async (slug) => {
+    const response = await axiosClient.delete(`/catalog/tools/${slug}`);
+    return response;
+  },
 };

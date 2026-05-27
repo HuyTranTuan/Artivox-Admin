@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, ChevronLeft, ChevronRight, X, Plus, Eye } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, X, Plus, Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
@@ -20,27 +20,45 @@ const CollectionsPage = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedFilters, setSelectedFilters] = useState({ status: null });
+  const [openDialog, setOpenDialog] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
+  const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
+
+  const load = async () => {
+    try {
+      setLoading(true);
+      const data = await collectionService.getCollections();
+      setItems(Array.isArray(data) ? data : []);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (selectedItem) {
+      setDeleting(true);
+      try {
+        await collectionService.deleteCollection(selectedItem.slug);
+        setOpenDialog(null);
+        load();
+      } catch (err) {
+        console.error("Delete collection failed:", err);
+      } finally {
+        setDeleting(false);
+      }
+    }
+  };
 
   // Fetch collections from API
   useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const data = await collectionService.getCollections();
-        if (mounted) setItems(Array.isArray(data) ? data : []);
-      } catch {
-        if (mounted) setItems([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
     load();
-    return () => {
-      mounted = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -68,7 +86,7 @@ const CollectionsPage = () => {
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <h1 className="font-title text-2xl font-bold text-slate-950">{t("catalog.collections")}</h1>
-            <Button className="h-8 w-8 p-0 rounded-lg">
+            <Button className="h-8 w-8 p-0 rounded-lg" onClick={() => navigate("/catalog/collections/create")}>
               <Plus className="h-5 w-5" />
             </Button>
           </div>
@@ -138,6 +156,27 @@ const CollectionsPage = () => {
                         >
                           <Eye style={{ width: 18, height: 18 }} />
                         </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/catalog/collections/edit/${item.slug}`);
+                          }}
+                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+                          style={{ padding: 5 }}
+                        >
+                          <Edit style={{ width: 16, height: 16 }} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedItem(item);
+                            setOpenDialog("delete");
+                          }}
+                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-red-200 text-red-600 hover:bg-red-50 transition"
+                          style={{ padding: 5 }}
+                        >
+                          <Trash2 style={{ width: 16, height: 16 }} />
+                        </button>
                       </div>
                     </div>
                   ))
@@ -178,6 +217,25 @@ const CollectionsPage = () => {
           </div>
         </div>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      {openDialog === "delete" && selectedItem && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{t("catalog.deleteTitle")}</h2>
+            <p className="text-sm text-slate-600 mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
+            <div className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)} disabled={deleting}>
+                {t("catalog.cancel")}
+              </Button>
+              <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleting}>
+                {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                {t("catalog.delete")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

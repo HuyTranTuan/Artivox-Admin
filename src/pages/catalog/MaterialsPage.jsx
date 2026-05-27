@@ -63,6 +63,23 @@ const MaterialsPage = () => {
 
   const resetForm = () => setForm({ name: "", type: "", status: "Active", stock: "", price: "" });
 
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (selectedItem) {
+      setDeleting(true);
+      try {
+        await materialsService.deleteMaterial(selectedItem.slug);
+        setOpenDialog(null);
+        refetch();
+      } catch (err) {
+        console.error("Delete material failed:", err);
+      } finally {
+        setDeleting(false);
+      }
+    }
+  };
+
   const handleRowClick = (slug) => {
     navigate(`/catalog/materials/${slug}`);
   };
@@ -439,10 +456,11 @@ const MaterialsPage = () => {
             <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{t("catalog.deleteTitle")}</h2>
             <p className="text-sm text-slate-600 mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
+              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)} disabled={deleting}>
                 {t("catalog.cancel")}
               </Button>
-              <Button variant="destructive" className="flex-1" onClick={() => setOpenDialog(null)}>
+              <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleting}>
+                {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {t("catalog.delete")}
               </Button>
             </div>

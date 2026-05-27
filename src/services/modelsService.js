@@ -33,4 +33,10 @@ export const modelsService = {
     });
     return response;
   },
+
+  // Delete a model by slug
+  deleteModel: async (slug) => {
+    const response = await axiosClient.delete(`/catalog/models/${slug}`);
+    return response;
+  },
 };

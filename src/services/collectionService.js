@@ -36,4 +36,10 @@ export const collectionService = {
     });
     return response;
   },
+
+  // Delete a collection by slug
+  deleteCollection: async (slug) => {
+    const response = await axiosClient.delete(`/catalog/collections/${slug}`);
+    return response;
+  },
 };
