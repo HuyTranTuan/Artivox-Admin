@@ -314,7 +314,7 @@ const StaffAiChatPage = () => {
                   className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                     msg.sender === "staff"
                       ? "bg-slate-950 text-white"
-                      : "bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-slate-800"
+                      : "bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 text-slate-800"
                   }`}
                 >
                   {msg.sender === "ai" && (

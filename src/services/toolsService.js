@@ -3,8 +3,9 @@ import axiosClient from "@api/axios";
 export const toolsService = {
   // Fetch all tools with pagination
   getTools: async (params = {}) => {
-    const { limit = 20, skip = 0 } = params;
+    const { search = "", limit = 20, skip = 0 } = params;
     const query = new URLSearchParams();
+    if (search) query.set("search", search);
     if (limit) query.set("limit", limit);
     if (skip) query.set("skip", skip);
     const qs = query.toString();

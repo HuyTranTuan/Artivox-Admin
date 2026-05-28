@@ -3,8 +3,9 @@ import axiosClient from "@api/axios";
 export const materialsService = {
   // Fetch all materials with pagination
   getMaterials: async (params = {}) => {
-    const { type, limit = 20, skip = 0 } = params;
+    const { search = "", type, limit = 20, skip = 0 } = params;
     const query = new URLSearchParams();
+    if (search) query.set("search", search);
     if (type) query.set("type", type);
     if (limit) query.set("limit", limit);
     if (skip) query.set("skip", skip);
