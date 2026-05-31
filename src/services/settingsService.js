@@ -72,17 +72,12 @@ export const settingsService = {
   },
 
   // Update password
-  updatePassword: async (currentPassword, newPassword) => {
-    try {
-      const response = await axiosClient.patch("/settings/password", {
-        currentPassword,
-        newPassword,
-      });
-      return response.data.data;
-    } catch (error) {
-      console.warn("Failed to update password:", error);
-      return null;
-    }
+  updatePassword: async ({ currentPassword, newPassword }) => {
+    const response = await axiosClient.patch("/auth/admin/change-password", {
+      currentPassword,
+      newPassword,
+    });
+    return { success: true, data: response.data.data };
   },
 
   // Update notification preferences
