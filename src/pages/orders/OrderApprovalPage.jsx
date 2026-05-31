@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Eye, CheckCircle, XCircle, Search, Filter, ChevronLeft, ChevronRight, X, ArrowUpDown, Loader2 } from "lucide-react";
+import { Eye, CircleCheckBig, XCircle, Search, Filter, ChevronLeft, ChevronRight, X, ArrowUpDown, Loader2 } from "lucide-react";
 import { Card } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
@@ -241,7 +241,7 @@ const OrderApprovalPage = () => {
                                   style={{ padding: 5 }}
                                   title={t("approval.approve")}
                                 >
-                                  <CheckCircle style={{ width: 18, height: 18 }} />
+                                  <CircleCheckBig style={{ width: 18, height: 18 }} />
                                 </button>
                                 <button
                                   onClick={() => handleReject(item.id)}
