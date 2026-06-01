@@ -10,7 +10,7 @@ export const dashboardService = {
   getAdminDashboard: async () => {
     try {
       const response = await axiosClient.get("/admin/dashboard");
-      return response?.data?.data || response?.data || response;
+      return response?.data || response;
     } catch (error) {
       console.warn("Admin dashboard API failed:", error);
       return null;
@@ -19,8 +19,8 @@ export const dashboardService = {
 
   getStaffDashboard: async () => {
     try {
-      const response = await axiosClient.get("/staff/dashboard");
-      return response?.data?.data || response?.data || response;
+      const response = await axiosClient.get("/admin/staff/dashboard");
+      return response?.data || response;
     } catch (error) {
       console.warn("Staff dashboard API failed:", error);
       return null;

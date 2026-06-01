@@ -7,11 +7,10 @@ const formatDate = (value) => {
 };
 
 const formatPrice = (value) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-    maximumFractionDigits: 0,
-  }).format(Number(value || 0));
+  const num = Number(value || 0);
+  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M VND`;
+  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K VND`;
+  return `${num.toLocaleString("vi-VN")} VND`;
 };
 
 export { formatDate, formatPrice };

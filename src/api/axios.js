@@ -21,7 +21,6 @@ const _send = async (method, path, data, config) => {
       data,
       ...config,
     });
-    toastTopRight("success", HTTP_CODE.HTTP_STATUS[200]);
     return response?.data;
   } catch (error) {
     switch (error.response?.status) {

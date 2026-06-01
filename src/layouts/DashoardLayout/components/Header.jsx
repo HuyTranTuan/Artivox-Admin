@@ -9,24 +9,28 @@ import { useUiStore } from "@store/uiStore";
 import { useNotificationSocket } from "@hooks/useNotificationSocket";
 import { useTranslation } from "@hooks/useTranslation";
 
-const initialNotifications = [
-  { id: 1, title: "New refund request", description: "Order #AVX-201 needs approval.", read: false },
-  { id: 2, title: "Low stock alert", description: "Resin Material 08 is below threshold.", read: false },
-  { id: 3, title: "Campaign published", description: "Summer Launch article is now live.", read: true },
-];
-
 const ThemeSwitch = ({ theme, onChange }) => {
   const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 px-2 py-2">
-      <span className={`text-xs font-medium ${theme === "dark" ? "text-slate-300" : "text-slate-500"}`}>{t("header.light")}</span>
+      <span
+        className={`text-xs font-medium ${theme === "dark" ? "text-slate-300" : "text-slate-500"}`}
+      >
+        {t("header.light")}
+      </span>
       <button
         onClick={() => onChange(theme === "light" ? "dark" : "light")}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${theme === "dark" ? "bg-amber-500" : "bg-slate-200"}`}
       >
-        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === "dark" ? "translate-x-6" : "translate-x-1"}`} />
+        <span
+          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === "dark" ? "translate-x-6" : "translate-x-1"}`}
+        />
       </button>
-      <span className={`text-xs font-medium ${theme === "dark" ? "text-slate-300" : "text-slate-500"}`}>{t("header.dark")}</span>
+      <span
+        className={`text-xs font-medium ${theme === "dark" ? "text-slate-300" : "text-slate-500"}`}
+      >
+        {t("header.dark")}
+      </span>
     </div>
   );
 };
@@ -35,7 +39,11 @@ const LanguageSwitch = ({ language, onChange, theme }) => {
   const { t } = useTranslation();
   return (
     <div className="flex items-center gap-2 px-2 py-2">
-      <span className={`text-xs font-medium ${theme === "dark" ? "text-white" : "text-slate-500"}`}>{t("header.en")}</span>
+      <span
+        className={`text-xs font-medium ${theme === "dark" ? "text-white" : "text-slate-500"}`}
+      >
+        {t("header.en")}
+      </span>
       <button
         onClick={() => onChange(language === "en" ? "vi" : "en")}
         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${language === "vi" ? "bg-amber-500" : "bg-slate-200"}`}
@@ -46,7 +54,11 @@ const LanguageSwitch = ({ language, onChange, theme }) => {
           {language === "vi" ? t("header.vn") : t("header.en")}
         </span>
       </button>
-      <span className={`text-xs font-medium ${theme === "dark" ? "text-white" : "text-slate-500"}`}>{t("header.vn")}</span>
+      <span
+        className={`text-xs font-medium ${theme === "dark" ? "text-white" : "text-slate-500"}`}
+      >
+        {t("header.vn")}
+      </span>
     </div>
   );
 };
@@ -54,14 +66,25 @@ const LanguageSwitch = ({ language, onChange, theme }) => {
 export const Header = () => {
   const navigate = useNavigate();
   const { user, handleSignOut } = useAuth();
-  const { toggleSidebar, toggleMobileSidebar, theme, setTheme, currentLanguage, setCurrentLanguage } = useUiStore();
+  const {
+    toggleSidebar,
+    toggleMobileSidebar,
+    theme,
+    setTheme,
+    currentLanguage,
+    setCurrentLanguage,
+  } = useUiStore();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   const search = useExpandableSearch();
 
-  const socketNotifications = useNotificationSocket(user?.staffId || user?.id, user?.id, !!user?.id);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const socketNotifications = useNotificationSocket(
+    user?.staffId || user?.id,
+    user?.id,
+    !!user?.id,
+  );
+  const [notifications, setNotifications] = useState([]);
 
   const { t } = useTranslation();
 
@@ -80,8 +103,17 @@ export const Header = () => {
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
 
-  const unreadCount = useMemo(() => notifications.filter((item) => !item.read).length, [notifications]);
-  const visibleNotifications = useMemo(() => (showUnreadOnly ? notifications.filter((item) => !item.read) : notifications), [notifications, showUnreadOnly]);
+  const unreadCount = useMemo(
+    () => notifications.filter((item) => !item.read).length,
+    [notifications],
+  );
+  const visibleNotifications = useMemo(
+    () =>
+      showUnreadOnly
+        ? notifications.filter((item) => !item.read)
+        : notifications,
+    [notifications, showUnreadOnly],
+  );
 
   const handleToggle = () => {
     if (window.innerWidth < 1024) toggleMobileSidebar();
@@ -90,8 +122,13 @@ export const Header = () => {
 
   useEffect(() => {
     const handler = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) setUserMenuOpen(false);
-      if (notificationRef.current && !notificationRef.current.contains(event.target)) setNotificationOpen(false);
+      if (menuRef.current && !menuRef.current.contains(event.target))
+        setUserMenuOpen(false);
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target)
+      )
+        setNotificationOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -106,21 +143,34 @@ export const Header = () => {
     setCurrentLanguage(lang);
   };
 
-  const roleLabel = user?.role === "ADMIN" ? t("header.artivoxAdmin") : t("header.artivoxStaff");
+  const roleLabel =
+    user?.role === "ADMIN"
+      ? t("header.artivoxAdmin")
+      : t("header.artivoxStaff");
 
   return (
     <header
       className={`sticky top-0 z-30 flex items-center justify-between gap-3 border-b px-4 py-3 backdrop-blur lg:px-6 ${
-        theme === "dark" ? "border-slate-800 bg-slate-900/80" : "border-slate-200/70 bg-white/70"
+        theme === "dark"
+          ? "border-slate-800 bg-slate-900/80"
+          : "border-slate-200/70 bg-white/70"
       }`}
     >
       {/* Left: Menu + Title */}
       <div className="flex items-center gap-2 shrink-0">
-        <Button variant="ghost" className="flex justify-center items-center h-10 w-10 rounded-xl px-0! py-0!" onClick={handleToggle}>
+        <Button
+          variant="ghost"
+          className="flex justify-center items-center h-10 w-10 rounded-xl px-0! py-0!"
+          onClick={handleToggle}
+        >
           <Menu className="[&>svg]:w-8 [&>svg]:h-8 ![&>svg]:stroke-3" />
         </Button>
         <div className="min-w-0">
-          <div className={`font-title text-sm lg:text-base font-bold truncate ${theme === "dark" ? "text-white" : "text-slate-950"}`}>{roleLabel}</div>
+          <div
+            className={`font-title text-sm lg:text-base font-bold truncate ${theme === "dark" ? "text-white" : "text-slate-950"}`}
+          >
+            {roleLabel}
+          </div>
         </div>
       </div>
 
@@ -141,20 +191,32 @@ export const Header = () => {
                 }}
               />
               {search.value ? (
-                <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700" onClick={search.clear}>
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  onClick={search.clear}
+                >
                   <X className="h-4 w-4" />
                 </button>
               ) : null}
             </div>
           ) : null}
-          <Button variant="ghost" className="h-10 w-10 rounded-xl p-0!" onClick={search.submit}>
+          <Button
+            variant="ghost"
+            className="h-10 w-10 rounded-xl p-0!"
+            onClick={search.submit}
+          >
             <Search className="[&>svg]:w-8 [&>svg]:h-8 ![&>svg]:stroke-3" />
           </Button>
         </div>
 
         {/* Notifications */}
         <div className="relative" ref={notificationRef}>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-xl p-0!" onClick={() => setNotificationOpen(!notificationOpen)}>
+          <Button
+            variant="ghost"
+            className="relative h-10 w-10 rounded-xl p-0!"
+            onClick={() => setNotificationOpen(!notificationOpen)}
+          >
             <Bell className="[&>svg]:w-8 [&>svg]:h-8 ![&>svg]:stroke-3" />
             {unreadCount ? (
               <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
@@ -181,9 +243,19 @@ export const Header = () => {
               style={{ zIndex: 900 }}
             >
               <div className="flex items-center justify-between px-4 py-2">
-                <div className={`font-title text-sm font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}>{t("header.notifications")}</div>
-                <button type="button" className="text-xs font-semibold text-amber-600 hover:text-amber-700" onClick={() => setShowUnreadOnly((p) => !p)}>
-                  {showUnreadOnly ? t("header.showAll") : t("header.showUnread")}
+                <div
+                  className={`font-title text-sm font-semibold ${theme === "dark" ? "text-white" : "text-slate-900"}`}
+                >
+                  {t("header.notifications")}
+                </div>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-amber-600 hover:text-amber-700"
+                  onClick={() => setShowUnreadOnly((p) => !p)}
+                >
+                  {showUnreadOnly
+                    ? t("header.showAll")
+                    : t("header.showUnread")}
                 </button>
               </div>
               <div className="space-y-1">
@@ -192,7 +264,11 @@ export const Header = () => {
                     <div
                       key={item.id}
                       onClick={() => {
-                        setNotifications((cur) => cur.map((n) => (n.id === item.id ? { ...n, read: true } : n)));
+                        setNotifications((cur) =>
+                          cur.map((n) =>
+                            n.id === item.id ? { ...n, read: true } : n,
+                          ),
+                        );
                         // Navigate to chat page for chat notifications
                         if (item.type === "CHAT_MESSAGE") {
                           navigate("/support/chat");
@@ -204,16 +280,30 @@ export const Header = () => {
                       className={`rounded-lg px-4 py-2.5 transition cursor-pointer ${item.read ? "hover:bg-slate-50" : "bg-amber-50 hover:bg-amber-100/80"}`}
                     >
                       <div className="flex items-start gap-2.5">
-                        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.read ? "bg-slate-200" : "bg-amber-500"}`} />
+                        <span
+                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.read ? "bg-slate-200" : "bg-amber-500"}`}
+                        />
                         <div className="flex-1 min-w-0">
-                          <div className={`text-sm font-semibold truncate ${theme === "dark" ? "text-white" : "text-slate-900"}`}>{item.title}</div>
-                          <div className={`mt-0.5 text-xs truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}>{item.description}</div>
+                          <div
+                            className={`text-sm font-semibold truncate ${theme === "dark" ? "text-white" : "text-slate-900"}`}
+                          >
+                            {item.title}
+                          </div>
+                          <div
+                            className={`mt-0.5 text-xs truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}
+                          >
+                            {item.description}
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div className={`px-4 py-6 text-center text-sm ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}>{t("header.noNotifications")}</div>
+                  <div
+                    className={`px-4 py-6 text-center text-sm ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}
+                  >
+                    {t("header.noNotifications")}
+                  </div>
                 )}
               </div>
             </div>
@@ -230,7 +320,11 @@ export const Header = () => {
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
             <div className="hidden lg:block min-w-0 max-w-30">
-              <div className={`text-[11px] leading-tight truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}>{user?.email || "user@artivox.vn"}</div>
+              <div
+                className={`text-[11px] leading-tight truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}
+              >
+                {user?.email || "user@artivox.vn"}
+              </div>
             </div>
           </button>
 
@@ -240,18 +334,34 @@ export const Header = () => {
               style={{ zIndex: 900 }}
             >
               <div className="px-4 py-3">
-                <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${theme === "dark" ? "text-white" : "text-slate-500"}`}>{t("header.theme")}</div>
+                <div
+                  className={`text-xs font-semibold uppercase tracking-wider mb-2 ${theme === "dark" ? "text-white" : "text-slate-500"}`}
+                >
+                  {t("header.theme")}
+                </div>
                 <ThemeSwitch theme={theme} onChange={handleThemeChange} />
               </div>
 
-              <div className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`} />
+              <div
+                className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`}
+              />
 
               <div className="px-4 py-3">
-                <div className={`text-xs font-semibold uppercase tracking-wider mb-2 ${theme === "dark" ? "text-white" : "text-slate-500"}`}>{t("header.language")}</div>
-                <LanguageSwitch language={currentLanguage} onChange={handleLanguageChange} theme={theme} />
+                <div
+                  className={`text-xs font-semibold uppercase tracking-wider mb-2 ${theme === "dark" ? "text-white" : "text-slate-500"}`}
+                >
+                  {t("header.language")}
+                </div>
+                <LanguageSwitch
+                  language={currentLanguage}
+                  onChange={handleLanguageChange}
+                  theme={theme}
+                />
               </div>
 
-              <div className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`} />
+              <div
+                className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`}
+              />
 
               <button
                 onClick={() => {
@@ -260,11 +370,15 @@ export const Header = () => {
                 }}
                 className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"}`}
               >
-                <Settings2 className={`h-4 w-4 shrink-0 ${theme === "dark" ? "text-white" : "text-slate-500"}`} />
+                <Settings2
+                  className={`h-4 w-4 shrink-0 ${theme === "dark" ? "text-white" : "text-slate-500"}`}
+                />
                 <span>{t("header.settings")}</span>
               </button>
 
-              <div className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`} />
+              <div
+                className={`mx-2 border-t ${theme === "dark" ? "border-slate-800" : "border-slate-100"}`}
+              />
 
               <button
                 onClick={() => {
