@@ -14,6 +14,7 @@ const RegisterPage = lazy(() => import("@pages/auth/RegisterPage"));
 const ArticleDetailPage = lazy(() => import("@pages/articles/ArticleDetailPage"));
 const ArticlesPage = lazy(() => import("@/pages/campaigns/ArticlesPage"));
 const CreateArticlePage = lazy(() => import("@pages/campaigns/CreateArticlePage"));
+const EditArticlePage = lazy(() => import("@/pages/campaigns/EditArticlePage"));
 const DiscountsPage = lazy(() => import("@/pages/campaigns/DiscountsPage"));
 const CreateDiscountPage = lazy(() => import("@/pages/campaigns/CreateDiscountPage"));
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
@@ -78,6 +79,10 @@ const AppRouter = createBrowserRouter([
           {
             path: "articles/create",
             element: withLazyLoad(CreateArticlePage),
+          },
+          {
+            path: "articles/:slug/edit",
+            element: withLazyLoad(EditArticlePage),
           },
           {
             path: "articles/:slug",

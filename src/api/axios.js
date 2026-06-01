@@ -52,6 +52,7 @@ const _send = async (method, path, data, config) => {
 
 const get = async (path, config) => {
   const result = await _send("get", path, null, config);
+  if (result?.pagination) return result;
   return result?.data || result;
 };
 const post = async (path, data, config) => {

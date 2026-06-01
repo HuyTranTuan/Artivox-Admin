@@ -4,7 +4,8 @@ import { useAuthStore } from "@store/authStore";
 
 export const useAuth = () => {
   const navigate = useNavigate();
-  const { signIn, signOut, refreshAuth, user, accessToken, refreshToken, name } = useAuthStore();
+  const { signIn, signOut, refreshAuth, user, accessToken, refreshToken, name } =
+    useAuthStore();
 
   const handleSignIn = async (payload) => {
     const response = await authService.signIn(payload);

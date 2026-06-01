@@ -8,6 +8,7 @@ import {
   Pencil,
   RefreshCw,
   Trash2,
+  CheckCircle,
 } from "lucide-react";
 import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
@@ -16,6 +17,7 @@ import { Card } from "@components/ui/card";
 import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 import { useUiStore } from "@store/uiStore";
+import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
 
 const normalizeArticle = (currentLang, rawItem, index = 0) => {
@@ -50,8 +52,29 @@ const ArticlesPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
+  const { user } = useAuthStore();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
+  const permission = useMemo(() => {
+    if (!user?.permission) return {};
+    if (typeof user.permission === "object") return user.permission;
+    try {
+      const validJsonString = user.permission.replace(
+        /([a-zA-Z0-9_]+)(?=\s*:)/g,
+        '"$1"',
+      );
+      return JSON.parse(validJsonString);
+    } catch (e) {
+      console.error("Failed to parse permission string", e);
+      return {};
+    }
+  }, [user]);
+
+  const canCreate = isAdmin || permission.create;
+  const canUpdate = isAdmin || permission.update;
+  const canDelete = isAdmin || permission.del;
 
   const loadArticles = useCallback(async () => {
     setLoading(true);
@@ -74,6 +97,28 @@ const ArticlesPage = () => {
 
   const handleView = (slug) => {
     navigate(`/articles/${slug}`);
+  };
+
+  const handleDelete = async (slug) => {
+    if (window.confirm("Are you sure to delete this article?")) {
+      try {
+        await articleService.deleteArticle(slug);
+        loadArticles();
+      } catch (error) {
+        console.error("Failed to delete article", error);
+      }
+    }
+  };
+
+  const handleApprove = async (id) => {
+    if (window.confirm("Are you sure to publish this article?")) {
+      try {
+        await articleService.approveArticle(id);
+        loadArticles();
+      } catch (error) {
+        console.error("Failed to approve article", error);
+      }
+    }
   };
 
   const dynamicStats = useMemo(() => {
@@ -144,6 +189,7 @@ const ArticlesPage = () => {
             <Button
               className="gap-2"
               onClick={() => navigate("/articles/create")}
+              disabled={!canCreate}
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -209,18 +255,33 @@ const ArticlesPage = () => {
                         >
                           <Eye style={{ width: 18, height: 18 }} />
                         </button>
-                        <button
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Pencil style={{ width: 18, height: 18 }} />
-                        </button>
-                        <button
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Trash2 style={{ width: 18, height: 18 }} />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={() => navigate(`/articles/${item.slug}/edit`)}
+                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+                            style={{ padding: 5 }}
+                          >
+                            <Pencil style={{ width: 18, height: 18 }} />
+                          </button>
+                        )}
+                        {isAdmin && (!item.publishedAt) && (
+                          <button
+                            onClick={() => handleApprove(item.id)}
+                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
+                            style={{ padding: 5 }}
+                          >
+                            <CheckCircle style={{ width: 18, height: 18 }} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(item.slug)}
+                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+                            style={{ padding: 5 }}
+                          >
+                            <Trash2 style={{ width: 18, height: 18 }} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))

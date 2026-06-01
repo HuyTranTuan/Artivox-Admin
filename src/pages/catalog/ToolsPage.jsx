@@ -1,6 +1,22 @@
 import { useMemo, useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Eye, Edit, Trash2, Grid3x3, List, Search, Filter, ChevronLeft, ChevronRight, X, Plus, ImageIcon, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router";
+import {
+  Eye,
+  Edit,
+  Trash2,
+  Grid3x3,
+  List,
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Plus,
+  ImageIcon,
+  Loader2,
+  Upload,
+  GripVertical,
+} from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
@@ -9,14 +25,57 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
-import { useTranslation } from "@hooks/useTranslation";
 import { toolsService } from "@services/toolsService";
+import { useAuthStore } from "@store/authStore";
 import ImageGalleryModal from "@components/ui/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
+import ImageUploadBox from "@components/ImageUploadBox";
+import { useTranslation } from "react-i18next";
+
+const ThumbnailPreview = ({ images, onClick }) => {
+  if (!images || images.length === 0) {
+    return (
+      <div
+        onClick={onClick}
+        className="h-16 w-16 rounded-lg bg-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition border border-slate-200"
+      >
+        <ImageIcon className="h-5 w-5 text-slate-400" />
+      </div>
+    );
+  }
+  const imgSrc =
+    typeof images[0] === "string"
+      ? images[0]
+      : images[0]?.thumb || images[0]?.url;
+  return (
+    <div className="relative group" onClick={onClick}>
+      <img
+        src={imgSrc}
+        alt="thumbnail"
+        className="h-16 w-16 rounded-lg object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
+        onError={(e) => {
+          e.target.style.display = "none";
+        }}
+      />
+      {images.length > 1 && (
+        <span className="absolute -bottom-1.5 -right-1.5 bg-amber-500 text-white text-[9px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
+          +{images.length - 1}
+        </span>
+      )}
+    </div>
+  );
+};
 
 const ToolsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuthStore();
+
+  const isAdmin = user?.role === "ADMIN";
+  const canCreate = isAdmin || user?.permission?.create;
+  const canUpdate = isAdmin || user?.permission?.update;
+  const canDelete = isAdmin || user?.permission?.del;
+
   const {
     data: items,
     loading,
@@ -28,13 +87,31 @@ const ToolsPage = () => {
     nextPage,
     prevPage,
     refetch,
-  } = usePaginatedApi((params) => toolsService.getTools({ ...params }), { defaultLimit: 20, pageParam: "page" });
+  } = usePaginatedApi((params) => toolsService.getTools({ ...params }), {
+    defaultLimit: 20,
+    pageParam: "page",
+  });
   const [viewMode, setViewMode] = useState("table");
   const [filterOpen, setFilterOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedFilters, setSelectedFilters] = useState({ category: null, status: null });
-  const [form, setForm] = useState({ name: "", category: "", status: "Active", stock: "", price: "" });
+  const [selectedFilters, setSelectedFilters] = useState({ status: null });
+  const [form, setForm] = useState({
+    name: "",
+    slug: "",
+    description: "",
+    specifications: "",
+    isActive: true,
+    stock: "0",
+    basePrice: "0",
+  });
+  const [saving, setSaving] = useState(false);
+  const [formGalleryImages, setFormGalleryImages] = useState([]);
+  const [thumbnailBefore, setThumbnailBefore] = useState(null);
+  const [thumbnailAfter, setThumbnailAfter] = useState(null);
+  const thumbnailBeforeRef = useRef(null);
+  const thumbnailAfterRef = useRef(null);
+  const galleryInputRef = useRef(null);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -53,13 +130,58 @@ const ToolsPage = () => {
     setGalleryOpen(true);
   };
 
-  const categories = [...new Set(items.map((item) => item.category).filter(Boolean))];
-  const statuses = [...new Set(items.map((item) => item.status).filter(Boolean))];
+  const statuses = ["Active", "Inactive"];
 
   const filteredItems = useMemo(
-    () => items.filter((item) => (!selectedFilters.category || item.category === selectedFilters.category) && (!selectedFilters.status || item.status === selectedFilters.status)),
+    () =>
+      items.filter((item) => {
+        const itemStatus = item.isActive ? "Active" : "Inactive";
+        return !selectedFilters.status || itemStatus === selectedFilters.status;
+      }),
     [items, selectedFilters],
   );
+
+  const handleEdit = (item) => {
+    setSelectedItem(item);
+    setOpenDialog("edit");
+    setForm({
+      name: item.name || "",
+      slug: item.slug || "",
+      description: item.description || "",
+      basePrice: item.basePrice?.toString() || "0",
+      stock: item.stock?.toString() || "0",
+      isActive: item.isActive,
+      specifications: item.tool?.specifications || "",
+    });
+
+    const thumbBefore = item.images?.find(
+      (img) => img.role === "THUMBNAIL_BEFORE",
+    );
+    const thumbAfter = item.images?.find(
+      (img) => img.role === "THUMBNAIL_AFTER",
+    );
+    const gallery = item.images?.filter((img) => img.role === "GALLERY") || [];
+
+    setThumbnailBefore(
+      thumbBefore
+        ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true }
+        : null,
+    );
+    setThumbnailAfter(
+      thumbAfter
+        ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
+        : null,
+    );
+    setFormGalleryImages(
+      gallery.map((img) => ({
+        preview: img.url,
+        id: img.id,
+        isExisting: true,
+        alt: img.altText || "Gallery Image",
+        file: null,
+      })),
+    );
+  };
 
   const [deleting, setDeleting] = useState(false);
 
@@ -78,11 +200,80 @@ const ToolsPage = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    if (openDialog === "edit" && selectedItem) {
+      setSaving(true);
+      try {
+        const formData = new FormData();
+        formData.append("name", form.name);
+        formData.append("description", form.description);
+        formData.append("basePrice", form.basePrice);
+        formData.append("stock", form.stock);
+        formData.append("isActive", form.isActive);
+        formData.append("specifications", form.specifications);
+
+        if (thumbnailBefore?.file) {
+          const ext = thumbnailBefore.file.name.split(".").pop();
+          formData.append(
+            "thumbnail_before",
+            thumbnailBefore.file,
+            `thumbnail_before.${ext}`,
+          );
+        }
+        if (thumbnailAfter?.file) {
+          const ext = thumbnailAfter.file.name.split(".").pop();
+          formData.append(
+            "thumbnail_after",
+            thumbnailAfter.file,
+            `thumbnail_after.${ext}`,
+          );
+        }
+
+        formGalleryImages.forEach((img) => {
+          if (img.file) {
+            formData.append("gallery", img.file);
+          }
+        });
+
+        await toolsService.updateTool(selectedItem.slug, formData);
+        setOpenDialog(null);
+        refetch();
+      } catch (err) {
+        console.error("Update tool failed:", err);
+      } finally {
+        setSaving(false);
+      }
+    }
+  };
+
+  const handleImageChange = (setter) => (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setter({ file, preview: URL.createObjectURL(file), isExisting: false });
+    e.target.value = "";
+  };
+
+  const handleGalleryAdd = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      isExisting: false,
+    }));
+    setFormGalleryImages((prev) => [...prev, ...newImages]);
+    e.target.value = "";
+  };
+
+  const removeGalleryImage = (idx) => {
+    setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const handleRowClick = (slug) => {
     navigate(`/catalog/tools/${slug}`);
   };
 
-  const ActionButtons = ({ item }) => (
+  const renderActionButtons = (item) => (
     <div className="flex gap-1.5">
       <button
         onClick={(e) => {
@@ -94,66 +285,249 @@ const ToolsPage = () => {
       >
         <Eye style={{ width: 18, height: 18 }} />
       </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedItem(item);
-          setOpenDialog("edit");
-          setForm({ name: item.name, category: item.category, status: item.status, stock: String(item.stock ?? ""), price: String(item.price ?? "") });
-        }}
-        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-        style={{ padding: 5 }}
-      >
-        <Edit style={{ width: 18, height: 18 }} />
-      </button>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setSelectedItem(item);
-          setOpenDialog("delete");
-        }}
-        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-        style={{ padding: 5 }}
-      >
-        <Trash2 style={{ width: 18, height: 18 }} />
-      </button>
+      {canUpdate && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(item);
+          }}
+          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+          style={{ padding: 5 }}
+        >
+          <Edit style={{ width: 18, height: 18 }} />
+        </button>
+      )}
+      {canDelete && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedItem(item);
+            setOpenDialog("delete");
+          }}
+          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+          style={{ padding: 5 }}
+        >
+          <Trash2 style={{ width: 18, height: 18 }} />
+        </button>
+      )}
     </div>
   );
 
-  const ThumbnailPreview = ({ images, onClick }) => {
-    if (!images || images.length === 0) {
-      return (
-        <div onClick={onClick} className="h-16 w-16 rounded-lg bg-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition border border-slate-200">
-          <ImageIcon className="h-5 w-5 text-slate-400" />
+  const renderFormModal = () => (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center overflow-y-auto">
+      <div
+        ref={dialogRef}
+        className="bg-white rounded-2xl shadow-xl p-6 max-w-4xl w-full mx-4 my-8"
+      >
+        <h2 className="font-title text-xl font-bold text-slate-900 mb-6">
+          {openDialog === "create"
+            ? t("catalog.addNewTool")
+            : t("catalog.editTool")}
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="space-y-4">
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
+              Information
+            </h3>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("catalog.name")}
+              </label>
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-500">
+                Slug (Read-only)
+              </label>
+              <Input
+                value={form.slug}
+                readOnly
+                className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("catalog.description")}
+              </label>
+              <textarea
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                rows={3}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-slate-700">
+                  {t("catalog.price")} (VND)
+                </label>
+                <Input
+                  type="number"
+                  value={form.basePrice}
+                  onChange={(e) =>
+                    setForm({ ...form, basePrice: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-700">
+                  {t("catalog.stock")}
+                </label>
+                <Input
+                  type="number"
+                  value={form.stock}
+                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("catalog.status")}
+              </label>
+              <select
+                value={form.isActive ? "active" : "inactive"}
+                onChange={(e) =>
+                  setForm({ ...form, isActive: e.target.value === "active" })
+                }
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">
+              Tool Specifics
+            </h3>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                Specifications
+              </label>
+              <textarea
+                value={form.specifications}
+                onChange={(e) =>
+                  setForm({ ...form, specifications: e.target.value })
+                }
+                rows={3}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+                placeholder="Dimensions, Weight, Material..."
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
+              Images
+            </h3>
+            <ImageUploadBox
+              label="Thumbnail Before"
+              value={thumbnailBefore}
+              onClear={() => setThumbnailBefore(null)}
+              inputRef={thumbnailBeforeRef}
+              onChange={handleImageChange(setThumbnailBefore)}
+              recommended="150x150"
+              t={t}
+            />
+            <ImageUploadBox
+              label="Thumbnail After"
+              value={thumbnailAfter}
+              onClear={() => setThumbnailAfter(null)}
+              inputRef={thumbnailAfterRef}
+              onChange={handleImageChange(setThumbnailAfter)}
+              recommended="150x150"
+              t={t}
+            />
+            <div>
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+                Gallery ({formGalleryImages.length})
+              </label>
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-slate-50/50">
+                {formGalleryImages.length === 0 ? (
+                  <div className="text-center py-4 text-xs text-slate-400">
+                    {t("catalog.noImages")}
+                  </div>
+                ) : (
+                  formGalleryImages.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-slate-100 shadow-sm"
+                    >
+                      <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
+                      <img
+                        src={img.preview}
+                        alt={img.alt || `Gallery ${idx + 1}`}
+                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                      />
+                      <span className="flex-1 text-xs text-slate-600 truncate">
+                        {img.file?.name || img.alt || `Image ${idx + 1}`}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryImage(idx)}
+                        className="text-rose-500 hover:text-rose-700 shrink-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+              <input
+                ref={galleryInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleGalleryAdd}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300"
+                onClick={() => galleryInputRef.current?.click()}
+              >
+                <Plus className="h-3.5 w-3.5" />
+                {t("catalog.addImages")}
+              </Button>
+            </div>
+          </div>
         </div>
-      );
-    }
-    const imgSrc = typeof images[0] === "string" ? images[0] : images[0]?.thumb || images[0]?.url;
-    return (
-      <div className="relative group" onClick={onClick}>
-        <img
-          src={imgSrc}
-          alt="thumbnail"
-          className="h-16 w-16 rounded-lg object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
-          onError={(e) => {
-            e.target.style.display = "none";
-          }}
-        />
-        {images.length > 1 && (
-          <span className="absolute -bottom-1.5 -right-1.5 bg-amber-500 text-white text-[9px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
-            +{images.length - 1}
-          </span>
-        )}
+
+        <div className="flex gap-3 pt-4 border-t border-slate-100">
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setOpenDialog(null)}
+            disabled={saving}
+          >
+            {t("catalog.cancel")}
+          </Button>
+          <Button
+            className="flex-1 gap-2"
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+            {openDialog === "create" ? t("catalog.create") : t("catalog.save")}
+          </Button>
+        </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   if (error) {
     return (
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-center py-8">
-            <div className="text-rose-500 font-semibold mb-2">{t("catalog.errorLoading")}</div>
+            <div className="text-rose-500 font-semibold mb-2">
+              {t("catalog.errorLoading")}
+            </div>
             <div className="text-sm text-slate-500 mb-4">{error}</div>
             <Button onClick={refetch}>{t("catalog.retry")}</Button>
           </div>
@@ -167,8 +541,15 @@ const ToolsPage = () => {
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="font-title text-2xl font-bold text-slate-950">{t("catalog.tools")}</h1>
-            <Button variant="outline-orange" className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold" onClick={() => navigate("/catalog/tools/create")}>
+            <h1 className="font-title text-2xl font-bold text-slate-950">
+              {t("catalog.tools")}
+            </h1>
+            <Button
+              variant="outline-orange"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
+              onClick={() => navigate("/catalog/tools/create")}
+              disabled={!canCreate}
+            >
               <Plus className="h-5 w-5" /> {t("catalog.addNew")}
             </Button>
           </div>
@@ -187,52 +568,68 @@ const ToolsPage = () => {
                     }}
                   />
                   {search.value ? (
-                    <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700" onClick={search.clear}>
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                      onClick={search.clear}
+                    >
                       <X className="h-4 w-4" />
                     </button>
                   ) : null}
                 </div>
               ) : null}
-              <Button variant="ghost" className="h-10 w-10 p-0" onClick={search.submit}>
+              <Button
+                variant="ghost"
+                className="h-10 w-10 p-0"
+                onClick={search.submit}
+              >
                 <Search style={{ width: 18, height: 18 }} />
               </Button>
             </div>
             <div className="relative">
-              <Button variant={filterOpen ? "default" : "ghost"} className="h-10 w-10 p-0" onClick={() => setFilterOpen(!filterOpen)}>
+              <Button
+                variant={filterOpen ? "default" : "ghost"}
+                className="h-10 w-10 p-0"
+                onClick={() => setFilterOpen(!filterOpen)}
+              >
                 <Filter className="h-5 w-5" />
               </Button>
               {filterOpen && (
-                <div ref={filterRef} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10">
+                <div
+                  ref={filterRef}
+                  className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10"
+                >
                   <div className="space-y-4">
-                    <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.category")}</div>
-                      {categories.map((category) => (
-                        <label key={category} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedFilters.category === category}
-                            onChange={() => setSelectedFilters((prev) => ({ ...prev, category: prev.category === category ? null : category }))}
-                            className="rounded"
-                          />
-                          <span className="text-sm">{category}</span>
-                        </label>
-                      ))}
-                    </div>
                     <div className="border-t pt-4">
-                      <div className="text-xs font-semibold text-slate-900 mb-2">{t("catalog.status")}</div>
+                      <div className="text-xs font-semibold text-slate-900 mb-2">
+                        {t("catalog.status")}
+                      </div>
                       {statuses.map((status) => (
-                        <label key={status} className="flex items-center gap-2 cursor-pointer">
+                        <label
+                          key={status}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
                           <input
                             type="checkbox"
                             checked={selectedFilters.status === status}
-                            onChange={() => setSelectedFilters((prev) => ({ ...prev, status: prev.status === status ? null : status }))}
+                            onChange={() =>
+                              setSelectedFilters((prev) => ({
+                                ...prev,
+                                status: prev.status === status ? null : status,
+                              }))
+                            }
                             className="rounded"
                           />
                           <span className="text-sm">{status}</span>
                         </label>
                       ))}
                     </div>
-                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setSelectedFilters({ category: null, status: null })}>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => setSelectedFilters({ status: null })}
+                    >
                       {t("catalog.clearFilters")}
                     </Button>
                   </div>
@@ -240,10 +637,20 @@ const ToolsPage = () => {
               )}
             </div>
             <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <Button variant={viewMode === "table" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setViewMode("table")}>
+              <Button
+                variant={viewMode === "table" ? "default" : "ghost"}
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setViewMode("table")}
+              >
                 <List className="h-4 w-4" />
               </Button>
-              <Button variant={viewMode === "grid" ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0" onClick={() => setViewMode("grid")}>
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setViewMode("grid")}
+              >
                 <Grid3x3 className="h-4 w-4" />
               </Button>
             </div>
@@ -253,12 +660,17 @@ const ToolsPage = () => {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-            <span className="ml-3 text-sm text-slate-500">{t("catalog.loading")}</span>
+            <span className="ml-3 text-sm text-slate-500">
+              {t("catalog.loading")}
+            </span>
           </div>
         ) : (
           <>
             {viewMode === "table" && (
-              <div className="overflow-x-auto" style={{ maxHeight: "calc(100vh - 300px)" }}>
+              <div
+                className="overflow-x-auto"
+                style={{ maxHeight: "calc(100vh - 300px)" }}
+              >
                 <div className="min-w-[800px]">
                   <div className="overflow-hidden rounded-2xl border border-slate-200">
                     <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
@@ -270,9 +682,14 @@ const ToolsPage = () => {
                       <div>{t("catalog.author")}</div>
                       <div>{t("catalog.actions")}</div>
                     </div>
-                    <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 380px)" }}>
+                    <div
+                      className="overflow-y-auto"
+                      style={{ maxHeight: "calc(100vh - 380px)" }}
+                    >
                       {filteredItems.length === 0 ? (
-                        <div className="px-4 py-8 text-sm text-slate-500 text-center">{t("catalog.noTools")}</div>
+                        <div className="px-4 py-8 text-sm text-slate-500 text-center">
+                          {t("catalog.noTools")}
+                        </div>
                       ) : (
                         filteredItems.map((item) => (
                           <div
@@ -287,14 +704,20 @@ const ToolsPage = () => {
                                 openGallery(item.images);
                               }}
                             />
-                            <div className="font-title text-base font-semibold text-slate-900">{item.name}</div>
+                            <div className="font-title text-base font-semibold text-slate-900">
+                              {item.name}
+                            </div>
                             <div>{item.category}</div>
                             <div>
                               <Badge>{item.status}</Badge>
                             </div>
-                            <div className="text-xs text-slate-500">{formatDate(item.createdAt)}</div>
-                            <div className="text-xs text-slate-500">{item.author || "—"}</div>
-                            <ActionButtons item={item} />
+                            <div className="text-xs text-slate-500">
+                              {formatDate(item.createdAt)}
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {item.author || "—"}
+                            </div>
+                            {renderActionButtons(item)}
                           </div>
                         ))
                       )}
@@ -339,19 +762,24 @@ const ToolsPage = () => {
                         <div className="h-full w-full flex items-center justify-center text-slate-400">
                           <div className="text-center">
                             <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                            <span className="text-xs">{t("catalog.noImages")}</span>
+                            <span className="text-xs">
+                              {t("catalog.noImages")}
+                            </span>
                           </div>
                         </div>
                       )}
                     </div>
                     <div className="p-4">
-                      <div className="font-title text-base font-semibold text-slate-900 mb-1">{item.name}</div>
+                      <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                        {item.name}
+                      </div>
                       <div className="text-xs text-slate-500 mb-3">
-                        {item.category} • {t("catalog.createdAt")} {formatDate(item.createdAt)}
+                        {item.category} • {t("catalog.createdAt")}{" "}
+                        {formatDate(item.createdAt)}
                       </div>
                       <Badge className="mb-3">{item.status}</Badge>
                       <div className="flex gap-2 mt-2">
-                        <ActionButtons item={item} />
+                        {renderActionButtons(item)}
                       </div>
                     </div>
                   </div>
@@ -360,10 +788,25 @@ const ToolsPage = () => {
             )}
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
               <div className="text-sm text-slate-600">
-                {total > 0 ? <>{t("catalog.pageOf", { page: currentPage, total: totalPages, count: total })}</> : t("catalog.noResults")}
+                {total > 0 ? (
+                  <>
+                    {t("catalog.pageOf", {
+                      page: currentPage,
+                      total: totalPages,
+                      count: total,
+                    })}
+                  </>
+                ) : (
+                  t("catalog.noResults")
+                )}
               </div>
               <div className="flex gap-2">
-                <Button variant="ghost" size="sm" onClick={prevPage} disabled={currentPage === 1 || loading}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={prevPage}
+                  disabled={currentPage === 1 || loading}
+                >
                   <ChevronLeft className="h-4 w-4" /> {t("catalog.previous")}
                 </Button>
                 <div className="flex items-center gap-1">
@@ -371,12 +814,15 @@ const ToolsPage = () => {
                     let pageNumber;
                     if (totalPages <= 5) pageNumber = i + 1;
                     else if (currentPage <= 3) pageNumber = i + 1;
-                    else if (currentPage >= totalPages - 2) pageNumber = totalPages - 4 + i;
+                    else if (currentPage >= totalPages - 2)
+                      pageNumber = totalPages - 4 + i;
                     else pageNumber = currentPage - 2 + i;
                     return (
                       <Button
                         key={pageNumber}
-                        variant={currentPage === pageNumber ? "default" : "ghost"}
+                        variant={
+                          currentPage === pageNumber ? "default" : "ghost"
+                        }
                         size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => setPage(pageNumber)}
@@ -387,7 +833,12 @@ const ToolsPage = () => {
                     );
                   })}
                 </div>
-                <Button variant="ghost" size="sm" onClick={nextPage} disabled={currentPage === totalPages || loading}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages || loading}
+                >
                   {t("catalog.next")} <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
@@ -396,60 +847,35 @@ const ToolsPage = () => {
         )}
       </Card>
 
-      {(openDialog === "create" || openDialog === "edit") && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{openDialog === "create" ? t("catalog.addNewTool") : t("catalog.editTool")}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-700">{t("catalog.name")}</label>
-                <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">{t("catalog.category")}</label>
-                <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">{t("catalog.status")}</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm">
-                  <option>Active</option>
-                  <option>Inactive</option>
-                  <option>Maintenance</option>
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-semibold text-slate-700">{t("catalog.stock")}</label>
-                  <Input value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-slate-700">{t("catalog.price")} (VND)</label>
-                  <Input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
-                </div>
-              </div>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)}>
-                {t("catalog.cancel")}
-              </Button>
-              <Button className="flex-1" onClick={() => setOpenDialog(null)}>
-                {openDialog === "create" ? t("catalog.create") : t("catalog.save")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {(openDialog === "create" || openDialog === "edit") && renderFormModal()}
 
       {openDialog === "delete" && selectedItem && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div ref={dialogRef} className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">{t("catalog.deleteTitle")}</h2>
-            <p className="text-sm text-slate-600 mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
+          <div
+            ref={dialogRef}
+            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+          >
+            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
+              {t("catalog.deleteTitle")}
+            </h2>
+            <p className="text-sm text-slate-600 mb-4">
+              {t("catalog.deleteConfirm", { name: selectedItem.name })}
+            </p>
             <div className="flex gap-3">
-              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)} disabled={deleting}>
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={() => setOpenDialog(null)}
+                disabled={deleting}
+              >
                 {t("catalog.cancel")}
               </Button>
-              <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleting}>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
                 {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {t("catalog.delete")}
               </Button>
@@ -458,7 +884,13 @@ const ToolsPage = () => {
         </div>
       )}
 
-      {galleryOpen && <ImageGalleryModal images={galleryImages} initialIndex={galleryIndex} onClose={() => setGalleryOpen(false)} />}
+      {galleryOpen && (
+        <ImageGalleryModal
+          images={galleryImages}
+          initialIndex={galleryIndex}
+          onClose={() => setGalleryOpen(false)}
+        />
+      )}
     </section>
   );
 };

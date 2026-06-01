@@ -9,12 +9,20 @@ import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useTranslation } from "@hooks/useTranslation";
 import { collectionService } from "@services/collectionService";
+import { useAuthStore } from "@store/authStore";
 
 const ROWS_PER_PAGE = 20;
 
 const CollectionsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuthStore();
+  
+  const isAdmin = user?.role === "ADMIN";
+  const canCreate = isAdmin || user?.permission?.create;
+  const canUpdate = isAdmin || user?.permission?.update;
+  const canDelete = isAdmin || user?.permission?.del;
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -86,7 +94,7 @@ const CollectionsPage = () => {
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <h1 className="font-title text-2xl font-bold text-slate-950">{t("catalog.collections")}</h1>
-            <Button className="h-8 w-8 p-0 rounded-lg" onClick={() => navigate("/catalog/collections/create")}>
+            <Button className="h-8 w-8 p-0 rounded-lg" onClick={() => navigate("/catalog/collections/create")} disabled={!canCreate}>
               <Plus className="h-5 w-5" />
             </Button>
           </div>
@@ -156,27 +164,31 @@ const CollectionsPage = () => {
                         >
                           <Eye style={{ width: 18, height: 18 }} />
                         </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/catalog/collections/edit/${item.slug}`);
-                          }}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Edit style={{ width: 16, height: 16 }} />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedItem(item);
-                            setOpenDialog("delete");
-                          }}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-red-200 text-red-600 hover:bg-red-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Trash2 style={{ width: 16, height: 16 }} />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/catalog/collections/edit/${item.slug}`);
+                            }}
+                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+                            style={{ padding: 5 }}
+                          >
+                            <Edit style={{ width: 16, height: 16 }} />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedItem(item);
+                              setOpenDialog("delete");
+                            }}
+                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-red-200 text-red-600 hover:bg-red-50 transition"
+                            style={{ padding: 5 }}
+                          >
+                            <Trash2 style={{ width: 16, height: 16 }} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))

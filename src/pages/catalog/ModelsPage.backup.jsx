@@ -120,9 +120,8 @@ const ModelsPage = () => {
       modelsService.getModels({
         ...params,
         search: debouncedSearch || undefined,
-        isActive: selectedFilters.status === "Active" ? true : selectedFilters.status === "Inactive" ? false : undefined,
       }),
-    [debouncedSearch, selectedFilters.status],
+    [debouncedSearch],
   );
 
   const {
@@ -140,7 +139,7 @@ const ModelsPage = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedFilters.status]);
+  }, [debouncedSearch]);
 
   const openGallery = (images, index = 0) => {
     setGalleryImages(images || []);
@@ -150,7 +149,16 @@ const ModelsPage = () => {
 
   const statuses = ["Active", "Inactive"];
 
-  const paginatedItems = items;
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const itemStatus = item.isActive ? "Active" : "Inactive";
+        return !selectedFilters.status || itemStatus === selectedFilters.status;
+      }),
+    [items, selectedFilters],
+  );
+
+  const paginatedItems = filteredItems;
 
   const handleEdit = (item) => {
     setSelectedItem(item);

@@ -50,7 +50,7 @@ export const usePaginatedApi = (fetchFn, options = {}) => {
     // Case 2: { data: [...], total: N } or { data: { data: [...] } } (double-wrapped)
     const rawData = result?.data?.data ?? result?.data ?? result;
     if (Array.isArray(rawData)) {
-      const total = result?.total ?? result?.data?.total ?? rawData.length;
+      const total = result?.pagination?.total ?? result?.total ?? result?.data?.total ?? rawData.length;
       return { data: rawData, total };
     }
 

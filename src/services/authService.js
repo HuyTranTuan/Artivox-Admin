@@ -2,7 +2,7 @@ import http from "@api/axios";
 
 export const authService = {
   signIn: async (payload) => {
-    const user = await http.post("/auth/admin/login", { email: payload.email, password: payload.password }, null);
+    const user = await http.post("/auth/admin/login", payload, null);
     if (!user) return null;
     return user;
   },
