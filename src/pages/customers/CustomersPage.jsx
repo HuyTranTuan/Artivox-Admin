@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "@hooks/useTranslation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -72,6 +73,7 @@ const createDraft = (customer) => ({
 });
 
 const CustomersPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const search = useExpandableSearch();
   const [customers, setCustomers] = useState([]);
@@ -276,10 +278,10 @@ const CustomersPage = () => {
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h1 className="font-title text-2xl font-bold text-slate-950">
-              Customers
+              {t("customers.title")}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              View and manage all registered customers.
+              {t("customers.subtitle")}
             </p>
           </div>
         </div>
@@ -296,7 +298,7 @@ const CustomersPage = () => {
                 <Input
                   ref={search.inputRef}
                   className="pl-4 pr-10"
-                  placeholder="Search customers..."
+                  placeholder={t("customers.search")}
                   value={search.value}
                   onChange={(event) => search.setValue(event.target.value)}
                   onKeyDown={(event) => {
@@ -329,7 +331,7 @@ const CustomersPage = () => {
             <Button
               variant="ghost"
               className="h-10 w-10 p-0"
-              aria-label="Export customers"
+              aria-label={t("customers.export")}
             >
               <Download style={{ width: 18, height: 18 }} />
             </Button>
@@ -363,14 +365,14 @@ const CustomersPage = () => {
                     className="rounded accent-orange-600"
                   />
                 </div>
-                <div>Name</div>
-                <div>Email</div>
-                <div>Phone</div>
-                <div>Joined</div>
-                <div>Status</div>
-                <div>Tier</div>
-                <div>Orders</div>
-                <div>Actions</div>
+                <div>{t("customers.columns.name")}</div>
+                <div>{t("customers.columns.email")}</div>
+                <div>{t("customers.columns.phone")}</div>
+                <div>{t("customers.columns.joined")}</div>
+                <div>{t("customers.columns.status")}</div>
+                <div>{t("customers.columns.tier")}</div>
+                <div>{t("customers.columns.orders")}</div>
+                <div>{t("customers.columns.actions")}</div>
               </div>
 
               <div
@@ -379,7 +381,7 @@ const CustomersPage = () => {
               >
                 {paginated.length === 0 ? (
                   <div className="px-4 py-8 text-center text-sm text-slate-500">
-                    No customers found
+                    {t("customers.noCustomers")}
                   </div>
                 ) : (
                   paginated.map((customer) => (
@@ -482,9 +484,11 @@ const CustomersPage = () => {
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
           <div className="text-sm text-slate-600">
-            Showing {filtered.length ? startIdx + 1 : 0}-
-            {Math.min(startIdx + itemsPerPage, filtered.length)} of{" "}
-            {filtered.length}
+            {t("customers.pagination.showing", {
+              start: filtered.length ? startIdx + 1 : 0,
+              end: Math.min(startIdx + itemsPerPage, filtered.length),
+              total: filtered.length,
+            })}
           </div>
           <div className="flex gap-2">
             <Button
@@ -494,7 +498,7 @@ const CustomersPage = () => {
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
-              Previous
+              {t("customers.pagination.previous")}
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
@@ -526,7 +530,7 @@ const CustomersPage = () => {
               }
               disabled={currentPage === totalPages}
             >
-              Next
+              {t("customers.pagination.next")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -540,11 +544,12 @@ const CustomersPage = () => {
             className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
           >
             <h2 className="mb-4 font-title text-xl font-bold text-slate-900">
-              Delete Customer
+              {t("customers.deleteDialog.title")}
             </h2>
             <p className="mb-4 text-sm text-slate-600">
-              Are you sure you want to delete{" "}
-              <strong>{selectedCustomer?.name}</strong>?
+              {t("customers.deleteDialog.message", {
+                name: selectedCustomer?.name,
+              })}
             </p>
             <div className="flex gap-3">
               <Button
@@ -552,14 +557,14 @@ const CustomersPage = () => {
                 className="flex-1"
                 onClick={() => setOpenDialog(null)}
               >
-                Cancel
+                {t("customers.deleteDialog.cancel")}
               </Button>
               <Button
                 variant="destructive"
                 className="flex-1"
                 onClick={deleteCustomer}
               >
-                Delete
+                {t("customers.deleteDialog.delete")}
               </Button>
             </div>
           </div>

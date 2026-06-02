@@ -58,7 +58,10 @@ const CreateCollectionPage = () => {
       setForm((prev) => ({
         ...prev,
         [field]: value,
-        slug: value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        slug: value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
       }));
     }
   };
@@ -91,7 +94,10 @@ const CreateCollectionPage = () => {
       }
       navigate("/catalog/collections");
     } catch (err) {
-      console.error(isEditMode ? "Update collection failed:" : "Create collection failed:", err);
+      console.error(
+        isEditMode ? "Update collection failed:" : "Create collection failed:",
+        err,
+      );
     } finally {
       setLoading(false);
     }
@@ -109,59 +115,90 @@ const CreateCollectionPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/catalog/collections")} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
+          <button
+            onClick={() => navigate("/catalog/collections")}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+          >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h2 className="font-title text-xl font-bold text-slate-900">
-            {isEditMode ? "Edit Collection" : "Add New Collection"}
+            {isEditMode ? t("catalog.editCollection") : t("catalog.addNewCollection")}
           </h2>
         </div>
         <Button onClick={handleSubmit} disabled={loading} className="gap-2">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {isEditMode ? "Save Changes" : t("catalog.create")}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+          {isEditMode ? t("catalog.saveChanges") : t("catalog.create")}
         </Button>
       </div>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">Collection Info</h3>
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+          {t("catalog.collectionInfo")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.name")}</label>
-            <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="Collection name" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.name")}
+            </label>
+            <Input
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder={t("catalog.collectionNamePlaceholder")}
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Slug</label>
-            <Input value={form.slug} onChange={(e) => handleChange("slug", e.target.value)} placeholder="collection-slug" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.slug")}
+            </label>
+            <Input
+              value={form.slug}
+              onChange={(e) => handleChange("slug", e.target.value)}
+              placeholder={t("catalog.collectionSlugPlaceholder")}
+            />
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.description")}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("catalog.description")}
+          </label>
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
             className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
-            placeholder="Collection description..."
+            placeholder={t("catalog.collectionDescriptionPlaceholder")}
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.status")}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("catalog.status")}
+          </label>
           <select
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            onChange={(e) =>
+              handleChange("isActive", e.target.value === "active")
+            }
             className="w-48 h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">{t("catalog.active")}</option>
+            <option value="inactive">{t("catalog.inactive")}</option>
           </select>
         </div>
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">Collection Image</h3>
-        
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+          {t("catalog.collectionImage")}
+        </h3>
+
         <div>
-          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Image</label>
+          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+            {t("catalog.image")}
+          </label>
           <div className="flex items-center gap-3">
             <div
               onClick={() => imageRef.current?.click()}
@@ -170,24 +207,39 @@ const CreateCollectionPage = () => {
               {image?.preview ? (
                 <img
                   src={image.preview}
-                  alt="Collection"
+                  srcSet={`${image.preview} 400w, ${image.preview} 800w, ${image.preview} 1200w`}
+                  sizes="112px"
+                  loading="lazy"
+                  alt={t("catalog.collection")}
                   className="h-full w-full object-cover"
                 />
               ) : (
                 <div className="text-center">
                   <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-                  <span className="text-[10px] text-slate-400">{t("catalog.upload")}</span>
+                  <span className="text-[10px] text-slate-400">
+                    {t("catalog.upload")}
+                  </span>
                 </div>
               )}
             </div>
-            <input ref={imageRef} type="file" accept="image/png,image/jpg,image/jpeg,image/webp" className="hidden" onChange={handleImageChange} />
+            <input
+              ref={imageRef}
+              type="file"
+              accept="image/png,image/jpg,image/jpeg,image/webp"
+              className="hidden"
+              onChange={handleImageChange}
+            />
             <div className="text-xs text-slate-400">
-              <p className="font-medium text-slate-600">Image</p>
-              <p>Recommended 1200x800</p>
+              <p className="font-medium text-slate-600">{t("catalog.image")}</p>
+              <p>{t("catalog.recommendedSize", { size: "1200x800" })}</p>
               <p className="text-[10px] mt-0.5">PNG, JPG, WEBP</p>
             </div>
             {image && (
-              <button type="button" onClick={() => setImage(null)} className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto">
+              <button
+                type="button"
+                onClick={() => setImage(null)}
+                className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
+              >
                 {t("catalog.remove")}
               </button>
             )}

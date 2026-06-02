@@ -22,10 +22,12 @@ import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { Badge } from "@components/ui/badge";
 import { settingsService } from "@services/settingsService";
+import { useTranslation } from "@hooks/useTranslation";
 
 const DEFAULT_AVATAR_COLOR = "bg-slate-950";
 
 const PersonalSettingsPage = () => {
+  const { t } = useTranslation();
   // ---------------------------------- State ----------------------------------
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -124,9 +126,15 @@ const PersonalSettingsPage = () => {
         language: profile.language,
         timezone: profile.timezone,
       });
-      showToast("success", "Profile saved successfully");
+      showToast(
+        "success",
+        t("settings.profileSaved", "Profile saved successfully"),
+      );
     } catch {
-      showToast("error", "Failed to save profile");
+      showToast(
+        "error",
+        t("settings.profileSaveFailed", "Failed to save profile"),
+      );
     } finally {
       setSaving(false);
     }
@@ -140,9 +148,12 @@ const PersonalSettingsPage = () => {
     try {
       const result = await settingsService.uploadAvatar(file);
       setProfile((prev) => ({ ...prev, avatar: result.url }));
-      showToast("success", "Avatar updated");
+      showToast("success", t("settings.avatarUpdated", "Avatar updated"));
     } catch {
-      showToast("error", "Failed to upload avatar");
+      showToast(
+        "error",
+        t("settings.avatarUploadFailed", "Failed to upload avatar"),
+      );
     } finally {
       setAvatarUploading(false);
     }
@@ -153,9 +164,12 @@ const PersonalSettingsPage = () => {
     try {
       await settingsService.removeAvatar();
       setProfile((prev) => ({ ...prev, avatar: null }));
-      showToast("success", "Avatar removed");
+      showToast("success", t("settings.avatarRemoved", "Avatar removed"));
     } catch {
-      showToast("error", "Failed to remove avatar");
+      showToast(
+        "error",
+        t("settings.avatarRemoveFailed", "Failed to remove avatar"),
+      );
     }
   };
 
@@ -166,15 +180,24 @@ const PersonalSettingsPage = () => {
 
     // Client-side validation
     if (!passwordForm.currentPassword) {
-      setPasswordError("Current password is required");
+      setPasswordError(
+        t("settings.currentPasswordRequired", "Current password is required"),
+      );
       return;
     }
     if (passwordForm.newPassword.length < 6) {
-      setPasswordError("New password must be at least 6 characters");
+      setPasswordError(
+        t(
+          "settings.newPasswordMinLength",
+          "New password must be at least 6 characters",
+        ),
+      );
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError(
+        t("settings.passwordsDoNotMatch", "Passwords do not match"),
+      );
       return;
     }
 
@@ -185,17 +208,20 @@ const PersonalSettingsPage = () => {
         newPassword: passwordForm.newPassword,
       });
       if (result.success) {
-        showToast("success", "Password updated");
+        showToast("success", t("settings.passwordUpdated", "Password updated"));
         setPasswordForm({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
         });
       } else {
-        setPasswordError(result.error || "Failed to update password");
+        setPasswordError(
+          result.error ||
+            t("settings.passwordUpdateFailed", "Failed to update password"),
+        );
       }
     } catch {
-      setPasswordError("An error occurred");
+      setPasswordError(t("common.errorOccurred", "An error occurred"));
     } finally {
       setSaving(false);
     }
@@ -209,7 +235,13 @@ const PersonalSettingsPage = () => {
     settingsService.updateNotifications(updated);
     showToast(
       "success",
-      `Notification "${key}" ${updated[key] ? "enabled" : "disabled"}`,
+      t("settings.notificationToggled", {
+        key,
+        status: updated[key]
+          ? t("common.enabled", "enabled")
+          : t("common.disabled", "disabled"),
+        defaultValue: `Notification "${key}" ${updated[key] ? "enabled" : "disabled"}`,
+      }),
     );
   };
 
@@ -219,9 +251,20 @@ const PersonalSettingsPage = () => {
     try {
       await settingsService.toggleTwoFactor(enabled);
       setProfile((prev) => ({ ...prev, twoFactorEnabled: enabled }));
-      showToast("success", `Two-factor ${enabled ? "enabled" : "disabled"}`);
+      showToast(
+        "success",
+        t("settings.twoFactorToggled", {
+          status: enabled
+            ? t("common.enabled", "enabled")
+            : t("common.disabled", "disabled"),
+          defaultValue: `Two-factor ${enabled ? "enabled" : "disabled"}`,
+        }),
+      );
     } catch {
-      showToast("error", "Failed to update 2FA setting");
+      showToast(
+        "error",
+        t("settings.twoFactorUpdateFailed", "Failed to update 2FA setting"),
+      );
     }
   };
 
@@ -229,10 +272,16 @@ const PersonalSettingsPage = () => {
   const handleDeleteAccount = async () => {
     try {
       await settingsService.deleteAccount();
-      showToast("success", "Account has been deleted (soft)");
+      showToast(
+        "success",
+        t("settings.accountDeleted", "Account has been deleted (soft)"),
+      );
       setShowDeleteConfirm(false);
     } catch {
-      showToast("error", "Failed to delete account");
+      showToast(
+        "error",
+        t("settings.accountDeleteFailed", "Failed to delete account"),
+      );
     }
   };
 
@@ -242,7 +291,9 @@ const PersonalSettingsPage = () => {
       <section className="flex items-center justify-center py-20">
         <div className="flex items-center gap-3 text-slate-500">
           <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-sm">Loading settings...</span>
+          <span className="text-sm">
+            {t("settings.loading", "Loading settings...")}
+          </span>
         </div>
       </section>
     );
@@ -318,10 +369,13 @@ const PersonalSettingsPage = () => {
 
           <div>
             <h1 className="font-title text-2xl font-bold text-slate-950">
-              Personal settings
+              {t("settings.title", "Personal settings")}
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Manage your profile, security, and notification preferences
+              {t(
+                "settings.subtitle",
+                "Manage your profile, security, and notification preferences",
+              )}
             </p>
           </div>
           <div className="ml-auto">
@@ -343,10 +397,10 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Profile Information
+                  {t("settings.profileInfo", "Profile Information")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Update your personal details
+                  {t("settings.updateDetails", "Update your personal details")}
                 </p>
               </div>
             </div>
@@ -355,7 +409,7 @@ const PersonalSettingsPage = () => {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Full Name
+                  {t("settings.fullName", "Full Name")}
                 </label>
                 <Input
                   value={profile.name}
@@ -368,7 +422,7 @@ const PersonalSettingsPage = () => {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Email Address
+                  {t("settings.emailAddress", "Email Address")}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -387,7 +441,7 @@ const PersonalSettingsPage = () => {
               {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Phone Number
+                  {t("settings.phoneNumber", "Phone Number")}
                 </label>
                 <Input
                   value={profile.phone}
@@ -399,14 +453,17 @@ const PersonalSettingsPage = () => {
               {/* Bio */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Bio
+                  {t("settings.bio", "Bio")}
                 </label>
                 <textarea
                   rows={3}
                   value={profile.bio}
                   onChange={(e) => handleProfileChange("bio", e.target.value)}
                   className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition resize-none"
-                  placeholder="Tell us about yourself"
+                  placeholder={t(
+                    "settings.bioPlaceholder",
+                    "Tell us about yourself",
+                  )}
                 />
               </div>
 
@@ -414,7 +471,7 @@ const PersonalSettingsPage = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Language
+                    {t("settings.language", "Language")}
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -433,7 +490,7 @@ const PersonalSettingsPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Timezone
+                    {t("settings.timezone", "Timezone")}
                   </label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -460,7 +517,9 @@ const PersonalSettingsPage = () => {
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  {saving ? "Saving..." : "Save Changes"}
+                  {saving
+                    ? t("common.saving", "Saving...")
+                    : t("common.saveChanges", "Save Changes")}
                 </Button>
               </div>
             </form>
@@ -474,10 +533,13 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Avatar
+                  {t("settings.avatar", "Avatar")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Upload or remove your profile picture
+                  {t(
+                    "settings.uploadRemoveAvatar",
+                    "Upload or remove your profile picture",
+                  )}
                 </p>
               </div>
             </div>
@@ -485,7 +547,7 @@ const PersonalSettingsPage = () => {
               <label className="cursor-pointer">
                 <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition">
                   <Camera className="h-4 w-4" />
-                  Choose image
+                  {t("settings.chooseImage", "Choose image")}
                 </div>
                 <input
                   type="file"
@@ -502,7 +564,7 @@ const PersonalSettingsPage = () => {
                   onClick={handleRemoveAvatar}
                 >
                   <Trash2 className="h-4 w-4" />
-                  Remove
+                  {t("common.remove", "Remove")}
                 </Button>
               )}
             </div>
@@ -519,10 +581,13 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Security
+                  {t("settings.security", "Security")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Update your password and security settings
+                  {t(
+                    "settings.securitySubtitle",
+                    "Update your password and security settings",
+                  )}
                 </p>
               </div>
             </div>
@@ -531,12 +596,15 @@ const PersonalSettingsPage = () => {
               {/* Current Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Current Password
+                  {t("settings.currentPassword", "Current Password")}
                 </label>
                 <div className="relative">
                   <Input
                     type={showPw.current ? "text" : "password"}
-                    placeholder="Enter current password"
+                    placeholder={t(
+                      "settings.enterCurrentPassword",
+                      "Enter current password",
+                    )}
                     className="pr-10 w-full"
                     value={passwordForm.currentPassword}
                     onChange={(e) =>
@@ -565,12 +633,15 @@ const PersonalSettingsPage = () => {
               {/* New Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  New Password
+                  {t("settings.newPassword", "New Password")}
                 </label>
                 <div className="relative">
                   <Input
                     type={showPw.new ? "text" : "password"}
-                    placeholder="Enter new password (min 6 chars)"
+                    placeholder={t(
+                      "settings.enterNewPassword",
+                      "Enter new password (min 6 chars)",
+                    )}
                     className="pr-10 w-full"
                     value={passwordForm.newPassword}
                     onChange={(e) =>
@@ -599,12 +670,15 @@ const PersonalSettingsPage = () => {
               {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Confirm New Password
+                  {t("settings.confirmNewPassword", "Confirm New Password")}
                 </label>
                 <div className="relative">
                   <Input
                     type={showPw.confirm ? "text" : "password"}
-                    placeholder="Confirm new password"
+                    placeholder={t(
+                      "settings.confirmNewPasswordPlaceholder",
+                      "Confirm new password",
+                    )}
                     className="pr-10 w-full"
                     value={passwordForm.confirmPassword}
                     onChange={(e) =>
@@ -654,7 +728,7 @@ const PersonalSettingsPage = () => {
                     setPasswordError("");
                   }}
                 >
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </Button>
                 <Button type="submit" className="gap-2" disabled={saving}>
                   {saving ? (
@@ -662,7 +736,9 @@ const PersonalSettingsPage = () => {
                   ) : (
                     <Key className="h-4 w-4" />
                   )}
-                  {saving ? "Updating..." : "Update Password"}
+                  {saving
+                    ? t("common.updating", "Updating...")
+                    : t("settings.updatePassword", "Update Password")}
                 </Button>
               </div>
             </form>
@@ -676,10 +752,13 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Two-Factor Authentication
+                  {t("settings.twoFactorAuth", "Two-Factor Authentication")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Add an extra layer of security to your account
+                  {t(
+                    "settings.twoFactorSubtitle",
+                    "Add an extra layer of security to your account",
+                  )}
                 </p>
               </div>
             </div>
@@ -687,12 +766,18 @@ const PersonalSettingsPage = () => {
             <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
               <div>
                 <div className="text-sm font-medium text-slate-900">
-                  Two-Factor Auth
+                  {t("settings.twoFactorAuthShort", "Two-Factor Auth")}
                 </div>
                 <div className="text-xs text-slate-500 mt-0.5">
                   {profile.twoFactorEnabled
-                    ? "Your account is protected by 2FA"
-                    : "Enable 2FA for additional security"}
+                    ? t(
+                        "settings.2faProtected",
+                        "Your account is protected by 2FA",
+                      )
+                    : t(
+                        "settings.2faEnable",
+                        "Enable 2FA for additional security",
+                      )}
                 </div>
               </div>
               <div className="relative">
@@ -729,10 +814,13 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Notifications
+                  {t("settings.notifications", "Notifications")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Control what notifications you receive
+                  {t(
+                    "settings.notificationsSubtitle",
+                    "Control what notifications you receive",
+                  )}
                 </p>
               </div>
             </div>
@@ -741,28 +829,46 @@ const PersonalSettingsPage = () => {
               {[
                 {
                   key: "email",
-                  label: "Email notifications",
-                  desc: "Receive notifications via email",
+                  label: t(
+                    "settings.emailNotifications",
+                    "Email notifications",
+                  ),
+                  desc: t(
+                    "settings.emailNotificationsDesc",
+                    "Receive notifications via email",
+                  ),
                 },
                 {
                   key: "push",
-                  label: "Push notifications",
-                  desc: "Receive notifications in browser",
+                  label: t("settings.pushNotifications", "Push notifications"),
+                  desc: t(
+                    "settings.pushNotificationsDesc",
+                    "Receive notifications in browser",
+                  ),
                 },
                 {
                   key: "orderUpdates",
-                  label: "Order updates",
-                  desc: "New orders, cancellations, and status changes",
+                  label: t("settings.orderUpdates", "Order updates"),
+                  desc: t(
+                    "settings.orderUpdatesDesc",
+                    "New orders, cancellations, and status changes",
+                  ),
                 },
                 {
                   key: "campaignAlerts",
-                  label: "Campaign alerts",
-                  desc: "Campaign performance and expiry warnings",
+                  label: t("settings.campaignAlerts", "Campaign alerts"),
+                  desc: t(
+                    "settings.campaignAlertsDesc",
+                    "Campaign performance and expiry warnings",
+                  ),
                 },
                 {
                   key: "weeklyDigest",
-                  label: "Weekly digest",
-                  desc: "Summary of weekly platform activity",
+                  label: t("settings.weeklyDigest", "Weekly digest"),
+                  desc: t(
+                    "settings.weeklyDigestDesc",
+                    "Summary of weekly platform activity",
+                  ),
                 },
               ].map((item) => (
                 <label
@@ -815,10 +921,13 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold text-slate-900">
-                  Danger Zone
+                  {t("settings.dangerZone", "Danger Zone")}
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Irreversible account actions
+                  {t(
+                    "settings.dangerZoneSubtitle",
+                    "Irreversible account actions",
+                  )}
                 </p>
               </div>
             </div>
@@ -826,10 +935,13 @@ const PersonalSettingsPage = () => {
             <div className="flex items-center justify-between rounded-xl border border-rose-200 p-4">
               <div>
                 <div className="text-sm font-medium text-slate-900">
-                  Delete Account
+                  {t("settings.deleteAccount", "Delete Account")}
                 </div>
                 <div className="text-xs text-slate-500 mt-0.5">
-                  Permanently delete your account and all associated data
+                  {t(
+                    "settings.deleteAccountDesc",
+                    "Permanently delete your account and all associated data",
+                  )}
                 </div>
               </div>
               <Button
@@ -838,7 +950,7 @@ const PersonalSettingsPage = () => {
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 <Trash2 className="h-4 w-4" />
-                Delete
+                {t("common.delete", "Delete")}
               </Button>
             </div>
           </Card>
@@ -850,11 +962,13 @@ const PersonalSettingsPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
             <h2 className="mb-4 font-title text-xl font-bold text-slate-900">
-              Delete Account
+              {t("settings.deleteAccount", "Delete Account")}
             </h2>
             <p className="mb-4 text-sm text-slate-600">
-              Are you sure you want to delete your account? This action cannot
-              be undone.
+              {t(
+                "settings.deleteAccountConfirm",
+                "Are you sure you want to delete your account? This action cannot be undone.",
+              )}
             </p>
             <div className="flex gap-3">
               <Button
@@ -862,14 +976,14 @@ const PersonalSettingsPage = () => {
                 className="flex-1"
                 onClick={() => setShowDeleteConfirm(false)}
               >
-                Cancel
+                {t("common.cancel", "Cancel")}
               </Button>
               <Button
                 variant="destructive"
                 className="flex-1"
                 onClick={handleDeleteAccount}
               >
-                Delete
+                {t("common.delete", "Delete")}
               </Button>
             </div>
           </div>

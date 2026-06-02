@@ -19,8 +19,8 @@ const formatTime = (value) =>
 
 // ── Typewriter hook: drains a text queue char-by-char into displayed text ──
 function useTypewriter(speed = 18) {
-  const queueRef = useRef("");       // pending characters to type out
-  const displayRef = useRef("");     // what's currently displayed
+  const queueRef = useRef(""); // pending characters to type out
+  const displayRef = useRef(""); // what's currently displayed
   const [displayed, setDisplayed] = useState("");
   const intervalRef = useRef(null);
   const onDoneRef = useRef(null);
@@ -82,8 +82,10 @@ const StaffAiChatPage = () => {
       roomId: AI_CHAT_ROOM,
       sender: "ai",
       type: "text",
-      content:
+      content: t(
+        "chat.aiWelcome",
         "Hello! I'm your Artivox AI Assistant. I can help you with product information, order status, customer inquiries, and more. How can I assist you today?",
+      ),
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -208,7 +210,10 @@ const StaffAiChatPage = () => {
       const aiReply = getAutoReply(promptText);
       const fallbackContent =
         aiReply?.reply ||
-        "I'm not sure I understand. Could you please rephrase your question?";
+        t(
+          "chat.aiFallback",
+          "I'm not sure I understand. Could you please rephrase your question?",
+        );
 
       setMessages((prev) =>
         prev.map((msg) => {
@@ -239,7 +244,7 @@ const StaffAiChatPage = () => {
         roomId: AI_CHAT_ROOM,
         sender: "ai",
         type: "text",
-        content: "Chat cleared. How can I help you?",
+        content: t("chat.chatCleared", "Chat cleared. How can I help you?"),
         timestamp: new Date().toISOString(),
       },
     ]);
@@ -255,17 +260,23 @@ const StaffAiChatPage = () => {
             </div>
             <div>
               <div className="font-title text-2xl font-bold text-slate-950">
-                AI Assistant Chat
+                {t("chat.title", "AI Assistant Chat")}
               </div>
               <div className="mt-1 text-sm text-slate-500">
-                Ask me anything about products, orders, or customers
+                {t(
+                  "chat.subtitle",
+                  "Ask me anything about products, orders, or customers",
+                )}
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Room: {AI_CHAT_ROOM}
+              {t("chat.roomLabel", {
+                id: AI_CHAT_ROOM,
+                defaultValue: "Room: {{id}}",
+              })}
             </span>
             <Button
               variant="ghost"
@@ -273,7 +284,7 @@ const StaffAiChatPage = () => {
               onClick={handleClearChat}
             >
               <X className="h-3.5 w-3.5 mr-1" />
-              Clear
+              {t("common.clear", "Clear")}
             </Button>
           </div>
         </div>
@@ -287,11 +298,13 @@ const StaffAiChatPage = () => {
           </div>
           <div>
             <div className="font-title text-base font-semibold text-slate-950">
-              Artivox AI
+              {t("chat.aiName", "Artivox AI")}
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-slate-500">Online</span>
+              <span className="text-xs text-slate-500">
+                {t("common.online", "Online")}
+              </span>
             </div>
           </div>
         </div>
@@ -326,20 +339,32 @@ const StaffAiChatPage = () => {
                       {msg.confidence > 0.6 && !isStreaming && (
                         <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
                           <Sparkles className="h-3 w-3" />
-                          Confident
+                          {t("chat.confident", "Confident")}
                         </span>
                       )}
                     </div>
                   )}
                   <div className="text-sm whitespace-pre-wrap">
-                    {displayContent || (thinking && msg.sender === "ai" ? (
-                      <span className="flex gap-1 items-center py-1">
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                      </span>
-                    ) : null)}
-                    {isStreaming && <span className="inline-block w-0.5 h-4 bg-amber-500 animate-pulse ml-0.5 align-text-bottom" />}
+                    {displayContent ||
+                      (thinking && msg.sender === "ai" ? (
+                        <span className="flex gap-1 items-center py-1">
+                          <span
+                            className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"
+                            style={{ animationDelay: "0ms" }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"
+                            style={{ animationDelay: "150ms" }}
+                          />
+                          <span
+                            className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"
+                            style={{ animationDelay: "300ms" }}
+                          />
+                        </span>
+                      ) : null)}
+                    {isStreaming && (
+                      <span className="inline-block w-0.5 h-4 bg-amber-500 animate-pulse ml-0.5 align-text-bottom" />
+                    )}
                   </div>
                   <div
                     className={`mt-2 text-[11px] ${msg.sender === "staff" ? "text-white/70" : "text-amber-500/80"}`}
@@ -370,8 +395,11 @@ const StaffAiChatPage = () => {
               className="min-h-[48px]"
               placeholder={
                 thinking
-                  ? "AI is thinking..."
-                  : "Ask about products, orders, materials, or anything..."
+                  ? t("chat.aiThinking", "AI is thinking...")
+                  : t(
+                      "chat.askPlaceholder",
+                      "Ask about products, orders, materials, or anything...",
+                    )
               }
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -383,15 +411,20 @@ const StaffAiChatPage = () => {
               disabled={thinking || !input.trim()}
             >
               <SendHorizontal className="h-4 w-4" />
-              Send
+              {t("common.send", "Send")}
             </Button>
           </div>
           <div className="mt-3 flex items-center gap-4 text-xs text-slate-400">
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5" />
-              Powered by AI knowledge base
+              {t("chat.poweredByAI", "Powered by AI knowledge base")}
             </span>
-            <span>Room ID: {AI_CHAT_ROOM}</span>
+            <span>
+              {t("chat.roomId", {
+                id: AI_CHAT_ROOM,
+                defaultValue: "Room ID: {{id}}",
+              })}
+            </span>
           </div>
         </form>
       </Card>

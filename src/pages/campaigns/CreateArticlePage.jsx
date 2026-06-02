@@ -9,12 +9,6 @@ import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
 import { articleService } from "@services/articleService";
 
-const statuses = [
-  { value: "Draft", labelKey: "articles.draft" },
-  { value: "Review", labelKey: "articles.review" },
-  { value: "Published", labelKey: "articles.publishedStatus" },
-];
-
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
   { value: "en", labelKey: "articles.en" },
@@ -26,11 +20,10 @@ const CreateArticlePage = () => {
   const [activeTab, setActiveTab] = useState("vi");
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
-  const [status, setStatus] = useState("Draft");
   const [coverImage, setCoverImage] = useState(null);
   const [translations, setTranslations] = useState({
-    vi: { title: "", content: "", locale: "vi" },
-    en: { title: "", content: "", locale: "en" },
+    vi: { title: "", summary: "", content: "", locale: "vi" },
+    en: { title: "", summary: "", content: "", locale: "en" },
   });
   const { t } = useTranslation();
   const { user } = useAuthStore();
@@ -63,10 +56,15 @@ const CreateArticlePage = () => {
       setIsSaving(false);
       return;
     }
-    
-    const validTranslations = [translations.vi, translations.en].filter(t => t.title && t.title.trim() !== "");
+
+    const validTranslations = [translations.vi, translations.en].filter(
+      (t) => t.title && t.title.trim() !== "",
+    );
     if (validTranslations.length === 0) {
-      alert(t("articles.translationRequired") || "At least one translation with a title is required");
+      alert(
+        t("articles.translationRequired") ||
+          "At least one translation with a title is required",
+      );
       setIsSaving(false);
       return;
     }
@@ -74,8 +72,8 @@ const CreateArticlePage = () => {
     try {
       const formData = new FormData();
       formData.append("slug", slug);
-      formData.append("status", status);
-      
+      formData.append("status", "Draft");
+
       formData.append("translations", JSON.stringify(validTranslations));
 
       if (coverImage) {
@@ -106,21 +104,32 @@ const CreateArticlePage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={handleCancel} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
+          <button
+            onClick={handleCancel}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+          >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">{t("articles.createArticle")}</h2>
+          <h2 className="font-title text-xl font-bold">
+            {t("articles.createArticle")}
+          </h2>
         </div>
-        <Button onClick={handleSave} className="gap-2" disabled={!canCreate || isSaving}>
+        <Button
+          onClick={handleSave}
+          className="gap-2"
+          disabled={!canCreate || isSaving}
+        >
           <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : t("articles.save")}
+          {isSaving ? t("articles.saving") || "Saving..." : t("articles.save")}
         </Button>
       </div>
 
       <Card className="p-6 space-y-5">
         {/* Slug / URL */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.slug")}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("articles.slug")}
+          </label>
           <input
             type="text"
             value={slug}
@@ -132,29 +141,15 @@ const CreateArticlePage = () => {
 
         {/* Cover Image */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.coverImage")}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("articles.coverImage")}
+          </label>
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setCoverImage(e.target.files[0])}
             className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
-        </div>
-
-        {/* Status */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.status")}</label>
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-          >
-            {statuses.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {t(opt.labelKey)}
-              </option>
-            ))}
-          </select>
         </div>
 
         {/* Language Tabs */}
@@ -165,7 +160,9 @@ const CreateArticlePage = () => {
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
                 className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
-                  activeTab === tab.value ? "border-amber-500 text-amber-600" : "border-transparent text-slate-500 hover:text-slate-700"
+                  activeTab === tab.value
+                    ? "border-amber-500 text-amber-600"
+                    : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
                 {t(tab.labelKey)}
@@ -175,24 +172,61 @@ const CreateArticlePage = () => {
 
           {/* Title */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.titleWithLocale", { locale: activeTab.toUpperCase() })}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("articles.titleWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
+            </label>
             <input
               type="text"
               value={translations[activeTab]?.title || ""}
-              onChange={(e) => handleTranslationChange(activeTab, "title", e.target.value)}
-              placeholder={t("articles.enterTitleWithLocale", { locale: activeTab.toUpperCase() })}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "title", e.target.value)
+              }
+              placeholder={t("articles.enterTitleWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
               className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            />
+          </div>
+
+          {/* Summary */}
+          <div className="mb-4">
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("articles.summaryWithLocale", {
+                locale: activeTab.toUpperCase(),
+              }) || `Summary (${activeTab.toUpperCase()})`}
+            </label>
+            <textarea
+              value={translations[activeTab]?.summary || ""}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "summary", e.target.value)
+              }
+              placeholder={
+                t("articles.enterSummaryWithLocale", {
+                  locale: activeTab.toUpperCase(),
+                }) || "Enter summary"
+              }
+              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
           {/* Content - Rich Text Editor */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.contentWithLocale", { locale: activeTab.toUpperCase() })}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("articles.contentWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
+            </label>
             <RichTextEditor
               key={activeTab}
               value={translations[activeTab]?.content || ""}
-              onChange={(value) => handleTranslationChange(activeTab, "content", value)}
-              placeholder={t("articles.writeContentWithLocale", { locale: activeTab.toUpperCase() })}
+              onChange={(value) =>
+                handleTranslationChange(activeTab, "content", value)
+              }
+              placeholder={t("articles.writeContentWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
             />
           </div>
         </div>

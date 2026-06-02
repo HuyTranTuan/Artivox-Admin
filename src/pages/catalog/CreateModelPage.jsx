@@ -1,6 +1,15 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Upload, X, Plus, GripVertical, ImageIcon, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Upload,
+  X,
+  Plus,
+  GripVertical,
+  ImageIcon,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
@@ -38,7 +47,10 @@ const CreateModelPage = () => {
       setForm((prev) => ({
         ...prev,
         [field]: value,
-        slug: value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        slug: value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
       }));
     }
   };
@@ -81,11 +93,19 @@ const CreateModelPage = () => {
 
       if (thumbnailBefore?.file) {
         const ext = thumbnailBefore.file.name.split(".").pop();
-        formData.append("thumbnail_before", thumbnailBefore.file, `thumbnail_before.${ext}`);
+        formData.append(
+          "thumbnail_before",
+          thumbnailBefore.file,
+          `thumbnail_before.${ext}`,
+        );
       }
       if (thumbnailAfter?.file) {
         const ext = thumbnailAfter.file.name.split(".").pop();
-        formData.append("thumbnail_after", thumbnailAfter.file, `thumbnail_after.${ext}`);
+        formData.append(
+          "thumbnail_after",
+          thumbnailAfter.file,
+          `thumbnail_after.${ext}`,
+        );
       }
       galleryImages.forEach((img) => {
         formData.append("gallery", img.file);
@@ -100,9 +120,18 @@ const CreateModelPage = () => {
     }
   };
 
-  const ImageUploadBox = ({ label, value, onClear, inputRef, onChange, recommended }) => (
+  const ImageUploadBox = ({
+    label,
+    value,
+    onClear,
+    inputRef,
+    onChange,
+    recommended,
+  }) => (
     <div>
-      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{label}</label>
+      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+        {label}
+      </label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
@@ -120,18 +149,30 @@ const CreateModelPage = () => {
           ) : (
             <div className="text-center">
               <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-              <span className="text-[10px] text-slate-400">{t("catalog.upload")}</span>
+              <span className="text-[10px] text-slate-400">
+                {t("catalog.upload")}
+              </span>
             </div>
           )}
         </div>
-        <input ref={inputRef} type="file" accept="image/png,image/jpg,image/jpeg,image/webp" className="hidden" onChange={onChange} />
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/png,image/jpg,image/jpeg,image/webp"
+          className="hidden"
+          onChange={onChange}
+        />
         <div className="text-xs text-slate-400">
           <p className="font-medium text-slate-600">{label}</p>
           <p>{recommended}</p>
           <p className="text-[10px] mt-0.5">PNG, JPG, WEBP</p>
         </div>
         {value && (
-          <button type="button" onClick={onClear} className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto">
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
+          >
             {t("catalog.remove")}
           </button>
         )}
@@ -143,98 +184,157 @@ const CreateModelPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate("/catalog/models")} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
+          <button
+            onClick={() => navigate("/catalog/models")}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+          >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">{t("catalog.addNewModel")}</h2>
+          <h2 className="font-title text-xl font-bold text-slate-900">
+            {t("catalog.addNewModel")}
+          </h2>
         </div>
         <Button onClick={handleSubmit} disabled={loading} className="gap-2">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           {t("catalog.create")}
         </Button>
       </div>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">{t("catalog.productInfo")}</h3>
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+          {t("catalog.productInfo")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.name")}</label>
-            <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder="Model name" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.name")}
+            </label>
+            <Input
+              value={form.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              placeholder={t("catalog.modelNamePlaceholder")}
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Slug</label>
-            <Input value={form.slug} onChange={(e) => handleChange("slug", e.target.value)} placeholder="model-slug" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.slug")}
+            </label>
+            <Input
+              value={form.slug}
+              onChange={(e) => handleChange("slug", e.target.value)}
+              placeholder={t("catalog.modelSlugPlaceholder")}
+            />
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.description")}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("catalog.description")}
+          </label>
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
             className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
-            placeholder="Product description..."
+            placeholder={t("catalog.productDescriptionPlaceholder")}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.price")} (VND)</label>
-            <Input type="number" value={form.basePrice} onChange={(e) => handleChange("basePrice", e.target.value)} placeholder="0" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.price")} (VND)
+            </label>
+            <Input
+              type="number"
+              value={form.basePrice}
+              onChange={(e) => handleChange("basePrice", e.target.value)}
+              placeholder="0"
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.stock")}</label>
-            <Input type="number" value={form.stock} onChange={(e) => handleChange("stock", e.target.value)} placeholder="0" />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.stock")}
+            </label>
+            <Input
+              type="number"
+              value={form.stock}
+              onChange={(e) => handleChange("stock", e.target.value)}
+              placeholder="0"
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.status")}</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.status")}
+            </label>
             <select
               value={form.isActive ? "active" : "inactive"}
-              onChange={(e) => handleChange("isActive", e.target.value === "active")}
+              onChange={(e) =>
+                handleChange("isActive", e.target.value === "active")
+              }
               className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
             >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
+              <option value="active">{t("catalog.active")}</option>
+              <option value="inactive">{t("catalog.inactive")}</option>
             </select>
           </div>
         </div>
 
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">3D Model Files</h3>
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
+          {t("catalog.3dModelFiles")}
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Preview File URL</label>
-            <Input value={form.previewFileUrl} onChange={(e) => handleChange("previewFileUrl", e.target.value)} placeholder="https://..." />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.previewFileUrl")}
+            </label>
+            <Input
+              value={form.previewFileUrl}
+              onChange={(e) => handleChange("previewFileUrl", e.target.value)}
+              placeholder={t("catalog.urlPlaceholder")}
+            />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Source File URL</label>
-            <Input value={form.sourceFileUrl} onChange={(e) => handleChange("sourceFileUrl", e.target.value)} placeholder="https://..." />
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {t("catalog.sourceFileUrl")}
+            </label>
+            <Input
+              value={form.sourceFileUrl}
+              onChange={(e) => handleChange("sourceFileUrl", e.target.value)}
+              placeholder={t("catalog.urlPlaceholder")}
+            />
           </div>
         </div>
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">{t("catalog.productImages")}</h3>
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+          {t("catalog.productImages")}
+        </h3>
 
         <ImageUploadBox
-          label="Thumbnail Before"
+          label={t("catalog.thumbnailBefore")}
           value={thumbnailBefore}
           onClear={() => setThumbnailBefore(null)}
           inputRef={thumbnailBeforeRef}
           onChange={handleThumbnailChange(setThumbnailBefore)}
-          recommended="Recommended 800x800"
+          recommended={t("catalog.recommendedSize", { size: "800x800" })}
         />
 
         <ImageUploadBox
-          label="Thumbnail After"
+          label={t("catalog.thumbnailAfter")}
           value={thumbnailAfter}
           onClear={() => setThumbnailAfter(null)}
           inputRef={thumbnailAfterRef}
           onChange={handleThumbnailChange(setThumbnailAfter)}
-          recommended="Recommended 800x800"
+          recommended={t("catalog.recommendedSize", { size: "800x800" })}
         />
 
         <div>
           <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-            Gallery ({galleryImages.length})
+            {t("catalog.gallery")} ({galleryImages.length})
           </label>
           <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
             {galleryImages.length === 0 ? (
@@ -244,7 +344,10 @@ const CreateModelPage = () => {
               </div>
             ) : (
               galleryImages.map((img, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5">
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5"
+                >
                   <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
                   <img
                     src={img.preview}
@@ -254,16 +357,35 @@ const CreateModelPage = () => {
                     alt={`Gallery ${idx + 1}`}
                     className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
                   />
-                  <span className="flex-1 text-xs text-slate-600 truncate">{img.file.name}</span>
-                  <button type="button" onClick={() => removeGalleryImage(idx)} className="text-rose-500 hover:text-rose-700 shrink-0">
+                  <span className="flex-1 text-xs text-slate-600 truncate">
+                    {img.file.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(idx)}
+                    className="text-rose-500 hover:text-rose-700 shrink-0"
+                  >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               ))
             )}
           </div>
-          <input ref={galleryInputRef} type="file" accept="image/png,image/jpg,image/jpeg,image/webp" multiple className="hidden" onChange={handleGalleryAdd} />
-          <Button type="button" variant="ghost" size="sm" className="mt-2 gap-1.5 text-xs" onClick={() => galleryInputRef.current?.click()}>
+          <input
+            ref={galleryInputRef}
+            type="file"
+            accept="image/png,image/jpg,image/jpeg,image/webp"
+            multiple
+            className="hidden"
+            onChange={handleGalleryAdd}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mt-2 gap-1.5 text-xs"
+            onClick={() => galleryInputRef.current?.click()}
+          >
             <Plus className="h-3.5 w-3.5" />
             {t("catalog.addImages")}
           </Button>

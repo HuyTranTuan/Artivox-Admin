@@ -17,7 +17,7 @@ const CreateDiscountPage = () => {
   const isEditMode = !!slug;
   const navigate = useNavigate();
   const { t } = useTranslation();
-  
+
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditMode);
 
@@ -50,8 +50,8 @@ const CreateDiscountPage = () => {
               minOrderAmount: data.minOrderAmount?.toString() || "",
               maxUses: data.maxUses?.toString() || "",
               isActive: data.isActive ?? true,
-              startsAt: data.startsAt ? data.startsAt.split('T')[0] : "",
-              expiresAt: data.expiresAt ? data.expiresAt.split('T')[0] : "",
+              startsAt: data.startsAt ? data.startsAt.split("T")[0] : "",
+              expiresAt: data.expiresAt ? data.expiresAt.split("T")[0] : "",
             });
           }
         } catch (error) {
@@ -70,7 +70,10 @@ const CreateDiscountPage = () => {
       setForm((prev) => ({
         ...prev,
         [field]: val,
-        slug: val.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        slug: val
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
       }));
     }
   };
@@ -107,7 +110,10 @@ const CreateDiscountPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={handleCancel} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100">
+          <button
+            onClick={handleCancel}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+          >
             <ArrowLeft className="h-4 w-4" />
           </button>
           <h2 className="font-title text-xl font-bold text-slate-900">
@@ -115,7 +121,11 @@ const CreateDiscountPage = () => {
           </h2>
         </div>
         <Button onClick={handleSave} disabled={loading} className="gap-2">
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
           {isEditMode ? "Save Changes" : t("articles.save")}
         </Button>
       </div>
@@ -123,15 +133,21 @@ const CreateDiscountPage = () => {
       <Card className="p-6 space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Discount Code (ex. SUMMER20)</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Discount Code (ex. SUMMER20)
+            </label>
             <Input
               value={form.code}
-              onChange={(e) => handleChange("code", e.target.value.toUpperCase())}
+              onChange={(e) =>
+                handleChange("code", e.target.value.toUpperCase())
+              }
               placeholder="SUMMER20"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Campaign Name (Internal)</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Campaign Name (Internal)
+            </label>
             <Input
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
@@ -141,7 +157,9 @@ const CreateDiscountPage = () => {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Slug</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Slug
+          </label>
           <Input
             value={form.slug}
             onChange={(e) => handleChange("slug", e.target.value)}
@@ -152,7 +170,9 @@ const CreateDiscountPage = () => {
         {/* Discount Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Discount Type</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Discount Type
+            </label>
             <select
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
@@ -183,7 +203,9 @@ const CreateDiscountPage = () => {
         {/* Min Order & Max Usage */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Minimum Order (₫)</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Minimum Order (₫)
+            </label>
             <Input
               type="number"
               value={form.minOrderAmount}
@@ -194,7 +216,9 @@ const CreateDiscountPage = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Max Usage Limit</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Max Usage Limit
+            </label>
             <Input
               type="number"
               value={form.maxUses}
@@ -208,7 +232,9 @@ const CreateDiscountPage = () => {
         {/* Start & End Date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Start Date</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Start Date
+            </label>
             <Input
               type="date"
               value={form.startsAt}
@@ -217,7 +243,9 @@ const CreateDiscountPage = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">End Date</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              End Date
+            </label>
             <Input
               type="date"
               value={form.expiresAt}
@@ -228,10 +256,14 @@ const CreateDiscountPage = () => {
 
         {/* Status */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Status</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Status
+          </label>
           <select
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            onChange={(e) =>
+              handleChange("isActive", e.target.value === "active")
+            }
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
             <option value="active">Active</option>

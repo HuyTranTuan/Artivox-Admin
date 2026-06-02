@@ -1,5 +1,5 @@
 import { Upload } from "lucide-react";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const ImageUploadBox = ({
   label,

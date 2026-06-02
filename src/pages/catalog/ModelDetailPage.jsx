@@ -51,7 +51,11 @@ const ModelDetailPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-sm text-slate-500">{t("catalog.noModels")}</div>
-          <Button variant="ghost" className="mt-4" onClick={() => navigate("/catalog/models")}>
+          <Button
+            variant="ghost"
+            className="mt-4"
+            onClick={() => navigate("/catalog/models")}
+          >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back
           </Button>
         </Card>
@@ -63,11 +67,17 @@ const ModelDetailPage = () => {
     <section className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" className="h-10 w-10 p-0 rounded-lg" onClick={() => navigate("/catalog/models")}>
+        <Button
+          variant="ghost"
+          className="h-10 w-10 p-0 rounded-lg"
+          onClick={() => navigate("/catalog/models")}
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="font-title text-2xl font-bold text-slate-950">{model.name}</h1>
+          <h1 className="font-title text-2xl font-bold text-slate-950">
+            {model.name}
+          </h1>
           <p className="text-sm text-slate-500 font-mono">{model.slug}</p>
         </div>
       </div>
@@ -80,7 +90,9 @@ const ModelDetailPage = () => {
               <Box className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t("catalog.modelDetail")}</h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">
+                {t("catalog.modelDetail")}
+              </h2>
             </div>
           </div>
 
@@ -144,7 +156,9 @@ const ModelDetailPage = () => {
               <Package className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t("catalog.info")}</h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">
+                {t("catalog.info")}
+              </h2>
             </div>
           </div>
           <div className="space-y-4">
@@ -152,14 +166,22 @@ const ModelDetailPage = () => {
               <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                 <Package className="h-3 w-3" /> {t("catalog.name")}
               </div>
-              <div className="text-sm font-medium text-slate-900 mt-1">{model.name}</div>
+              <div className="text-sm font-medium text-slate-900 mt-1">
+                {model.name}
+              </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t("catalog.category")}</div>
-              <div className="text-sm text-slate-700 mt-1">{model.category || "—"}</div>
+              <div className="text-xs text-slate-500 uppercase">
+                {t("catalog.category")}
+              </div>
+              <div className="text-sm text-slate-700 mt-1">
+                {model.category || "—"}
+              </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t("catalog.status")}</div>
+              <div className="text-xs text-slate-500 uppercase">
+                {t("catalog.status")}
+              </div>
               <div className="mt-1">
                 <Badge>{model.status}</Badge>
               </div>
@@ -168,22 +190,36 @@ const ModelDetailPage = () => {
               <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" /> {t("catalog.createdAt")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">{formatDate(model.createdAt)}</div>
+              <div className="text-sm text-slate-700 mt-1">
+                {formatDate(model.createdAt)}
+              </div>
             </div>
             <div>
               <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                 <User className="h-3 w-3" /> {t("catalog.author")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">{model.author || "—"}</div>
+              <div className="text-sm text-slate-700 mt-1">
+                {model.author || "—"}
+              </div>
             </div>
           </div>
-          <Button className="w-full mt-6" variant="secondary" onClick={() => navigate("/catalog/models")}>
+          <Button
+            className="w-full mt-6"
+            variant="secondary"
+            onClick={() => navigate("/catalog/models")}
+          >
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("catalog.back")}
           </Button>
         </Card>
       </div>
 
-      {galleryOpen && <ImageGalleryModal images={model.images || []} initialIndex={galleryIndex} onClose={() => setGalleryOpen(false)} />}
+      {galleryOpen && (
+        <ImageGalleryModal
+          images={model.images || []}
+          initialIndex={galleryIndex}
+          onClose={() => setGalleryOpen(false)}
+        />
+      )}
     </section>
   );
 };

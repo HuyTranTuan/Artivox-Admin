@@ -38,9 +38,11 @@ const normalizeArticle = (currentLang, rawItem, index = 0) => {
     coverImage: rawItem?.coverImage || null, // Extracted from root
     locale: translation.locale || rawItem?.locale || rawItem?.language || "EN",
     author: rawItem?.author?.fullName || rawItem?.authorName || "Unknown",
-    status:
-      rawItem?.status ||
-      (rawItem?.publishedAt || rawItem?.publishDate ? "Published" : "Draft"),
+    status: rawItem?.deletedAt
+      ? "Deleted"
+      : rawItem?.publishedAt || rawItem?.publishDate
+        ? "Published"
+        : "Draft",
     publishedAt: rawItem?.publishedAt || rawItem?.publishDate || null,
     createdAt: rawItem?.createdAt || null,
     updatedAt: rawItem?.updatedAt || null,
@@ -132,10 +134,9 @@ const ArticlesPage = () => {
       ...new Set(articles.map((a) => a.locale).filter(Boolean)),
     ];
     const locales = localesArray.length > 0 ? localesArray.join(" / ") : "EN";
-    const totalViews = articles.reduce(
-      (acc, a) => acc + (Number(a.views) || 0),
-      0,
-    );
+    const totalViews = articles
+      .filter((a) => a.status === "Published")
+      .reduce((acc, a) => acc + (Number(a.views) || 0), 0);
     const formattedViews =
       totalViews >= 1000
         ? (totalViews / 1000).toFixed(1) + "K"
@@ -257,14 +258,16 @@ const ArticlesPage = () => {
                         </button>
                         {canUpdate && (
                           <button
-                            onClick={() => navigate(`/articles/${item.slug}/edit`)}
+                            onClick={() =>
+                              navigate(`/articles/${item.slug}/edit`)
+                            }
                             className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                             style={{ padding: 5 }}
                           >
                             <Pencil style={{ width: 18, height: 18 }} />
                           </button>
                         )}
-                        {isAdmin && (!item.publishedAt) && (
+                        {isAdmin && !item.publishedAt && (
                           <button
                             onClick={() => handleApprove(item.id)}
                             className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"

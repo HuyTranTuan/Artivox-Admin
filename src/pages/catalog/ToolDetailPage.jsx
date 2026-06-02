@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Package, Wrench, CalendarDays, User, DollarSign, PackageCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Package,
+  Wrench,
+  CalendarDays,
+  User,
+  DollarSign,
+  PackageCheck,
+} from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
@@ -51,7 +59,11 @@ const ToolDetailPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-sm text-slate-500">{t("catalog.noTools")}</div>
-          <Button variant="ghost" className="mt-4" onClick={() => navigate("/catalog/tools")}>
+          <Button
+            variant="ghost"
+            className="mt-4"
+            onClick={() => navigate("/catalog/tools")}
+          >
             <ArrowLeft className="h-4 w-4 mr-1" /> Back
           </Button>
         </Card>
@@ -62,11 +74,17 @@ const ToolDetailPage = () => {
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" className="h-10 w-10 p-0 rounded-lg" onClick={() => navigate("/catalog/tools")}>
+        <Button
+          variant="ghost"
+          className="h-10 w-10 p-0 rounded-lg"
+          onClick={() => navigate("/catalog/tools")}
+        >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="font-title text-2xl font-bold text-slate-950">{tool.name}</h1>
+          <h1 className="font-title text-2xl font-bold text-slate-950">
+            {tool.name}
+          </h1>
           <p className="text-sm text-slate-500 font-mono">{tool.slug}</p>
         </div>
       </div>
@@ -78,7 +96,9 @@ const ToolDetailPage = () => {
               <Wrench className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t("catalog.toolDetail")}</h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">
+                {t("catalog.toolDetail")}
+              </h2>
             </div>
           </div>
 
@@ -141,20 +161,32 @@ const ToolDetailPage = () => {
               <Package className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t("catalog.info")}</h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">
+                {t("catalog.info")}
+              </h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t("catalog.name")}</div>
-              <div className="text-sm font-medium text-slate-900 mt-1">{tool.name}</div>
+              <div className="text-xs text-slate-500 uppercase">
+                {t("catalog.name")}
+              </div>
+              <div className="text-sm font-medium text-slate-900 mt-1">
+                {tool.name}
+              </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t("catalog.category")}</div>
-              <div className="text-sm text-slate-700 mt-1">{tool.category || "—"}</div>
+              <div className="text-xs text-slate-500 uppercase">
+                {t("catalog.category")}
+              </div>
+              <div className="text-sm text-slate-700 mt-1">
+                {tool.category || "—"}
+              </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t("catalog.status")}</div>
+              <div className="text-xs text-slate-500 uppercase">
+                {t("catalog.status")}
+              </div>
               <div className="mt-1">
                 <Badge>{tool.status}</Badge>
               </div>
@@ -164,35 +196,53 @@ const ToolDetailPage = () => {
                 <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                   <PackageCheck className="h-3 w-3" /> {t("catalog.stock")}
                 </div>
-                <div className="text-sm text-slate-700 mt-1">{tool.stock ?? "—"}</div>
+                <div className="text-sm text-slate-700 mt-1">
+                  {tool.stock ?? "—"}
+                </div>
               </div>
               <div>
                 <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                   <DollarSign className="h-3 w-3" /> {t("catalog.price")}
                 </div>
-                <div className="text-sm text-slate-700 mt-1">{tool.price ? `₫${Number(tool.price).toLocaleString()}` : "—"}</div>
+                <div className="text-sm text-slate-700 mt-1">
+                  {tool.price ? `₫${Number(tool.price).toLocaleString()}` : "—"}
+                </div>
               </div>
             </div>
             <div>
               <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" /> {t("catalog.createdAt")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">{formatDate(tool.createdAt)}</div>
+              <div className="text-sm text-slate-700 mt-1">
+                {formatDate(tool.createdAt)}
+              </div>
             </div>
             <div>
               <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
                 <User className="h-3 w-3" /> {t("catalog.author")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">{tool.author || "—"}</div>
+              <div className="text-sm text-slate-700 mt-1">
+                {tool.author || "—"}
+              </div>
             </div>
           </div>
-          <Button className="w-full mt-6" variant="secondary" onClick={() => navigate("/catalog/tools")}>
+          <Button
+            className="w-full mt-6"
+            variant="secondary"
+            onClick={() => navigate("/catalog/tools")}
+          >
             <ArrowLeft className="h-4 w-4 mr-1" /> {t("catalog.back")}
           </Button>
         </Card>
       </div>
 
-      {galleryOpen && <ImageGalleryModal images={tool.images || []} initialIndex={galleryIndex} onClose={() => setGalleryOpen(false)} />}
+      {galleryOpen && (
+        <ImageGalleryModal
+          images={tool.images || []}
+          initialIndex={galleryIndex}
+          onClose={() => setGalleryOpen(false)}
+        />
+      )}
     </section>
   );
 };

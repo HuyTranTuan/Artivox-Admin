@@ -16,7 +16,7 @@ import { useCountUp } from "@hooks/useCountUp";
 import { PieChart as PieChartComponent } from "@components/ui/PieChart";
 import { formatPrice } from "@/utils/formatUtils";
 import SummaryCard from "@/components/SummaryCard";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const buildLinePath = (data, width, height, padding = 20, key = "value") => {
   if (!data || data.length === 0) return "";
@@ -53,6 +53,7 @@ const WidgetsSection = ({ widgets }) => {
     totalActiveCarts,
     totalCompletedOrders,
     totalRevenue,
+    totalArticleViews,
   } = widgets;
 
   const { t } = useTranslation();
@@ -89,7 +90,7 @@ const WidgetsSection = ({ widgets }) => {
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
         <SummaryCard
           label={t("dashboard.activeCarts")}
           value={formatPrice(useCountUp(totalActiveCarts))}
@@ -101,6 +102,12 @@ const WidgetsSection = ({ widgets }) => {
           value={formatPrice(useCountUp(totalAbandonedCarts))}
           icon={CarTaxiFrontIcon}
           color="from-rose-500 to-red-500"
+        />
+        <SummaryCard
+          label={t("dashboard.totalArticleViews")}
+          value={useCountUp(totalArticleViews)}
+          icon={MessageCircle}
+          color="from-blue-500 to-indigo-500"
         />
       </div>
     </>

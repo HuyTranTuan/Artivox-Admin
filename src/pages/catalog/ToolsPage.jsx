@@ -30,7 +30,7 @@ import { useAuthStore } from "@store/authStore";
 import ImageGalleryModal from "@components/ui/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
-import { useTranslation } from "react-i18next";
+import { useTranslation } from "@hooks/useTranslation";
 
 const ThumbnailPreview = ({ images, onClick }) => {
   if (!images || images.length === 0) {
@@ -328,7 +328,7 @@ const ToolsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-4">
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
-              Information
+              {t("catalog.information")}
             </h3>
             <div>
               <label className="text-xs font-semibold text-slate-700">
@@ -341,7 +341,7 @@ const ToolsPage = () => {
             </div>
             <div>
               <label className="text-xs font-semibold text-slate-500">
-                Slug (Read-only)
+                {t("catalog.slug")} ({t("catalog.readOnly")})
               </label>
               <Input
                 value={form.slug}
@@ -397,16 +397,16 @@ const ToolsPage = () => {
                 }
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
               >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
+                <option value="active">{t("catalog.active")}</option>
+                <option value="inactive">{t("catalog.inactive")}</option>
               </select>
             </div>
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">
-              Tool Specifics
+              {t("catalog.toolSpecifics")}
             </h3>
             <div>
               <label className="text-xs font-semibold text-slate-700">
-                Specifications
+                {t("catalog.specifications")}
               </label>
               <textarea
                 value={form.specifications}
@@ -421,29 +421,29 @@ const ToolsPage = () => {
           </div>
           <div className="space-y-4">
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
-              Images
+              {t("catalog.images")}
             </h3>
             <ImageUploadBox
-              label="Thumbnail Before"
+              label={t("catalog.thumbnailBefore")}
               value={thumbnailBefore}
               onClear={() => setThumbnailBefore(null)}
               inputRef={thumbnailBeforeRef}
               onChange={handleImageChange(setThumbnailBefore)}
-              recommended="150x150"
+              recommended={t("catalog.recommended", { size: "150x150" })}
               t={t}
             />
             <ImageUploadBox
-              label="Thumbnail After"
+              label={t("catalog.thumbnailAfter")}
               value={thumbnailAfter}
               onClear={() => setThumbnailAfter(null)}
               inputRef={thumbnailAfterRef}
               onChange={handleImageChange(setThumbnailAfter)}
-              recommended="150x150"
+              recommended={t("catalog.recommended", { size: "150x150" })}
               t={t}
             />
             <div>
               <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-                Gallery ({formGalleryImages.length})
+                {t("catalog.gallery")} ({formGalleryImages.length})
               </label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-slate-50/50">
                 {formGalleryImages.length === 0 ? (
@@ -463,7 +463,9 @@ const ToolsPage = () => {
                         className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
                       />
                       <span className="flex-1 text-xs text-slate-600 truncate">
-                        {img.file?.name || img.alt || `Image ${idx + 1}`}
+                        {img.file?.name ||
+                          img.alt ||
+                          `${t("catalog.image")} ${idx + 1}`}
                       </span>
                       <button
                         type="button"
@@ -580,7 +582,7 @@ const ToolsPage = () => {
               ) : null}
               <Button
                 variant="ghost"
-                className="h-10 w-10 p-0"
+                className="h-10 w-10 p-0!"
                 onClick={search.submit}
               >
                 <Search style={{ width: 18, height: 18 }} />
@@ -589,7 +591,7 @@ const ToolsPage = () => {
             <div className="relative">
               <Button
                 variant={filterOpen ? "default" : "ghost"}
-                className="h-10 w-10 p-0"
+                className="h-10 w-10 p-0!"
                 onClick={() => setFilterOpen(!filterOpen)}
               >
                 <Filter className="h-5 w-5" />
@@ -597,7 +599,7 @@ const ToolsPage = () => {
               {filterOpen && (
                 <div
                   ref={filterRef}
-                  className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-10"
+                  className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-40"
                 >
                   <div className="space-y-4">
                     <div className="border-t pt-4">
@@ -640,7 +642,7 @@ const ToolsPage = () => {
               <Button
                 variant={viewMode === "table" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0!"
                 onClick={() => setViewMode("table")}
               >
                 <List className="h-4 w-4" />
@@ -648,7 +650,7 @@ const ToolsPage = () => {
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 w-8 p-0"
+                className="h-8 w-8 p-0!"
                 onClick={() => setViewMode("grid")}
               >
                 <Grid3x3 className="h-4 w-4" />
