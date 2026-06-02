@@ -70,11 +70,11 @@ const ModelsPage = () => {
 
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission.replace(
+  const validJsonString = user?.permission?.replace(
     /([a-zA-Z0-9_]+)(?=\s*:)/g,
     '"$1"',
   );
-  const permission = JSON.parse(validJsonString);
+  const permission = validJsonString ? JSON.parse(validJsonString) : {};
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
   const canDelete = isAdmin || permission.del;
@@ -154,7 +154,25 @@ const ModelsPage = () => {
 
   const statuses = ["Active", "Inactive"];
 
-  const paginatedItems = items;
+  const filteredItems = useMemo(
+    () =>
+      items.filter((item) => {
+        const itemStatus = item.isActive ? "Active" : "Inactive";
+        const matchesSearch =
+          debouncedSearch === "" ||
+          item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          item.description
+            ?.toLowerCase()
+            .includes(debouncedSearch.toLowerCase());
+        return (
+          matchesSearch &&
+          (!selectedFilters.status || itemStatus === selectedFilters.status)
+        );
+      }),
+    [items, debouncedSearch, selectedFilters],
+  );
+
+  const paginatedItems = filteredItems;
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -351,6 +369,8 @@ const ModelsPage = () => {
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder={t("catalog.name")}
+                className="placeholder:text-gray-400"
               />
             </div>
             <div>
@@ -360,7 +380,8 @@ const ModelsPage = () => {
               <Input
                 value={form.slug}
                 readOnly
-                className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+                className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200 placeholder:text-gray-400"
+                placeholder={t("catalog.slug")}
               />
             </div>
             <div>
@@ -373,7 +394,8 @@ const ModelsPage = () => {
                   setForm({ ...form, description: e.target.value })
                 }
                 rows={3}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-500 text-gray-700"
+                placeholder={t("catalog.description")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -387,6 +409,8 @@ const ModelsPage = () => {
                   onChange={(e) =>
                     setForm({ ...form, basePrice: e.target.value })
                   }
+                  placeholder={t("catalog.price")}
+                  className="placeholder:text-gray-400"
                 />
               </div>
               <div>
@@ -397,6 +421,8 @@ const ModelsPage = () => {
                   type="number"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  className="placeholder:text-gray-400"
+                  placeholder={t("catalog.stock")}
                 />
               </div>
             </div>
@@ -409,7 +435,7 @@ const ModelsPage = () => {
                 onChange={(e) =>
                   setForm({ ...form, isActive: e.target.value === "active" })
                 }
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
               >
                 <option value="active">{t("catalog.active")}</option>
                 <option value="inactive">{t("catalog.inactive")}</option>
@@ -428,6 +454,8 @@ const ModelsPage = () => {
                 onChange={(e) =>
                   setForm({ ...form, previewFileUrl: e.target.value })
                 }
+                placeholder={t("catalog.previewFileUrl")}
+                className="placeholder:text-gray-500 text-gray-700"
               />
             </div>
             <div>
@@ -439,6 +467,8 @@ const ModelsPage = () => {
                 onChange={(e) =>
                   setForm({ ...form, sourceFileUrl: e.target.value })
                 }
+                placeholder={t("catalog.sourceFileUrl")}
+                className="placeholder:text-gray-500 text-gray-700"
               />
             </div>
           </div>
@@ -525,14 +555,14 @@ const ModelsPage = () => {
         <div className="flex gap-3 pt-4 border-t border-slate-100">
           <Button
             variant="secondary"
-            className="flex-1"
+            className="flex-1 cursor-pointer"
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
             {t("catalog.cancel")}
           </Button>
           <Button
-            className="flex-1 gap-2"
+            className="flex-1 gap-2 cursor-pointer"
             onClick={handleSubmit}
             disabled={saving}
           >
@@ -570,7 +600,7 @@ const ModelsPage = () => {
             </h1>
             <Button
               variant="outline-orange"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
               onClick={() => navigate("/catalog/models/create")}
               disabled={!canCreate}
             >
@@ -583,7 +613,7 @@ const ModelsPage = () => {
                 <div className="relative w-64">
                   <Input
                     ref={search.inputRef}
-                    className="pl-4 pr-10"
+                    className="pl-4 pr-10 placeholder:text-gray-400"
                     placeholder={t("catalog.searchPlaceholder")}
                     value={search.value}
                     onChange={(e) => search.setValue(e.target.value)}
@@ -604,7 +634,7 @@ const ModelsPage = () => {
               ) : null}
               <Button
                 variant="ghost"
-                className="h-10 w-10 p-0!"
+                className="h-10 w-10 p-0! cursor-pointer"
                 onClick={search.submit}
               >
                 <Search className="h-5 w-5" />
@@ -613,7 +643,7 @@ const ModelsPage = () => {
             <div className="relative">
               <Button
                 variant={filterOpen ? "default" : "ghost"}
-                className="h-10 w-10 p-0!"
+                className="h-10 w-10 p-0! cursor-pointer"
                 onClick={() => setFilterOpen(!filterOpen)}
               >
                 <Filter className="h-5 w-5" />
@@ -655,7 +685,7 @@ const ModelsPage = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full"
+                      className="w-full cursor-pointer"
                       onClick={() => setSelectedFilters({ status: null })}
                     >
                       {t("catalog.clearFilters")}
@@ -925,7 +955,7 @@ const ModelsPage = () => {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -933,7 +963,7 @@ const ModelsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleDelete}
                 disabled={deleting}
               >

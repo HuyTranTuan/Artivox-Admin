@@ -192,7 +192,7 @@ const CreateMaterialPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
+          <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewMaterial")}
           </h2>
         </div>
@@ -218,7 +218,10 @@ const CreateMaterialPage = () => {
             <Input
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder={t("catalog.materialNamePlaceholder", "Material name")}
+              placeholder={t(
+                "catalog.materialNamePlaceholder",
+                "Material name",
+              )}
             />
           </div>
           <div>
@@ -240,8 +243,11 @@ const CreateMaterialPage = () => {
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
-            placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none bg-white text-gray-700 placeholder-gray-500"
+            placeholder={t(
+              "catalog.descriptionPlaceholder",
+              "Product description...",
+            )}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -254,6 +260,7 @@ const CreateMaterialPage = () => {
               value={form.basePrice}
               onChange={(e) => handleChange("basePrice", e.target.value)}
               placeholder="0"
+              className="text-gray-700 placeholder-gray-500"
             />
           </div>
           <div>
@@ -265,6 +272,7 @@ const CreateMaterialPage = () => {
               value={form.stock}
               onChange={(e) => handleChange("stock", e.target.value)}
               placeholder="0"
+              className="text-gray-700 placeholder-gray-500"
             />
           </div>
           <div>
@@ -276,7 +284,7 @@ const CreateMaterialPage = () => {
               onChange={(e) =>
                 handleChange("isActive", e.target.value === "active")
               }
-              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
             >
               <option value="active">{t("catalog.active")}</option>
               <option value="inactive">{t("catalog.inactive")}</option>
@@ -295,7 +303,7 @@ const CreateMaterialPage = () => {
             <select
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
-              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700 placeholder-gray-500 bg-white"
             >
               <option value="FDM">FDM</option>
               <option value="RESIN">RESIN</option>
@@ -309,6 +317,7 @@ const CreateMaterialPage = () => {
               value={form.color}
               onChange={(e) => handleChange("color", e.target.value)}
               placeholder="#FF0000"
+              className="text-gray-700 placeholder-gray-500"
             />
           </div>
           <div>
@@ -318,7 +327,7 @@ const CreateMaterialPage = () => {
             <select
               value={form.unit}
               onChange={(e) => handleChange("unit", e.target.value)}
-              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
             >
               <option value="GRAM">{t("catalog.unitGram", "Gram")}</option>
               <option value="PIECE">{t("catalog.unitPiece", "Piece")}</option>
@@ -401,9 +410,9 @@ const CreateMaterialPage = () => {
           />
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="mt-2 gap-1.5 text-xs"
+            className="mt-2 gap-1.5 text-xs cursor-pointer"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

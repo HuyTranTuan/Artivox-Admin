@@ -1,15 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, SendHorizontal, Sparkles, X } from "lucide-react";
+
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { useAuth } from "@hooks/useAuth";
 import { getAutoReply } from "@services/aiChatService";
 import { useTranslation } from "@hooks/useTranslation";
-import { useUiStore } from "@store/uiStore";
 import { useAuthStore } from "@store/authStore";
-
-const AI_CHAT_ROOM = "staffId";
 
 const formatTime = (value) =>
   new Date(value).toLocaleTimeString([], {
@@ -74,8 +72,9 @@ function useTypewriter(speed = 18) {
 const StaffAiChatPage = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { theme } = useUiStore();
   const messageEndRef = useRef(null);
+  const AI_CHAT_ROOM = user?.email || "staffId";
+
   const [messages, setMessages] = useState([
     {
       id: "ai-welcome",
@@ -273,10 +272,7 @@ const StaffAiChatPage = () => {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              {t("chat.roomLabel", {
-                id: AI_CHAT_ROOM,
-                defaultValue: "Room: {{id}}",
-              })}
+              {t("chat.roomLabel", { id: AI_CHAT_ROOM })}
             </span>
             <Button
               variant="ghost"

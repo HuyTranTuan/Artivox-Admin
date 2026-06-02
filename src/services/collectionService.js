@@ -2,8 +2,8 @@ import axiosClient from "@api/axios";
 
 export const collectionService = {
   // Fetch all collections
-  getCollections: async () => {
-    const response = await axiosClient.get("/catalog/collections");
+  getCollections: async (params) => {
+    const response = await axiosClient.get("/catalog/collections", { params });
     return response;
   },
 

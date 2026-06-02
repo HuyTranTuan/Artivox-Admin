@@ -18,6 +18,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useTranslation } from "@hooks/useTranslation";
+import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
 
@@ -29,14 +30,32 @@ const CollectionsPage = () => {
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
-  const canCreate = isAdmin || user?.permission?.create;
-  const canUpdate = isAdmin || user?.permission?.update;
-  const canDelete = isAdmin || user?.permission?.del;
+  const validJsonString = user?.permission?.replace(
+    /([a-zA-Z0-9_]+)(?=\s*:)/g,
+    '"$1"',
+  );
+  const permission = validJsonString ? JSON.parse(validJsonString) : {};
+  const canCreate = isAdmin || permission.create;
+  const canUpdate = isAdmin || permission.update;
+  const canDelete = isAdmin || permission.del;
 
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: items,
+    loading,
+    error,
+    page: currentPage,
+    totalPages,
+    totalItems: total,
+    setPage,
+    nextPage,
+    prevPage,
+    refetch,
+  } = usePaginatedApi(
+    (params) => collectionService.getCollections({ ...params }),
+    { defaultLimit: ROWS_PER_PAGE, pageParam: "page" },
+  );
+
   const [filterOpen, setFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedFilters, setSelectedFilters] = useState({ status: null });
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -47,17 +66,9 @@ const CollectionsPage = () => {
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
 
-  const load = async () => {
-    try {
-      setLoading(true);
-      const data = await collectionService.getCollections();
-      setItems(Array.isArray(data) ? data : []);
-    } catch {
-      setItems([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, selectedFilters]);
 
   const handleDelete = async () => {
     if (selectedItem) {
@@ -65,7 +76,7 @@ const CollectionsPage = () => {
       try {
         await collectionService.deleteCollection(selectedItem.slug);
         setOpenDialog(null);
-        load();
+        refetch();
       } catch (err) {
         console.error("Delete collection failed:", err);
       } finally {
@@ -74,19 +85,10 @@ const CollectionsPage = () => {
     }
   };
 
-  // Fetch collections from API
-  useEffect(() => {
-    load();
-  }, []);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, selectedFilters]);
-
-  // Filter collections based on search
   const filteredItems = useMemo(
     () =>
       items.filter((item) => {
+        const itemStatus = item.isActive ? "Active" : "Inactive";
         const matchesSearch =
           debouncedSearch === "" ||
           item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
@@ -95,18 +97,13 @@ const CollectionsPage = () => {
             .includes(debouncedSearch.toLowerCase());
         return (
           matchesSearch &&
-          (!selectedFilters.status || item.status === selectedFilters.status)
+          (!selectedFilters.status || itemStatus === selectedFilters.status)
         );
       }),
     [items, debouncedSearch, selectedFilters],
   );
 
-  const totalPages = Math.ceil(filteredItems.length / ROWS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ROWS_PER_PAGE;
-  const paginatedItems = filteredItems.slice(
-    startIndex,
-    startIndex + ROWS_PER_PAGE,
-  );
+  const paginatedItems = filteredItems;
 
   return (
     <section className="space-y-6">
@@ -118,7 +115,7 @@ const CollectionsPage = () => {
             </h1>
             <Button
               variant="outline-orange"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
               onClick={() => navigate("/catalog/collections/create")}
               disabled={!canCreate}
             >
@@ -272,7 +269,7 @@ const CollectionsPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              onClick={() => setPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -292,7 +289,7 @@ const CollectionsPage = () => {
                     variant={currentPage === pageNumber ? "default" : "ghost"}
                     size="sm"
                     className="h-8 w-8 p-0"
-                    onClick={() => setCurrentPage(pageNumber)}
+                    onClick={() => setPage(pageNumber)}
                   >
                     {pageNumber}
                   </Button>
@@ -302,9 +299,7 @@ const CollectionsPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
+              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
             >
               {t("catalog.next")}

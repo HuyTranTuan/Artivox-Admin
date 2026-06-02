@@ -199,11 +199,15 @@ const CreateToolPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
+          <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewTool")}
           </h2>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="gap-2 cursor-pointer"
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -226,6 +230,7 @@ const CreateToolPage = () => {
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
               placeholder={t("catalog.toolNamePlaceholder", "Tool name")}
+              className="text-gray-700 placeholder-gray-500 bg-white"
             />
           </div>
           <div>
@@ -236,6 +241,7 @@ const CreateToolPage = () => {
               value={form.slug}
               onChange={(e) => handleChange("slug", e.target.value)}
               placeholder={t("catalog.slugPlaceholder", "tool-slug")}
+              className="text-gray-700 placeholder-gray-500 bg-white"
             />
           </div>
         </div>
@@ -247,8 +253,11 @@ const CreateToolPage = () => {
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
-            placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none bg-white text-gray-700 placeholder-gray-500"
+            placeholder={t(
+              "catalog.descriptionPlaceholder",
+              "Product description...",
+            )}
           />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -261,6 +270,7 @@ const CreateToolPage = () => {
               value={form.basePrice}
               onChange={(e) => handleChange("basePrice", e.target.value)}
               placeholder="0"
+              className="text-gray-700 placeholder-gray-500 bg-white"
             />
           </div>
           <div>
@@ -272,6 +282,7 @@ const CreateToolPage = () => {
               value={form.stock}
               onChange={(e) => handleChange("stock", e.target.value)}
               placeholder="0"
+              className="text-gray-700 placeholder-gray-500 bg-white"
             />
           </div>
           <div>
@@ -283,7 +294,7 @@ const CreateToolPage = () => {
               onChange={(e) =>
                 handleChange("isActive", e.target.value === "active")
               }
-              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
             >
               <option value="active">{t("catalog.active")}</option>
               <option value="inactive">{t("catalog.inactive")}</option>
@@ -302,7 +313,7 @@ const CreateToolPage = () => {
             value={form.specifications}
             onChange={(e) => handleChange("specifications", e.target.value)}
             rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono"
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono text-gray-700 placeholder-gray-500 bg-white"
             placeholder='{"power": "1000W", "weight": "2kg"}'
           />
         </div>
@@ -380,9 +391,9 @@ const CreateToolPage = () => {
           />
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="mt-2 gap-1.5 text-xs"
+            className="mt-2 gap-1.5 text-xs cursor-pointer"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

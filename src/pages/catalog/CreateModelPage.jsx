@@ -186,15 +186,19 @@ const CreateModelPage = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/catalog/models")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
+          <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewModel")}
           </h2>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="gap-2 cursor-pointer"
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -217,6 +221,7 @@ const CreateModelPage = () => {
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
               placeholder={t("catalog.modelNamePlaceholder")}
+              className="placeholder:text-gray-600"
             />
           </div>
           <div>
@@ -227,6 +232,7 @@ const CreateModelPage = () => {
               value={form.slug}
               onChange={(e) => handleChange("slug", e.target.value)}
               placeholder={t("catalog.modelSlugPlaceholder")}
+              className="placeholder:text-gray-600"
             />
           </div>
         </div>
@@ -238,7 +244,7 @@ const CreateModelPage = () => {
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-600 bg-slate-50 "
             placeholder={t("catalog.productDescriptionPlaceholder")}
           />
         </div>
@@ -252,6 +258,7 @@ const CreateModelPage = () => {
               value={form.basePrice}
               onChange={(e) => handleChange("basePrice", e.target.value)}
               placeholder="0"
+              className="placeholder:text-gray-600"
             />
           </div>
           <div>
@@ -263,6 +270,7 @@ const CreateModelPage = () => {
               value={form.stock}
               onChange={(e) => handleChange("stock", e.target.value)}
               placeholder="0"
+              className="placeholder:text-gray-600"
             />
           </div>
           <div>
@@ -274,7 +282,7 @@ const CreateModelPage = () => {
               onChange={(e) =>
                 handleChange("isActive", e.target.value === "active")
               }
-              className="w-full h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-slate-50 text-gray-600"
             >
               <option value="active">{t("catalog.active")}</option>
               <option value="inactive">{t("catalog.inactive")}</option>
@@ -294,6 +302,7 @@ const CreateModelPage = () => {
               value={form.previewFileUrl}
               onChange={(e) => handleChange("previewFileUrl", e.target.value)}
               placeholder={t("catalog.urlPlaceholder")}
+              className="placeholder:text-gray-600"
             />
           </div>
           <div>
@@ -304,6 +313,7 @@ const CreateModelPage = () => {
               value={form.sourceFileUrl}
               onChange={(e) => handleChange("sourceFileUrl", e.target.value)}
               placeholder={t("catalog.urlPlaceholder")}
+              className="placeholder:text-gray-600"
             />
           </div>
         </div>
@@ -381,9 +391,9 @@ const CreateModelPage = () => {
           />
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             size="sm"
-            className="mt-2 gap-1.5 text-xs"
+            className="mt-2 gap-1.5 text-xs cursor-pointer hover:bg-slate-50"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

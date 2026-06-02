@@ -71,11 +71,11 @@ const MaterialsPage = () => {
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission.replace(
+  const validJsonString = user?.permission?.replace(
     /([a-zA-Z0-9_]+)(?=\s*:)/g,
     '"$1"',
   );
-  const permission = JSON.parse(validJsonString);
+  const permission = validJsonString ? JSON.parse(validJsonString) : {};
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
   const canDelete = isAdmin || permission.del;
@@ -148,14 +148,21 @@ const MaterialsPage = () => {
     () =>
       items.filter((item) => {
         const itemStatus = item.isActive ? "Active" : "Inactive";
+        const matchesSearch =
+          debouncedSearch === "" ||
+          item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+          item.description
+            ?.toLowerCase()
+            .includes(debouncedSearch.toLowerCase());
         return (
-          (!selectedFilters.type ||
-            item.material?.type === selectedFilters.type) &&
+          matchesSearch &&
           (!selectedFilters.status || itemStatus === selectedFilters.status)
         );
       }),
-    [items, selectedFilters],
+    [items, debouncedSearch, selectedFilters],
   );
+
+  const paginatedItems = filteredItems;
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -356,6 +363,8 @@ const MaterialsPage = () => {
               <Input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder={t("catalog.name")}
+                className="placeholder:text-gray-500 text-gray-700"
               />
             </div>
             <div>
@@ -365,7 +374,8 @@ const MaterialsPage = () => {
               <Input
                 value={form.slug}
                 readOnly
-                className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+                placeholder={t("catalog.slug")}
+                className="bg-slate-50 cursor-not-allowed border-slate-200 placeholder:text-gray-500 text-gray-700"
               />
             </div>
             <div>
@@ -378,7 +388,8 @@ const MaterialsPage = () => {
                   setForm({ ...form, description: e.target.value })
                 }
                 rows={3}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
+                placeholder={t("catalog.description")}
+                className="bg-white w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none text-gray-700 placeholder:text-gray-500"
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -392,6 +403,8 @@ const MaterialsPage = () => {
                   onChange={(e) =>
                     setForm({ ...form, basePrice: e.target.value })
                   }
+                  placeholder={t("catalog.price")}
+                  className="placeholder:text-gray-500 text-gray-700"
                 />
               </div>
               <div>
@@ -402,6 +415,8 @@ const MaterialsPage = () => {
                   type="number"
                   value={form.stock}
                   onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                  placeholder={t("catalog.stock")}
+                  className="placeholder:text-gray-500 text-gray-700"
                 />
               </div>
             </div>
@@ -414,7 +429,7 @@ const MaterialsPage = () => {
                 onChange={(e) =>
                   setForm({ ...form, isActive: e.target.value === "active" })
                 }
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+                className="w-full border bg-slate-0 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700 placeholder:text-gray-500"
               >
                 <option value="active">{t("catalog.active")}</option>
                 <option value="inactive">{t("catalog.inactive")}</option>
@@ -434,6 +449,7 @@ const MaterialsPage = () => {
                     setForm({ ...form, materialType: e.target.value })
                   }
                   placeholder="PLA, ABS..."
+                  className="placeholder:text-gray-500 text-gray-700"
                 />
               </div>
               <div>
@@ -447,14 +463,15 @@ const MaterialsPage = () => {
                     onChange={(e) =>
                       setForm({ ...form, color: e.target.value })
                     }
-                    className="p-1 h-9 w-12"
+                    className="p-1 h-9 w-12 placeholder:text-gray-500 text-gray-700"
                   />
                   <Input
                     value={form.color}
                     onChange={(e) =>
                       setForm({ ...form, color: e.target.value })
                     }
-                    className="flex-1 text-sm font-mono"
+                    placeholder={t("catalog.color")}
+                    className="placeholder:text-gray-500 text-gray-700"
                   />
                 </div>
               </div>
@@ -466,6 +483,7 @@ const MaterialsPage = () => {
                   value={form.unit}
                   onChange={(e) => setForm({ ...form, unit: e.target.value })}
                   placeholder="ROLL, BOTTLE..."
+                  className="text-gray-700 placeholder:text-gray-500"
                 />
               </div>
             </div>
@@ -539,7 +557,7 @@ const MaterialsPage = () => {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300"
+                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300 cursor-pointer"
                 onClick={() => galleryInputRef.current?.click()}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -552,14 +570,14 @@ const MaterialsPage = () => {
         <div className="flex gap-3 pt-4 border-t border-slate-100">
           <Button
             variant="secondary"
-            className="flex-1"
+            className="flex-1 cursor-pointer"
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
             {t("catalog.cancel")}
           </Button>
           <Button
-            className="flex-1 gap-2"
+            className="flex-1 gap-2 cursor-pointer"
             onClick={handleSubmit}
             disabled={saving}
           >
@@ -580,7 +598,9 @@ const MaterialsPage = () => {
               {t("catalog.errorLoading")}
             </div>
             <div className="text-sm text-slate-500 mb-4">{error}</div>
-            <Button onClick={refetch}>{t("catalog.retry")}</Button>
+            <Button onClick={refetch} className="cursor-pointer">
+              {t("catalog.retry")}
+            </Button>
           </div>
         </Card>
       </section>
@@ -597,7 +617,7 @@ const MaterialsPage = () => {
             </h1>
             <Button
               variant="outline-orange"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
               onClick={() => navigate("/catalog/materials/create")}
               disabled={!canCreate}
             >
@@ -631,7 +651,7 @@ const MaterialsPage = () => {
               ) : null}
               <Button
                 variant="ghost"
-                className="h-10 w-10 p-0!"
+                className="h-10 w-10 p-0! cursor-pointer"
                 onClick={search.submit}
               >
                 <Search className="h-5 w-5" />
@@ -640,7 +660,7 @@ const MaterialsPage = () => {
             <div className="relative">
               <Button
                 variant={filterOpen ? "default" : "ghost"}
-                className="h-10 w-10 p-0!"
+                className="h-10 w-10 p-0! cursor-pointer"
                 onClick={() => setFilterOpen(!filterOpen)}
               >
                 <Filter className="h-5 w-5" />
@@ -706,7 +726,7 @@ const MaterialsPage = () => {
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full"
+                      className="w-full cursor-pointer"
                       onClick={() =>
                         setSelectedFilters({ type: null, status: null })
                       }
@@ -721,7 +741,7 @@ const MaterialsPage = () => {
               <Button
                 variant={viewMode === "table" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 w-8 p-0!"
+                className="h-8 w-8 p-0! cursor-pointer"
                 onClick={() => setViewMode("table")}
               >
                 <List className="h-4 w-4" />
@@ -729,7 +749,7 @@ const MaterialsPage = () => {
               <Button
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
-                className="h-8 w-8 p-0!"
+                className="h-8 w-8 p-0! cursor-pointer"
                 onClick={() => setViewMode("grid")}
               >
                 <Grid3x3 className="h-4 w-4" />
@@ -754,28 +774,28 @@ const MaterialsPage = () => {
               >
                 <div className="min-w-[800px]">
                   <div className="overflow-hidden rounded-2xl border border-slate-200">
-                    <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
+                    <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_150px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
                       <div>{t("catalog.image")}</div>
                       <div>{t("catalog.name")}</div>
-                      <div>{t("catalog.type")}</div>
+                      <div>{t("catalog.price")}</div>
                       <div>{t("catalog.status")}</div>
                       <div>{t("catalog.createdAt")}</div>
-                      <div>{t("catalog.author")}</div>
+                      <div>{t("catalog.stock")}</div>
                       <div>{t("catalog.actions")}</div>
                     </div>
                     <div
                       className="overflow-y-auto"
                       style={{ maxHeight: "calc(100vh - 380px)" }}
                     >
-                      {filteredItems.length === 0 ? (
+                      {paginatedItems.length === 0 ? (
                         <div className="px-4 py-8 text-sm text-slate-500 text-center">
                           {t("catalog.noMaterials")}
                         </div>
                       ) : (
-                        filteredItems.map((item) => (
+                        paginatedItems.map((item) => (
                           <div
                             key={item.id}
-                            className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-100 cursor-pointer transition"
+                            className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_150px] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-100 cursor-pointer transition"
                             onClick={() => handleRowClick(item.slug)}
                           >
                             <ThumbnailPreview
@@ -785,10 +805,12 @@ const MaterialsPage = () => {
                                 openGallery(item.images);
                               }}
                             />
-                            <div className="font-title text-base font-semibold text-slate-900">
-                              {item.name}
+                            <div>
+                              <div className="font-title text-base font-semibold text-slate-900">
+                                {item.name}
+                              </div>
                             </div>
-                            <div>{item.material?.type || "N/A"}</div>
+                            <div>{item.basePrice?.toLocaleString()} VND</div>
                             <div>
                               <Badge>
                                 {item.isActive
@@ -800,7 +822,7 @@ const MaterialsPage = () => {
                               {formatDate(item.createdAt)}
                             </div>
                             <div className="text-xs text-slate-500">
-                              {item.author || "—"}
+                              {item.stock}
                             </div>
                             {renderActionButtons(item)}
                           </div>
@@ -813,7 +835,7 @@ const MaterialsPage = () => {
             )}
             {viewMode === "grid" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredItems.map((item) => (
+                {paginatedItems.map((item) => (
                   <div
                     key={item.id}
                     className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group cursor-pointer"
@@ -954,7 +976,7 @@ const MaterialsPage = () => {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -962,7 +984,7 @@ const MaterialsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={handleDelete}
                 disabled={deleting}
               >
