@@ -139,6 +139,15 @@
   "common.unknownProduct": "Sản phẩm không xác định",
   "common.na": "N/A",
   "common.user": "Người dùng",
+  "common.phone": "Số điện thoại",
+  "dashboard.approvalRate": "Tỷ lệ duyệt",
+  "dashboard.myOrders": "Đơn hàng của tôi",
+  "dashboard.approvedOrders": "Đơn đã duyệt",
+  "dashboard.pendingApprovals": "Đơn chờ duyệt",
+  "dashboard.chatRooms": "Phòng chat",
+  "dashboard.recentOrders": "Đơn hàng gần đây",
+  "dashboard.customerName": "Tên khách hàng",
+  "dashboard.topCustomers": "Khách hàng hàng đầu",
 
   "footer.copyright": "© 2026 Artivox"
 }

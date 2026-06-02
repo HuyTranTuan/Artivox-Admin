@@ -79,11 +79,9 @@ const StaffDashboardPage = () => {
     <section className="space-y-6">
       {/* ── Header ── */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-title text-2xl font-bold text-slate-900">
-            {t("dashboard.staffTitle")}
-          </h1>
-        </div>
+        <h1 className="font-title text-2xl font-bold">
+          {t("dashboard.staffTitle")}
+        </h1>
       </div>
 
       {/* ── Basic Info ── */}

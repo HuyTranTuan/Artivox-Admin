@@ -215,6 +215,15 @@
   "common.unknownProduct": "Unknown Product",
   "common.na": "N/A",
   "common.user": "User",
+  "common.phone": "Phone",
+  "dashboard.approvalRate": "Approval Rate",
+  "dashboard.myOrders": "My Orders",
+  "dashboard.approvedOrders": "Approved Orders",
+  "dashboard.pendingApprovals": "Pending Approvals",
+  "dashboard.chatRooms": "Chat Rooms",
+  "dashboard.recentOrders": "Recent Orders",
+  "dashboard.customerName": "Customer Name",
+  "dashboard.topCustomers": "Top Customers",
 
   "footer.copyright": "© 2026 Artivox"
 }
