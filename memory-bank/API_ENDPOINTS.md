@@ -1,100 +1,209 @@
-content = """# API ENDPOINTS - CAVEMAN EDITION
+# API ENDPOINTS
 
-**BASE:** `http://localhost:3000/api`  
-**LOCK:** Put `Authorization: Bearer <accessToken>` in head. Use `Cookie: refreshToken=<token>` for new tokens.
-
----
-
-## 🔐 AUTH (PROVE WHO YOU ARE)
-
-- `POST /auth/customer/register` ── **In:** email, password, fullName ── **Out:** user, tokens
-- `POST /auth/customer/login` ── **In:** email, password ── **Out:** user, tokens
-- `POST /auth/admin/login` ── **In:** email, password ── **Out:** user, tokens
-- `POST /auth/refresh-token` ── **In:** cookie/header ── **Out:** tokens
-- `POST /auth/logout` `[Lock]` ── **Out:** logout msg
-- `PATCH /auth/admin/account` `[Lock: Admin]` ── **In:** fullName?, email?, phone?, address? ── **Out:** Admin data
-- `PATCH /auth/customer/account` `[Lock: Customer]` ── **In:** fullName?, email?, phone?, address?, password? ── **Out:** Customer data
+**BASE:** `http://localhost:3000/api`
+**AUTH:** `Authorization: Bearer <accessToken>` | refresh via cookie `refreshToken`
 
 ---
 
-## 📦 CATALOG (THINGS TO BUY)
+## AUTH `/auth`
 
-- `GET /catalog/models` `[Ask: ?search&limit&skip]` ── **Out:** Models list
-- `GET /catalog/models/:slug` ── **Out:** One Model details
-- `GET /catalog/materials` `[Ask: ?type&limit&skip]` ── **Out:** Materials list
-- `GET /catalog/materials/:slug` ── **Out:** One Material
-- `GET /catalog/tools` `[Ask: ?limit&skip]` ── **Out:** Tools list
-- `GET /catalog/tools/:slug` ── **Out:** One Tool
-- `GET /catalog/products` `[Ask: ?type&search&limit&skip]` ── **Out:** Products list
-- `GET /catalog/products/:slug` ── **Out:** One Product
-- `GET /catalog/collections` ── **Out:** Collections list
-- `GET /catalog/collections/:id` ── **Out:** One Collection + Products
-
----
-
-## 🛒 SHOPPING (CART & DISCOUNTS)
-
-- `GET /cart` `[Lock]` ── **Out:** Cart items
-- `POST /cart/add` `[Lock]` ── **In:** productId, quantity ── **Out:** Item data
-- `PATCH /cart/:cartItemId` `[Lock]` ── **In:** quantity ── **Out:** Fresh item data
-- `DELETE /cart/:cartItemId` `[Lock]` ── **Out:** Delete msg
-- `GET /discounts` ── **Out:** All discounts
-- `GET /discounts/:slug` ── **Out:** One discount
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| POST | `/customer/register` | - | email, password, fullName | user, tokens |
+| POST | `/customer/login` | - | email, password | user, tokens |
+| POST | `/admin/login` | - | email, password | user, tokens |
+| POST | `/refresh-token` | - | cookie/header | tokens |
+| POST | `/logout` | ✓ | - | msg |
+| GET | `/me` | ✓ | - | current user |
+| PATCH | `/admin/account` | ✓ | fullName?, email?, phone?, address? | admin data |
+| PATCH | `/customer/account` | ✓ | fullName?, email?, phone?, address? | customer data |
+| PATCH | `/admin/change-password` | ✓ | oldPassword, newPassword | msg |
+| PATCH | `/customer/change-password` | ✓ | oldPassword, newPassword | msg |
+| POST | `/forgot-password` | - | email | msg |
+| POST | `/reset-password` | - | token, newPassword | msg |
+| POST | `/verify-email` | - | token | msg |
+| POST | `/resend-verify-email` | - | email | msg |
+| GET | `/customer/google` | - | - | redirect |
+| GET | `/customer/google/callback` | - | - | tokens redirect |
 
 ---
 
-## 📋 ORDERS (BUY NOW)
+## CATALOG `/catalog`
 
-- `POST /orders` `[Lock]` ── **In:** shippingAddress ── **Out:** Order info `[Boom: Admin get notify]`
-- `GET /orders/me` `[Lock]` ── **Out:** My orders
-- `GET /orders` `[Lock: Admin]` ── **Out:** All orders
-- `GET /orders/:orderId` ── **Out:** Order detail
-- `POST /orders/:orderId/cancel` `[Lock]` ── **Out:** Cancelled order
-- `PATCH /orders/:orderId/approve` `[Lock: Admin]` ── **Out:** Done order `[Boom: Customer get notify]`
+### Models `/catalog/models`
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | optional | ?search&limit&skip&isActive | models list |
+| GET | `/:slug` | optional | - | model detail |
+| POST | `/` | ADMIN/STAFF | multipart images + body | new model |
+| PUT | `/:slug` | ADMIN/STAFF | multipart images + body | updated model |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+
+### Materials `/catalog/materials`
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | optional | ?type&search&limit&skip&isActive | materials list |
+| GET | `/:slug` | optional | - | material detail |
+| POST | `/` | ADMIN/STAFF | multipart | new material |
+| PUT | `/:slug` | ADMIN/STAFF | multipart | updated material |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+
+### Tools `/catalog/tools`
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | optional | ?search&limit&skip&isActive | tools list |
+| GET | `/:slug` | optional | - | tool detail |
+| POST | `/` | ADMIN/STAFF | multipart | new tool |
+| PUT | `/:slug` | ADMIN/STAFF | multipart | updated tool |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+
+### Products `/catalog/products`
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | optional | ?type&search&limit&skip | products list |
+| GET | `/:slug` | optional | - | product detail |
+| PATCH | `/:id` | ✓ | collectionId?, discountId? | updated product |
+| POST | `/:slug/rate` | ✓ | rating, comment | rating |
+
+### Collections `/catalog/collections`
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | - | - | public collections |
+| GET | `/:slug` | - | - | collection + products |
+| GET | `/admin/all` | ADMIN/STAFF | - | all collections (incl. inactive) |
+| POST | `/` | ADMIN/STAFF | multipart | new collection |
+| PUT | `/:slug` | ADMIN/STAFF | multipart | updated collection |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+| POST | `/:id/products` | ADMIN/STAFF | productId | product added |
+| DELETE | `/:id/products/:productId` | ADMIN/STAFF | - | product removed |
 
 ---
 
-## 📰 ARTICLES (WORDS ON STONE)
+## CART `/cart` `[All: Lock]`
 
-- `GET /articles` ── **Out:** All articles
-- `GET /articles/:slug` ── **Out:** One article multi-lang
-- `GET /articles/:lang` OR `/:lang/:slug` `(lang = vi/en)` ── **Out:** Safe published text
-- `POST /articles` `[Lock: Admin/Staff]` ── **In:** slug, coverImage, translations ── **Out:** New article `[Boom: Admin get notify]`
-- `PUT /articles/:slug` `[Lock: Owner]` ── **In:** coverImage?, translations? ── **Out:** Fixed article
-- `DELETE /articles/:slug` `[Lock: Owner]` ── **Out:** Article gone
-- `PATCH /articles/:articleId/approve` `[Lock: Manager]` ── **Out:** Live article `[Boom: Author get notify]`
-
----
-
-## 💬 CHAT (UGGA BUGGA TALK)
-
-- `GET /chat/rooms` `[Lock]` ── **Out:** Rooms + last talk
-- `POST /chat/rooms` `[Lock: Admin]` ── **In:** customerId ── **Out:** Active room
-- `GET /chat/:roomId/messages` `[Lock]` ── **Out:** Old talk messages
-- `POST /chat/:roomId/message` `[Lock]` ── **In:** content, fileUrl?, fileType? ── **Out:** New message `[Boom: Recipient get notify]`
-- `PATCH /chat/:roomId/read` `[Lock]` ── **Out:** Read success
+| Method | Path | In | Out |
+|---|---|---|---|
+| GET | `/` | - | cart items |
+| POST | `/add` | productId, quantity | item |
+| PATCH | `/:id` | quantity | updated item |
+| DELETE | `/:id` | - | deleted |
 
 ---
 
-## 🔔 NOTIFICATIONS (LOUD NOISES)
+## ORDERS `/orders`
 
-- `GET /notifications` `[Lock]` `[Ask: ?limit&offset&isRead]` ── **Out:** Loud noises list
-- `GET /notifications/unread-count` `[Lock]` ── **Out:** Unread count number
-- `GET /notifications/:id` `[Lock]` ── **Out:** Noise detail
-- `PATCH /notifications/:id/read` `[Lock]` ── **Out:** Read true
-- `PATCH /notifications/read-all` `[Lock]` ── **Out:** All read success
-- `DELETE /notifications/:id` `[Lock]` ── **Out:** Noise gone
-
----
-
-## 👥 USERS (TRIBE PEOPLE)
-
-- `GET /customers` ── **Out:** Tribe list
-- `GET /customers/:slug` ── **Out:** One tribe person info
-- `GET /customer-activity-log` `[Lock]` ── **Out:** What person did log
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | - | - | all orders |
+| POST | `/` | ✓ | shippingAddress, paymentMethod, note? | order |
+| GET | `/me` | ✓ | - | my orders |
+| GET | `/:orderId` | - | - | order detail |
+| POST | `/:orderId/cancel` | ✓ | - | cancelled |
+| PATCH | `/:orderId/approve` | ✓ | - | approved |
+| PATCH | `/:orderId/payment-status` | ✓ | paymentStatus | updated |
 
 ---
 
-## 🛡️ BAD THINGS (ERROR SHIELD)
+## ARTICLES `/articles`
 
-If smash code, server throw:
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | - | - | all articles |
+| GET | `/:slug` | - | - | article detail |
+| GET | `/:lang` | - | - | by locale (en/vi/vn) |
+| GET | `/:lang/:slug` | - | - | localized article |
+| POST | `/` | ADMIN/STAFF | multipart | created |
+| PUT | `/:slug` | ADMIN/STAFF | multipart | updated |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+| PATCH | `/:articleId/approve` | ADMIN/MANAGER | - | approved |
+
+---
+
+## CHAT `/chat` `[All: Lock except /ai]`
+
+| Method | Path | In | Out |
+|---|---|---|---|
+| POST | `/ai` | message, history? | AI reply (no auth) |
+| GET | `/rooms` | - | my rooms |
+| POST | `/rooms` | customerId? | room |
+| POST | `/rooms/:roomId/claim` | - | claimed room |
+| GET | `/rooms/:roomId/messages` | - | messages |
+| POST | `/rooms/:roomId/messages` | content, fileUrl?, fileType? | message |
+| PATCH | `/rooms/:roomId/read` | - | read ok |
+| GET | `/internal-users` | - | staff list |
+| GET | `/internal-rooms` | - | internal rooms |
+| POST | `/internal-rooms` | targetUserId | room |
+| GET | `/internal-rooms/:roomId/messages` | - | messages |
+| POST | `/internal-rooms/:roomId/messages` | content, fileUrl?, fileType? | message |
+| PATCH | `/internal-rooms/:roomId/read` | - | read ok |
+
+---
+
+## DISCOUNTS `/discounts`
+
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/` | - | - | active discounts |
+| GET | `/admin` | ADMIN/STAFF | - | all discounts |
+| GET | `/:slug` | - | - | discount detail |
+| POST | `/` | ADMIN/STAFF | name, value, type, ... | created |
+| PUT | `/:slug` | ADMIN/STAFF | body | updated |
+| DELETE | `/:slug` | ADMIN/STAFF | - | deleted |
+
+---
+
+## NOTIFICATIONS `/notifications` `[All: Lock]`
+
+| Method | Path | In | Out |
+|---|---|---|---|
+| GET | `/` | ?limit&offset&isRead | list |
+| GET | `/unread-count` | - | count |
+| GET | `/:id` | - | detail |
+| PATCH | `/:id/read` | - | marked read |
+| PATCH | `/read-all` | - | all read |
+| DELETE | `/:id` | - | deleted |
+
+---
+
+## ADMIN `/admin` `[All: Lock]`
+
+| Method | Path | Auth | In | Out |
+|---|---|---|---|---|
+| GET | `/staff/dashboard` | ANY | - | personal stats |
+| POST | `/staff/upload-image` | ADMIN/MANAGER/STAFF | multipart | url |
+| GET | `/dashboard` | ADMIN | - | full dashboard |
+| GET | `/users` | ADMIN | - | admin users |
+| GET | `/customers` | ADMIN | - | all customers |
+| GET | `/customers/:slug` | ADMIN | - | customer detail |
+| PATCH | `/customers/:slug/banned` | ADMIN | - | ban toggle |
+| GET | `/orders` | ADMIN | - | all orders |
+| PATCH | `/orders/:id` | ADMIN | status | updated |
+| GET | `/revenue` | ADMIN | ?period | revenue data |
+| POST | `/staff-create` | ADMIN | email, password, fullName | new staff |
+| PATCH | `/staff-decentralize/:email` | ADMIN | role | updated role |
+
+---
+
+## SEARCH `/search`
+
+| Method | Path | In | Out |
+|---|---|---|---|
+| GET | `/` | ?q&limit&type | global results |
+| GET | `/models` | ?q&page&limit&filters | models |
+| GET | `/materials` | ?q&page&limit&type&unit | materials |
+| GET | `/tools` | ?q&page&limit&priceMin&priceMax | tools |
+
+---
+
+## MISC
+
+| Method | Path | In | Out |
+|---|---|---|---|
+| GET | `/customers` | - | customers list |
+| GET | `/customers/:slug` | - | customer |
+| GET | `/discount_orders` | - | discount orders |
+| GET | `/discount_orders/:id` | - | one discount order |
+| GET | `/customer-activity-log` | - | activity logs |
+| GET | `/location/provinces` | - | provinces |
+| GET | `/location/wards` | - | all wards |
+| GET | `/location/wards/:provinceCode` | - | wards by province |

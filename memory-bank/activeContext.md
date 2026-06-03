@@ -1,14 +1,32 @@
 # Active Context
 
+**Updated:** Jun 4, 2026
+
 ## Current Focus
 
-Artivox-FE/artivox-nextjs implementation:
+- Catalog pages (Models, Materials, Tools) — search/filter/pagination wired to real BE
+- Active file: `ModelsPage.jsx`, `ToolsPage.jsx`
 
-- Updated product services with CRUD operations
-- Added checkout flow (information → payment → done/failed)
-- Cart page now routes to /checkout/information
+## Architecture Notes
+
+- Data flow: Component → Hook (`usePaginatedApi`) → Service → Axios
+- Services live in `src/services/` — named exports only
+- No direct Axios in components
+- Socket: `notificationSocket.js` (notifications), `supportChatSocket.js` (customer chat)
+- Internal staff chat: `/chat/internal-rooms`, `/chat/internal-users`
+- Admin API prefix: `/admin/*` (requires auth + role)
+- Catalog admin routes: POST/PUT/DELETE on `/catalog/models|materials|tools|collections`
+
+## Hot Paths
+
+- `src/services/` — all API calls
+- `src/hooks/usePaginatedApi.js` — pagination logic
+- `src/pages/catalog/` — ModelsPage, MaterialsPage, ToolsPage, CollectionsPage
+- `src/pages/support/` — Chat UI
+- `src/pages/notifications/` — notifications
 
 ## Next Tasks
 
-- Update list pages and detail pages with all API response fields
-- Add Edit/Remove buttons with confirmation dialogs on detail pages
+- Wire notification list page to real API + socket
+- Product page: assign collection + discount (PATCH /catalog/products/:id)
+- Mobile responsive pass
