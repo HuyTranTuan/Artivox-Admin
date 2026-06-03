@@ -121,8 +121,10 @@ const CreateCollectionPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
-            {isEditMode ? t("catalog.editCollection") : t("catalog.addNewCollection")}
+          <h2 className="font-title text-xl font-bold">
+            {isEditMode
+              ? t("catalog.editCollection")
+              : t("catalog.addNewCollection")}
           </h2>
         </div>
         <Button onClick={handleSubmit} disabled={loading} className="gap-2">
@@ -141,40 +143,42 @@ const CreateCollectionPage = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-slate-800">
               {t("catalog.name")}
             </label>
             <Input
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
               placeholder={t("catalog.collectionNamePlaceholder")}
+              className="h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-amber-50 placeholder:text-slate-500"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium text-slate-800">
               {t("catalog.slug")}
             </label>
             <Input
               value={form.slug}
               onChange={(e) => handleChange("slug", e.target.value)}
               placeholder={t("catalog.collectionSlugPlaceholder")}
+              className="h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-amber-50 placeholder:text-slate-500"
             />
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 block text-sm font-medium text-slate-800">
             {t("catalog.description")}
           </label>
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
             rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
             placeholder={t("catalog.collectionDescriptionPlaceholder")}
+            className="h-28 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white placeholder:text-slate-500 resize-none"
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 block text-sm font-medium text-slate-800">
             {t("catalog.status")}
           </label>
           <select
@@ -182,7 +186,7 @@ const CreateCollectionPage = () => {
             onChange={(e) =>
               handleChange("isActive", e.target.value === "active")
             }
-            className="w-48 h-10 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none"
+            className="h-13 w-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white placeholder:text-slate-500 resize-none text-slate-600"
           >
             <option value="active">{t("catalog.active")}</option>
             <option value="inactive">{t("catalog.inactive")}</option>
@@ -196,7 +200,7 @@ const CreateCollectionPage = () => {
         </h3>
 
         <div>
-          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+          <label className="text-xs font-semibold text-slate-800 mb-1.5 block">
             {t("catalog.image")}
           </label>
           <div className="flex items-center gap-3">
@@ -229,8 +233,8 @@ const CreateCollectionPage = () => {
               className="hidden"
               onChange={handleImageChange}
             />
-            <div className="text-xs text-slate-400">
-              <p className="font-medium text-slate-600">{t("catalog.image")}</p>
+            <div className="text-xs text-slate-700">
+              <p className="font-medium text-slate-700">{t("catalog.image")}</p>
               <p>{t("catalog.recommendedSize", { size: "1200x800" })}</p>
               <p className="text-[10px] mt-0.5">PNG, JPG, WEBP</p>
             </div>

@@ -597,24 +597,10 @@ const ModelsPage = () => {
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
-              onClick={() => exportToCsv(
-                filteredItems.map((i) => ({
-                  Name: i.name,
-                  Slug: i.slug,
-                  Price: i.basePrice,
-                  Stock: i.stock,
-                  Status: i.isActive ? "Active" : "Inactive",
-                  Created: i.createdAt,
-                })),
-                "models"
-              )}
-              disabled={!filteredItems.length}
-            >
-              <Download className="h-4 w-4" /> Export CSV
-            </Button>
+            <h1 className="font-title text-2xl font-bold text-slate-950">
+              {t("catalog.models")}
+            </h1>
+
             <Button
               variant="outline-orange"
               className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
@@ -622,6 +608,27 @@ const ModelsPage = () => {
               disabled={!canCreate}
             >
               <Plus className="h-5 w-5" /> {t("catalog.addNew")}
+            </Button>
+
+            <Button
+              variant="outline"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800"
+              onClick={() =>
+                exportToCsv(
+                  filteredItems.map((i) => ({
+                    Name: i.name,
+                    Slug: i.slug,
+                    Price: i.basePrice,
+                    Stock: i.stock,
+                    Status: i.isActive ? "Active" : "Inactive",
+                    Created: i.createdAt,
+                  })),
+                  "models",
+                )
+              }
+              disabled={!filteredItems.length}
+            >
+              <Download className="h-4 w-4" /> Export CSV
             </Button>
           </div>
           <div className="flex items-center gap-2">
