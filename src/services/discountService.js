@@ -1,4 +1,4 @@
-import axiosClient from "@api/axios";
+import http from "@api/axios";
 
 export const discountService = {
   // Fetch all active discounts
@@ -8,37 +8,37 @@ export const discountService = {
     if (limit) query.set("limit", limit);
     if (skip) query.set("skip", skip);
     const qs = query.toString();
-    const response = await axiosClient.get(`/discounts${qs ? `?${qs}` : ""}`);
+    const response = await http.get(`/discounts${qs ? `?${qs}` : ""}`);
     return response;
   },
 
   // Fetch all discounts for admin
   getDiscountsAdmin: async () => {
-    const response = await axiosClient.get("/discounts/admin");
+    const response = await http.get("/discounts/admin");
     return response;
   },
 
   // Fetch a single discount by slug
   getDiscountBySlug: async (slug) => {
-    const response = await axiosClient.get(`/discounts/${slug}`);
+    const response = await http.get(`/discounts/${slug}`);
     return response;
   },
 
   // Create a new discount
   createDiscount: async (data) => {
-    const response = await axiosClient.post("/discounts", data);
+    const response = await http.post("/discounts", data);
     return response;
   },
 
   // Update a discount by slug
   updateDiscount: async (slug, data) => {
-    const response = await axiosClient.put(`/discounts/${slug}`, data);
+    const response = await http.put(`/discounts/${slug}`, data);
     return response;
   },
 
   // Delete a discount by slug
   deleteDiscount: async (slug) => {
-    const response = await axiosClient.delete(`/discounts/${slug}`);
+    const response = await http.del(`/discounts/${slug}`);
     return response;
   },
 };

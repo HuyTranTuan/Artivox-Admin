@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import RichTextEditor from "@components/ui/RichTextEditor";
-import { useUiStore } from "@store/uiStore";
+import RichTextEditor from "@/components/RichTextEditor";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
 import { articleService } from "@services/articleService";
@@ -16,18 +15,17 @@ const tabs = [
 
 const CreateArticlePage = () => {
   const navigate = useNavigate();
-  const { currentLanguage: lang } = useUiStore();
-  const [activeTab, setActiveTab] = useState("vi");
-  const [title, setTitle] = useState("");
+  const { t } = useTranslation();
+  const { user } = useAuthStore();
+
+  const [isSaving, setIsSaving] = useState(false);
   const [slug, setSlug] = useState("");
   const [coverImage, setCoverImage] = useState(null);
+  const [activeTab, setActiveTab] = useState("vi");
   const [translations, setTranslations] = useState({
     vi: { title: "", summary: "", content: "", locale: "vi" },
     en: { title: "", summary: "", content: "", locale: "en" },
   });
-  const { t } = useTranslation();
-  const { user } = useAuthStore();
-  const [isSaving, setIsSaving] = useState(false);
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
   const permission = useMemo(() => {
@@ -120,7 +118,7 @@ const CreateArticlePage = () => {
           disabled={!canCreate || isSaving}
         >
           <Save className="h-4 w-4" />
-          {isSaving ? t("articles.saving") || "Saving..." : t("articles.save")}
+          {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
         </Button>
       </div>
 

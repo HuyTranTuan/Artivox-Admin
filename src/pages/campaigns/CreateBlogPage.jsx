@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import RichTextEditor from "@components/ui/RichTextEditor";
+import RichTextEditor from "@/components/RichTextEditor";
 import { useUiStore } from "@store/uiStore";
 import { useTranslation } from "@hooks/useTranslation";
 

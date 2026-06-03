@@ -15,27 +15,7 @@ import { Input } from "@components/ui/input";
 import { useAuth } from "@hooks/useAuth";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useUiStore } from "@store/uiStore";
-
-const initialNotifications = [
-  {
-    id: 1,
-    title: "New refund request",
-    description: "Order #AVX-201 needs approval.",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "Low stock alert",
-    description: "Resin Material 08 is below threshold.",
-    read: false,
-  },
-  {
-    id: 3,
-    title: "Campaign published",
-    description: "Summer Launch article is now live.",
-    read: true,
-  },
-];
+import { notificationService } from "@services/notificationService";
 
 export const Header = () => {
   const { toggleSidebar, toggleMobileSidebar, theme } = useUiStore();
@@ -45,18 +25,18 @@ export const Header = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
+  const [notifications, setNotifications] = useState([]);
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
 
   const unreadCount = useMemo(
-    () => notifications.filter((item) => !item.read).length,
+    () => notifications.filter((item) => item.isRead === false).length,
     [notifications],
   );
 
   const visibleNotifications = useMemo(() => {
     if (showUnreadOnly) {
-      return notifications.filter((item) => !item.read);
+      return notifications.filter((item) => item.isRead === false);
     }
     return notifications;
   }, [notifications, showUnreadOnly]);
@@ -188,7 +168,7 @@ export const Header = () => {
               style={{ zIndex: 900 }}
             >
               <div className="flex items-center justify-between px-4 py-3">
-                <div className="font-title text-sm font-semibold text-slate-900">
+                <div className="text-sm font-semibold text-slate-900">
                   Notifications
                 </div>
                 <button
@@ -204,20 +184,26 @@ export const Header = () => {
                   visibleNotifications.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => {
-                        setNotifications((current) =>
-                          current.map((notification) =>
-                            notification.id === item.id
-                              ? { ...notification, read: !notification.read }
-                              : notification,
-                          ),
-                        );
+                      onClick={async () => {
+                        if (!item.isRead) {
+                          await notificationService.markAsRead(item.id);
+                          setNotifications((current) =>
+                            current.map((notification) =>
+                              notification.id === item.id
+                                ? {
+                                    ...notification,
+                                    isRead: true,
+                                  }
+                                : notification,
+                            ),
+                          );
+                        }
                       }}
-                      className={`rounded-xl px-4 py-3 transition ${item.read ? "hover:bg-slate-50" : "bg-amber-50 hover:bg-amber-100/80"}`}
+                      className={`rounded-xl px-4 py-3 transition ${item.isRead ? "hover:bg-slate-50" : "bg-amber-50 hover:bg-amber-100/80"}`}
                     >
                       <div className="flex items-start gap-3">
                         <span
-                          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${item.read ? "bg-slate-200" : "bg-amber-500"}`}
+                          className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${item.isRead ? "bg-slate-200" : "bg-amber-500"}`}
                         />
                         <div>
                           <div className="text-sm font-semibold text-slate-900">
@@ -245,8 +231,16 @@ export const Header = () => {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className="flex items-center gap-3 cursor-pointer focus:outline-none"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-sm font-bold text-white">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            <div className="flex h-12 w-12 overflow-hidden items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-sm font-bold text-white shrink-0">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                user?.name?.charAt(0)?.toUpperCase() || "U"
+              )}
             </div>
             <div className="hidden text-left lg:block">
               <div className="text-sm font-semibold text-slate-900 leading-tight">

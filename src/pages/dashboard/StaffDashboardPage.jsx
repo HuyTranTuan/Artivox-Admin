@@ -16,6 +16,7 @@ import { useCountUp } from "@hooks/useCountUp";
 import { useTranslation } from "@hooks/useTranslation";
 import { formatPrice } from "@/utils/formatUtils";
 import SummaryCard from "@/components/SummaryCard";
+import Loading from "@/components/Loading";
 
 const STATUS_COLORS = {
   COMPLETED: "bg-emerald-100 text-emerald-700",
@@ -65,14 +66,7 @@ const StaffDashboardPage = () => {
   const topCustomers = tables.myTopCustomers || [];
 
   if (loading) {
-    return (
-      <section className="space-y-6">
-        <h1 className="font-title text-2xl font-bold text-slate-900 theme-mode-dark">
-          {t("dashboard.staffTitle")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("dashboard.loading")}</p>
-      </section>
-    );
+    return <Loading text={false} height={"20"} width={"20"} />;
   }
 
   return (

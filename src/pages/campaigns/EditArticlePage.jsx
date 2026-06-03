@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import RichTextEditor from "@components/ui/RichTextEditor";
+import RichTextEditor from "@/components/RichTextEditor";
 import { useUiStore } from "@store/uiStore";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
@@ -169,7 +169,7 @@ const EditArticlePage = () => {
           disabled={!canUpdate || isSaving}
         >
           <Save className="h-4 w-4" />
-          {isSaving ? t("articles.saving") || "Saving..." : t("articles.save")}
+          {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
         </Button>
       </div>
 

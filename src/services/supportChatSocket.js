@@ -1,138 +1,41 @@
-import { getAutoReply } from "./aiChatService";
+import { io } from "socket.io-client";
 
-const SUPPORT_CHAT_WS_URL = import.meta.env.VITE_SUPPORT_CHAT_WS_URL || "";
-const SUPPORT_CHAT_CHANNEL = import.meta.env.VITE_SUPPORT_CHAT_CHANNEL || "support-chat-demo";
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3600/api/v1";
+const WS_URL = API_URL.replace("/api/v1", "");
 
-let mockListeners = [];
+export const createSupportChatSocket = ({ customerId, onMessage, onTyping }) => {
+  const token = localStorage.getItem("adminToken");
+  const socket = io(`${WS_URL}/chat`, {
+    auth: { token: `Bearer ${token}` },
+  });
 
-const emitMockMessage = (message) => {
-  mockListeners.forEach((listener) => listener(message));
-};
-
-const parseIncomingMessage = (rawMessage) => {
-  try {
-    const parsed = JSON.parse(rawMessage);
-    return parsed?.payload || parsed;
-  } catch {
-    return {
-      id: `raw-${Date.now()}`,
-      conversationId: "fallback-thread",
-      sender: "customer",
-      type: "text",
-      content: rawMessage,
-      timestamp: new Date().toISOString(),
-    };
-  }
-};
-
-export const createSupportChatSocket = ({ onMessage, onStatusChange }) => {
-  let socket = null;
-  let mockReplyTimeout = null;
-  let isClosed = false;
-
-  const handleIncoming = (message) => {
-    onMessage(message);
-  };
-
-  if (SUPPORT_CHAT_WS_URL) {
-    try {
-      socket = new WebSocket(SUPPORT_CHAT_WS_URL);
-      onStatusChange("connecting");
-
-      socket.addEventListener("open", () => {
-        if (isClosed) return;
-        onStatusChange("connected");
-        socket.send(
-          JSON.stringify({
-            action: "subscribe",
-            channel: SUPPORT_CHAT_CHANNEL,
-          }),
-        );
-      });
-
-      socket.addEventListener("message", (event) => {
-        if (isClosed) return;
-        handleIncoming(parseIncomingMessage(event.data));
-      });
-
-      socket.addEventListener("close", () => {
-        if (isClosed) return;
-        onStatusChange("disconnected");
-      });
-
-      socket.addEventListener("error", () => {
-        if (isClosed) return;
-        onStatusChange("error");
-      });
-    } catch {
-      socket = null;
-      onStatusChange("error");
+  socket.on("connect", () => {
+    if (customerId) {
+      socket.emit("chat:join", { customerId });
     }
-  } else {
-    onStatusChange("mock");
-    mockListeners.push(handleIncoming);
-  }
+  });
+
+  socket.on("chat:message", (message) => {
+    if (onMessage) onMessage(message);
+  });
+
+  socket.on("chat:typing", (data) => {
+    if (onTyping) onTyping(data);
+  });
 
   return {
-    channel: SUPPORT_CHAT_CHANNEL,
-    send(payload) {
-      if (socket?.readyState === WebSocket.OPEN) {
-        socket.send(
-          JSON.stringify({
-            action: "message",
-            channel: SUPPORT_CHAT_CHANNEL,
-            payload,
-          }),
-        );
-        return;
-      }
-
-      if (payload.sender === "customer") {
-        // AI Auto-Reply for customer messages
-        const aiReply = getAutoReply(payload.content);
-        if (aiReply) {
-          clearTimeout(mockReplyTimeout);
-          mockReplyTimeout = window.setTimeout(() => {
-            const aiMessage = {
-              id: `ai-${Date.now()}`,
-              conversationId: payload.conversationId,
-              sender: "ai",
-              type: "text",
-              content: aiReply.reply,
-              intent: aiReply.intent,
-              confidence: aiReply.confidence,
-              timestamp: new Date().toISOString(),
-            };
-            emitMockMessage(aiMessage);
-          }, 600);
-        }
-        return;
-      }
-
-      if (payload.sender === "admin") {
-        clearTimeout(mockReplyTimeout);
-        mockReplyTimeout = window.setTimeout(() => {
-          emitMockMessage({
-            id: `reply-${Date.now()}`,
-            conversationId: payload.conversationId,
-            sender: "customer",
-            type: "text",
-            content: "Thank you for your help! I'll check that.",
-            timestamp: new Date().toISOString(),
-          });
-        }, 900);
-        return;
-      }
-
-      emitMockMessage(payload);
+    joinRoom(id) {
+      socket.emit("chat:join", { customerId: id });
+    },
+    leaveRoom(id) {
+      socket.emit("chat:leave", { customerId: id });
+    },
+    sendTyping(id) {
+      socket.emit("chat:typing", { customerId: id, senderType: "ADMIN" });
     },
     close() {
-      isClosed = true;
-      clearTimeout(mockReplyTimeout);
-      mockListeners = mockListeners.filter((listener) => listener !== handleIncoming);
-      if (socket && socket.readyState <= WebSocket.OPEN) {
-        socket.close();
-      }
+      socket.disconnect();
     },
   };
 };
+

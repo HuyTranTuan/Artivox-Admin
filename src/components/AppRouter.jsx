@@ -35,9 +35,11 @@ const PersonalSettingsPage = lazy(() => import("@pages/settings/PersonalSettings
 const ChatPage = lazy(() => import("@pages/support/ChatPage"));
 const CustomersPage = lazy(() => import("@pages/customers/CustomersPage"));
 const CustomerDetailPage = lazy(() => import("@pages/customers/CustomerDetailPage"));
+const NotificationsPage = lazy(() => import("@pages/notifications/NotificationsPage"));
 const NotificationDetailPage = lazy(() => import("@pages/notifications/NotificationDetailPage"));
 const OrderApprovalPage = lazy(() => import("@pages/orders/OrderApprovalPage"));
 const StaffAiChatPage = lazy(() => import("@pages/support/StaffAiChatPage"));
+const ChatAdminPage = lazy(() => import("@pages/support/ChatAdminPage"));
 
 const withLazyLoad = (Component) => (
   <Suspense fallback={<Loading />}>
@@ -181,6 +183,11 @@ const AppRouter = createBrowserRouter([
             path: "support/chat",
             element: withLazyLoad(ChatPage),
           },
+          // Internal Chat
+          {
+            path: "support/admin-chat",
+            element: withLazyLoad(ChatAdminPage),
+          },
           // Staff AI Chat
           {
             path: "support/ai-chat",
@@ -196,6 +203,10 @@ const AppRouter = createBrowserRouter([
             element: withLazyLoad(CustomerDetailPage),
           },
           // Notifications
+          {
+            path: "notifications",
+            element: withLazyLoad(NotificationsPage),
+          },
           {
             path: "notifications/:id",
             element: withLazyLoad(NotificationDetailPage),

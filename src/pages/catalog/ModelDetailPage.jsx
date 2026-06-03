@@ -6,8 +6,9 @@ import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
-import ImageGalleryModal from "@components/ui/ImageGalleryModal";
+import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
+import Loading from "@/components/Loading";
 
 const ModelDetailPage = () => {
   const { slug } = useParams();
@@ -37,13 +38,7 @@ const ModelDetailPage = () => {
   }, [slug]);
 
   if (loading) {
-    return (
-      <section className="space-y-6">
-        <Card className="p-6">
-          <div className="text-sm text-slate-500">{t("catalog.loading")}</div>
-        </Card>
-      </section>
-    );
+    return <Loading text={false} height={"20"} width={"20"} />;
   }
 
   if (!model) {

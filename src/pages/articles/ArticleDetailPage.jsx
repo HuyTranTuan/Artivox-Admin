@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Calendar, User, Globe, Eye, CheckCircle, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  User,
+  Globe,
+  Eye,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { articleService } from "@services/articleService";
 import { Card } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import { Badge } from "@components/ui/badge";
 import { formatDate } from "@/utils/formatUtils";
+import Loading from "@/components/Loading";
 
 const ArticleDetailPage = () => {
   const { slug } = useParams();
@@ -32,11 +41,7 @@ const ArticleDetailPage = () => {
   }, [slug]);
 
   if (loading) {
-    return (
-      <section className="space-y-6">
-        <p className="text-sm text-slate-500">Loading article...</p>
-      </section>
-    );
+    return <Loading text={false} height={"20"} width={"20"} />;
   }
 
   if (!article) {
@@ -49,14 +54,19 @@ const ArticleDetailPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="font-title text-xl font-bold text-slate-900">Article not found</h1>
+          <h1 className="font-title text-xl font-bold text-slate-900">
+            Article not found
+          </h1>
         </div>
-        <p className="text-sm text-slate-500">The article you're looking for doesn't exist or has been removed.</p>
+        <p className="text-sm text-slate-500">
+          The article you're looking for doesn't exist or has been removed.
+        </p>
       </section>
     );
   }
 
-  const authorName = article.author?.fullName || article.authorName || "Unknown";
+  const authorName =
+    article.author?.fullName || article.authorName || "Unknown";
   const translation = article.translations?.[0] || {};
 
   return (
@@ -68,7 +78,9 @@ const ArticleDetailPage = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
-        <h1 className="font-title text-xl font-bold text-slate-900">{translation.title || article.title || "Untitled"}</h1>
+        <h1 className="font-title text-xl font-bold text-slate-900">
+          {translation.title || article.title || "Untitled"}
+        </h1>
       </div>
 
       <Card className="p-6 space-y-6">
@@ -90,12 +102,16 @@ const ArticleDetailPage = () => {
             <Eye className="h-4 w-4" />
             <span>{article.views || 0} views</span>
           </div>
-          <Badge>{article.status || (article?.isPublished ? "Published" : "Draft")}</Badge>
+          <Badge>
+            {article.status || (article?.isPublished ? "Published" : "Draft")}
+          </Badge>
         </div>
 
         {/* Content */}
         <div className="prose prose-slate max-w-none">
-          <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">{translation.content || article.content || "No content available."}</p>
+          <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
+            {translation.content || article.content || "No content available."}
+          </p>
         </div>
 
         {/* Actions */}

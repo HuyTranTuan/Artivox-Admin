@@ -13,7 +13,7 @@ import {
 
 import { Card } from "@components/ui/card";
 import { useCountUp } from "@hooks/useCountUp";
-import { PieChart as PieChartComponent } from "@components/ui/PieChart";
+import { PieChart as PieChartComponent } from "@/components/PieChart";
 import { formatPrice } from "@/utils/formatUtils";
 import SummaryCard from "@/components/SummaryCard";
 import { useTranslation } from "@hooks/useTranslation";

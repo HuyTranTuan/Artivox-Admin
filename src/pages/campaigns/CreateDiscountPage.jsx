@@ -112,11 +112,11 @@ const CreateDiscountPage = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCancel}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-13 w-13 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
+          <h2 className="font-title text-xl font-bold">
             {isEditMode ? "Edit Discount" : "Create Discount"}
           </h2>
         </div>

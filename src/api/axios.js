@@ -3,7 +3,7 @@ import { applyAxiosInterceptors } from "@api/interceptors";
 import useToast from "@/hooks/useToast";
 import HTTP_CODE from "@/constants/httpStatus";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3600/api/v1";
 
 export const axiosClient = axios.create({
   baseURL,

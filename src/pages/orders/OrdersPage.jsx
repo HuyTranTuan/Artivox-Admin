@@ -8,6 +8,7 @@ import {
   ChevronRight,
   X,
   ArrowUpDown,
+  Upload,
 } from "lucide-react";
 import { Card } from "@components/ui/card";
 import { Button } from "@components/ui/button";
@@ -17,6 +18,7 @@ import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useUiStore } from "@store/uiStore";
 import { useTranslation } from "@hooks/useTranslation";
+import { exportToCsv } from "@utils/exportCsv";
 
 const fmtDate = (dateStr) => {
   if (!dateStr) return "—";
@@ -42,108 +44,50 @@ const statusColor = {
   CANCELLED: "text-slate-500",
 };
 
-const MOCK_ORDERS = [
-  {
-    id: "ORD-1847",
-    code: "ORD-1847",
-    customer: { name: "Nguyen Minh" },
-    totalAmount: 2400000,
-    status: "DELIVERED",
-    createdAt: "2026-05-05T10:30:00Z",
-  },
-  {
-    id: "ORD-1846",
-    code: "ORD-1846",
-    customer: { name: "Tran Anh" },
-    totalAmount: 1800000,
-    status: "PROCESSING",
-    createdAt: "2026-05-04T14:20:00Z",
-  },
-  {
-    id: "ORD-1845",
-    code: "ORD-1845",
-    customer: { name: "Le Hieu" },
-    totalAmount: 3200000,
-    status: "SHIPPED",
-    createdAt: "2026-05-03T09:15:00Z",
-  },
-  {
-    id: "ORD-1844",
-    code: "ORD-1844",
-    customer: { name: "Pham Duc" },
-    totalAmount: 1200000,
-    status: "PENDING",
-    createdAt: "2026-05-02T16:45:00Z",
-  },
-  {
-    id: "ORD-1843",
-    code: "ORD-1843",
-    customer: { name: "Hoang Tuan" },
-    totalAmount: 2800000,
-    status: "DELIVERED",
-    createdAt: "2026-05-01T11:00:00Z",
-  },
-  {
-    id: "ORD-1842",
-    code: "ORD-1842",
-    customer: { name: "Vo Lan" },
-    totalAmount: 5600000,
-    status: "PAID",
-    createdAt: "2026-04-28T08:30:00Z",
-  },
-  {
-    id: "ORD-1841",
-    code: "ORD-1841",
-    customer: { name: "Dang Khoa" },
-    totalAmount: 950000,
-    status: "REFUND_PENDING",
-    createdAt: "2026-04-25T13:10:00Z",
-  },
-  {
-    id: "ORD-1840",
-    code: "ORD-1840",
-    customer: { name: "Bich Ngoc" },
-    totalAmount: 4100000,
-    status: "DELIVERED",
-    createdAt: "2026-04-22T15:25:00Z",
-  },
-];
+// Removed MOCK_ORDERS
+
+import { usePaginatedApi } from "@hooks/usePaginatedApi";
+import { orderService } from "@services/orderService";
 
 const OrdersPage = () => {
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
   const { t } = useTranslation();
 
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const {
+    data: orders,
+    loading,
+    error,
+    page: currentPage,
+    totalPages,
+    totalItems: apiTotalItems,
+    setPage,
+    nextPage,
+    prevPage,
+    refetch,
+  } = usePaginatedApi((params) => orderService.listOrders({ ...params }), {
+    defaultLimit: 20,
+    pageParam: "page",
+  });
+
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [sortField, setSortField] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
-  const itemsPerPage = 20;
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
-  useEffect(() => {
-    const load = async () => {
-      await new Promise((r) => setTimeout(r, 300));
-      setOrders(MOCK_ORDERS);
-      setLoading(false);
-    };
-    load();
-  }, []);
 
   useEffect(() => {
-    setCurrentPage(1);
+    setPage(1);
   }, [debouncedSearch, selectedStatus, sortField, sortDir]);
 
   const statusOptions = [
-    ...new Set(orders.map((o) => o.status).filter(Boolean)),
+    ...new Set(orders.filter(o => o.status !== "PENDING").map((o) => o.status).filter(Boolean)),
   ];
 
   const filtered = useMemo(() => {
-    let result = [...orders];
+    let result = orders.filter((o) => o.status !== "PENDING");
     const keyword = debouncedSearch.toLowerCase();
     if (keyword) {
       result = result.filter(
@@ -172,7 +116,9 @@ const OrdersPage = () => {
     return result;
   }, [orders, debouncedSearch, selectedStatus, sortField, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+  const itemsPerPage = 20;
+  const derivedTotalItems = filtered.length;
+  const derivedTotalPages = Math.max(1, Math.ceil(derivedTotalItems / itemsPerPage));
   const startIdx = (currentPage - 1) * itemsPerPage;
   const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
 
@@ -210,6 +156,23 @@ const OrdersPage = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer hidden sm:flex"
+              onClick={() => exportToCsv(
+                filtered.map((o) => ({
+                  Code: o.code || o.id,
+                  Customer: o.customer?.name || o.customer || "—",
+                  Amount: o.totalAmount || o.amount,
+                  Status: o.status,
+                  Date: o.createdAt
+                })),
+                "orders"
+              )}
+              disabled={!filtered.length}
+            >
+              <Upload className="h-4 w-4 rotate-180" /> Export CSV
+            </Button>
             <div ref={search.containerRef} className="flex items-center gap-2">
               {search.isOpen ? (
                 <div className="relative w-64">
@@ -392,26 +355,26 @@ const OrdersPage = () => {
 
         <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
           <div className="text-sm text-slate-600">
-            {t("orders.showing")} {filtered.length ? startIdx + 1 : 0}-
-            {Math.min(startIdx + itemsPerPage, filtered.length)}{" "}
-            {t("orders.of")} {filtered.length}
+            {t("orders.showing")} {derivedTotalItems ? startIdx + 1 : 0}-
+            {Math.min(startIdx + itemsPerPage, derivedTotalItems)}{" "}
+            {t("orders.of")} {derivedTotalItems}
           </div>
           <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
+              onClick={prevPage}
+              disabled={currentPage === 1 || loading}
             >
               <ChevronLeft className="h-4 w-4" /> {t("orders.previous")}
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+              {Array.from({ length: Math.min(5, derivedTotalPages) }, (_, index) => {
                 let page;
-                if (totalPages <= 5) page = index + 1;
+                if (derivedTotalPages <= 5) page = index + 1;
                 else if (currentPage <= 3) page = index + 1;
-                else if (currentPage >= totalPages - 2)
-                  page = totalPages - 4 + index;
+                else if (currentPage >= derivedTotalPages - 2)
+                  page = derivedTotalPages - 4 + index;
                 else page = currentPage - 2 + index;
                 return (
                   <Button
@@ -419,7 +382,7 @@ const OrdersPage = () => {
                     variant={currentPage === page ? "default" : "ghost"}
                     size="sm"
                     className="h-8 w-8 p-0!"
-                    onClick={() => setCurrentPage(page)}
+                    onClick={() => setPage(page)}
                   >
                     {page}
                   </Button>
@@ -429,10 +392,8 @@ const OrdersPage = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
+              onClick={nextPage}
+              disabled={currentPage === derivedTotalPages || loading}
             >
               {t("orders.next")} <ChevronRight className="h-4 w-4" />
             </Button>

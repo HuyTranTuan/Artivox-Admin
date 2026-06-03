@@ -28,9 +28,10 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { materialsService } from "@services/materialsService";
 import { useAuthStore } from "@store/authStore";
-import ImageGalleryModal from "@components/ui/ImageGalleryModal";
+import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import { useTranslation } from "@hooks/useTranslation";
+import { exportToCsv } from "@utils/exportCsv";
 
 const ThumbnailPreview = ({ images, onClick }) => {
   if (!images || images.length === 0) {
@@ -611,10 +612,28 @@ const MaterialsPage = () => {
     <section className="space-y-6">
       <Card className="p-6">
         <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="font-title text-2xl font-bold text-slate-950">
-              {t("catalog.materials")}
-            </h1>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
+              onClick={() => exportToCsv(
+                filteredItems.map((i) => ({
+                  Name: i.name,
+                  Slug: i.slug,
+                  Type: i.material?.type,
+                  Color: i.material?.color,
+                  Unit: i.material?.unit,
+                  Price: i.basePrice,
+                  Stock: i.stock,
+                  Status: i.isActive ? "Active" : "Inactive",
+                  Created: i.createdAt,
+                })),
+                "materials"
+              )}
+              disabled={!filteredItems.length}
+            >
+              <Upload className="h-4 w-4 rotate-180" /> Export CSV
+            </Button>
             <Button
               variant="outline-orange"
               className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"

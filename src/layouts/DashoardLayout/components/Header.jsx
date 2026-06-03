@@ -8,6 +8,7 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useUiStore } from "@store/uiStore";
 import { useNotificationSocket } from "@hooks/useNotificationSocket";
 import { useTranslation } from "@hooks/useTranslation";
+import { notificationService } from "@services/notificationService";
 
 const ThemeSwitch = ({ theme, onChange }) => {
   const { t } = useTranslation();
@@ -84,33 +85,22 @@ export const Header = () => {
     user?.id,
     !!user?.id,
   );
-  const [notifications, setNotifications] = useState([]);
+  
+  const notifications = socketNotifications.notifications;
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (socketNotifications.notifications.length > 0) {
-      setNotifications((prev) => {
-        const merged = [...socketNotifications.notifications];
-        prev.forEach((n) => {
-          if (!merged.some((m) => m.id === n.id)) merged.push(n);
-        });
-        return merged.slice(0, 50);
-      });
-    }
-  }, [socketNotifications.notifications]);
 
   const menuRef = useRef(null);
   const notificationRef = useRef(null);
 
   const unreadCount = useMemo(
-    () => notifications.filter((item) => !item.read).length,
+    () => notifications.filter((item) => !item.isRead).length,
     [notifications],
   );
   const visibleNotifications = useMemo(
     () =>
       showUnreadOnly
-        ? notifications.filter((item) => !item.read)
+        ? notifications.filter((item) => !item.isRead)
         : notifications,
     [notifications, showUnreadOnly],
   );
@@ -263,12 +253,11 @@ export const Header = () => {
                   visibleNotifications.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => {
-                        setNotifications((cur) =>
-                          cur.map((n) =>
-                            n.id === item.id ? { ...n, read: true } : n,
-                          ),
-                        );
+                      onClick={async () => {
+                        if (!item.isRead) {
+                          socketNotifications.markAsRead(item.id);
+                          await notificationService.markAsRead(item.id);
+                        }
                         // Navigate to chat page for chat notifications
                         if (item.type === "CHAT_MESSAGE") {
                           navigate("/support/chat");
@@ -277,11 +266,11 @@ export const Header = () => {
                         }
                         setNotificationOpen(false);
                       }}
-                      className={`rounded-lg px-4 py-2.5 transition cursor-pointer ${item.read ? "hover:bg-slate-50" : "bg-amber-300 hover:bg-amber-100/80"}`}
+                      className={`rounded-lg px-4 py-2.5 transition cursor-pointer ${item.isRead ? "hover:bg-slate-50" : "bg-amber-300 hover:bg-amber-100/80"}`}
                     >
                       <div className="flex items-start gap-2.5">
                         <span
-                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.read ? "bg-slate-200" : "bg-amber-500"}`}
+                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.isRead ? "bg-slate-200" : "bg-amber-500"}`}
                         />
                         <div className="flex-1 min-w-0">
                           <div
@@ -316,8 +305,12 @@ export const Header = () => {
             onClick={() => setUserMenuOpen(!userMenuOpen)}
             className={`flex flex-col items-center gap-2 cursor-pointer focus:outline-none rounded-lg px-1.5 py-1 transition ${theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-base font-bold text-white shrink-0">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-base font-bold text-white shrink-0">
+              {user?.avatar ? (
+                <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
+              ) : (
+                user?.name?.charAt(0)?.toUpperCase() || "U"
+              )}
             </div>
             <div className="hidden lg:block min-w-0 max-w-30">
               <div

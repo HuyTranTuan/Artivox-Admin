@@ -1,11 +1,11 @@
-import axiosClient from "@api/axios";
+import http from "@api/axios";
 
 export const settingsService = {
   // Get personal settings
   getPersonalSettings: async () => {
     try {
-      const response = await axiosClient.get("/settings/personal");
-      return response.data.data;
+      const response = await http.get("/settings/personal");
+      return response;
     } catch (error) {
       console.warn("Failed to fetch personal settings:", error);
       return null;
@@ -15,14 +15,14 @@ export const settingsService = {
   // Get personal settings (profile)
   getProfile: async () => {
     try {
-      const response = await axiosClient.get("/auth/me"); // assuming we have a me endpoint
+      const user = await http.get("/auth/me");
       // map backend user structure to profile structure
-      const user = response.data.data;
       return {
         name: user.fullName || "",
         email: user.email || "",
         phone: user.phone || "",
         avatar: user.avatar || null,
+        role: user.role || "Admin",
         language: "English (US)",
         timezone: "Asia/Saigon (UTC+7)",
       };
@@ -41,8 +41,8 @@ export const settingsService = {
         phone: data.phone,
         address: data.address,
       };
-      const response = await axiosClient.patch("/auth/admin/account", payload);
-      return response.data.data;
+      const response = await http.patch("/auth/admin/account", payload);
+      return response;
     } catch (error) {
       console.warn("Failed to update profile:", error);
       throw error;
@@ -56,8 +56,8 @@ export const settingsService = {
       reader.onload = async () => {
         try {
           const base64 = reader.result;
-          const response = await axiosClient.patch("/auth/admin/account", { avatar: base64 });
-          resolve({ url: response.data.data.avatar });
+          const response = await http.patch("/auth/admin/account", { avatar: base64 });
+          resolve({ url: response.avatar });
         } catch (error) {
           reject(error);
         }
@@ -67,26 +67,36 @@ export const settingsService = {
   },
 
   removeAvatar: async () => {
-    // Currently backend doesn't support removing avatar natively via this endpoint unless updated
-    return null;
+    const response = await http.patch("/auth/admin/account", { avatar: "" });
+    return response;
   },
 
   // Update password
   updatePassword: async ({ currentPassword, newPassword }) => {
-    const response = await axiosClient.patch("/auth/admin/change-password", {
+    const response = await http.patch("/auth/admin/change-password", {
       currentPassword,
       newPassword,
     });
-    return { success: true, data: response.data.data };
+    return { success: true, data: response };
   },
 
   // Update notification preferences
   updateNotificationPreferences: async (preferences) => {
     try {
-      const response = await axiosClient.patch("/settings/notifications", preferences);
-      return response.data.data;
+      const response = await http.patch("/settings/notifications", preferences);
+      return response;
     } catch (error) {
       console.warn("Failed to update notification preferences:", error);
+      return null;
+    }
+  },
+
+  // Get notification preferences
+  getNotifications: async () => {
+    try {
+      const response = await http.get("/settings/notifications");
+      return response;
+    } catch {
       return null;
     }
   },

@@ -30,6 +30,14 @@ export const useAuthStore = create(
       signOut: () => {
         set({ user: null, accessToken: "", refreshToken: "" });
       },
+      refreshUserAvatar: (avatar) =>
+        set((state) => ({
+          ...state,
+          user: {
+            ...state.user,
+            avatar,
+          },
+        })),
     }),
     {
       name: "artivox-auth",

@@ -153,7 +153,7 @@ const StaffAiChatPage = () => {
         }));
 
       const apiBase =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:3000/api/v1";
+        import.meta.env.VITE_API_BASE_URL || "http://localhost:3600/api/v1";
       const token = useAuthStore.getState().accessToken;
 
       const response = await fetch(`${apiBase}/chat/ai`, {

@@ -7,6 +7,7 @@ import {
   ChartsSection,
   TablesSection,
 } from "@/layouts/DashoardLayout/components/DashboardSection";
+import Loading from "@/components/Loading";
 
 const DashboardPage = () => {
   const { t } = useTranslation();
@@ -32,17 +33,9 @@ const DashboardPage = () => {
   }, []);
 
   const { widgets, tables, charts } = data || {};
-  console.log("tables", tables);
 
   if (loading) {
-    return (
-      <section className="space-y-6">
-        <h1 className="font-title text-2xl font-bold text-slate-900">
-          {t("dashboard.title")}
-        </h1>
-        <p className="text-sm text-slate-500">{t("dashboard.loading")}</p>
-      </section>
-    );
+    return <Loading text={false} height={"20"} width={"20"} />;
   }
 
   return (

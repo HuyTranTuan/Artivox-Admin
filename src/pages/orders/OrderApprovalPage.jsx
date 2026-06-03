@@ -39,12 +39,12 @@ const OrderApprovalPage = () => {
     error,
     page: currentPage,
     totalPages,
-    totalItems,
+    totalItems: apiTotalItems,
     setPage,
     nextPage,
     prevPage,
     refetch,
-  } = usePaginatedApi((params) => orderService.listOrders({ ...params }), {
+  } = usePaginatedApi((params) => orderService.listOrders({ ...params, status: "PENDING" }), {
     defaultLimit: 20,
     pageParam: "page",
   });
@@ -94,7 +94,11 @@ const OrderApprovalPage = () => {
     return result;
   }, [orders, debouncedSearch, selectedStatus, sortField, sortDir]);
 
-  const paginated = filtered;
+  const itemsPerPage = 20;
+  const derivedTotalItems = filtered.length;
+  const derivedTotalPages = Math.max(1, Math.ceil(derivedTotalItems / itemsPerPage));
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
 
   const toggleSort = (field) => {
     if (sortField === field) {
@@ -364,11 +368,11 @@ const OrderApprovalPage = () => {
 
             <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
               <div className="text-sm text-slate-600">
-                {totalItems > 0
+                {derivedTotalItems > 0
                   ? t("approval.pageOf", {
                       page: currentPage,
-                      total: totalPages,
-                      count: totalItems,
+                      total: derivedTotalPages,
+                      count: derivedTotalItems,
                     })
                   : t("approval.noResults")}
               </div>
@@ -383,13 +387,13 @@ const OrderApprovalPage = () => {
                 </Button>
                 <div className="flex items-center gap-1">
                   {Array.from(
-                    { length: Math.min(5, totalPages) },
+                    { length: Math.min(5, derivedTotalPages) },
                     (_, index) => {
                       let page;
-                      if (totalPages <= 5) page = index + 1;
+                      if (derivedTotalPages <= 5) page = index + 1;
                       else if (currentPage <= 3) page = index + 1;
-                      else if (currentPage >= totalPages - 2)
-                        page = totalPages - 4 + index;
+                      else if (currentPage >= derivedTotalPages - 2)
+                        page = derivedTotalPages - 4 + index;
                       else page = currentPage - 2 + index;
                       return (
                         <Button
@@ -410,7 +414,7 @@ const OrderApprovalPage = () => {
                   variant="ghost"
                   size="sm"
                   onClick={nextPage}
-                  disabled={currentPage === totalPages || loading}
+                  disabled={currentPage === derivedTotalPages || loading}
                 >
                   {t("orders.next")} <ChevronRight className="h-4 w-4" />
                 </Button>

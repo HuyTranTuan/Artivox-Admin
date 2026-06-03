@@ -18,12 +18,23 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { Input } from "@components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@components/ui/select";
+import { Switch } from "@components/ui/switch";
+import { Label } from "@components/ui/label";
 import { discountService } from "@services/discountService";
+import useToast from "@hooks/useToast";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
+import SummaryCard from "@/components/SummaryCard";
 
 // Stats are calculated dynamically inside the component
 const formatDateLabel = (value) => {
@@ -36,7 +47,8 @@ const formatDateLabel = (value) => {
 const normalizeDiscount = (rawItem, index) => {
   const id =
     rawItem?.id || rawItem?._id || rawItem?.slug || `discount-${index}`;
-  const slug = rawItem?.slug || rawItem?.code || String(id);
+  const slug = rawItem?.slug || String(id);
+  const code = rawItem?.code || String(id);
   const percentValue =
     rawItem?.percent ?? rawItem?.percentage ?? rawItem?.discountPercent;
   const amountValue = rawItem?.amount ?? rawItem?.discountAmount;
@@ -52,24 +64,20 @@ const normalizeDiscount = (rawItem, index) => {
   return {
     id,
     slug,
-    name:
-      rawItem?.name ||
-      rawItem?.title ||
-      rawItem?.campaignName ||
-      rawItem?.code ||
-      `Discount Campaign ${index + 1}`,
-    type: rawItem?.type || rawItem?.discountType || "Unknown",
-    status: rawItem?.status || "UNKNOWN",
+    code,
+    name: rawItem?.name || `Discount Campaign ${index + 1}`,
+    type: rawItem?.type || "UNKNOWN",
+    isActive: rawItem?.isActive,
     discount: String(discountValue),
-    usage: Number(
-      rawItem?.usage ?? rawItem?.usedCount ?? rawItem?.redeemedCount ?? 0,
-    ),
-    startDate: formatDateLabel(
-      rawItem?.startDate || rawItem?.startAt || rawItem?.createdAt,
-    ),
-    endDate: formatDateLabel(
-      rawItem?.endDate || rawItem?.endAt || rawItem?.expiresAt,
-    ),
+    usage: Number(rawItem?.usedCount ?? 0),
+    startDate: formatDateLabel(rawItem?.startsAt),
+    endDate: formatDateLabel(rawItem?.expiresAt),
+    products: rawItem?.products,
+    _raw: {
+      startsAt: rawItem?.startsAt,
+      expiresAt: rawItem?.expiresAt,
+      value: rawItem?.value,
+    },
   };
 };
 
@@ -85,12 +93,16 @@ const DiscountsPage = () => {
   const search = useExpandableSearch();
   const pp = 20;
   const ds = useDebounce(search.value, 300);
-  const dr = useClickOutsideClose(() => setOd(null));
   const fr = useClickOutsideClose(() => setFo(false));
+  const { toastTopRight } = useToast();
 
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const isAdmin = user?.role === "ADMIN";
+
+  // Edit form state (separate from display state `si`)
+  const [form, setForm] = useState({});
+  const [saving, setSaving] = useState(false);
 
   // Parse permission safely
   const permission = useMemo(() => {
@@ -121,7 +133,7 @@ const DiscountsPage = () => {
     const loadDiscounts = async () => {
       setLoading(true);
       try {
-        const data = await discountService.getDiscounts();
+        const data = await discountService.getDiscountsAdmin();
         const normalized = (Array.isArray(data) ? data : []).map(
           normalizeDiscount,
         );
@@ -200,6 +212,19 @@ const DiscountsPage = () => {
         <button
           onClick={() => {
             setSi(item);
+            setForm({
+              name: item.name,
+              code: item.code,
+              type: item.type,
+              value: item._raw?.value ?? item.discount?.replace("%", "") ?? "",
+              isActive: item.isActive,
+              startsAt: item._raw?.startsAt
+                ? new Date(item._raw.startsAt).toISOString().slice(0, 10)
+                : "",
+              expiresAt: item._raw?.expiresAt
+                ? new Date(item._raw.expiresAt).toISOString().slice(0, 10)
+                : "",
+            });
             setOd("edit");
           }}
           className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
@@ -224,9 +249,7 @@ const DiscountsPage = () => {
   );
 
   const dynamicStats = useMemo(() => {
-    const active = items.filter(
-      (i) => i.status === "ACTIVE" || i.status === "active",
-    ).length;
+    const active = items.filter((i) => i.isActive === true).length;
     const totalRedeemed = items.reduce(
       (acc, i) => acc + (Number(i.usage) || 0),
       0,
@@ -263,19 +286,14 @@ const DiscountsPage = () => {
       {/* Horizontal Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {dynamicStats.map((item) => {
-          const Icon = item.icon;
           return (
-            <Card key={item.label} className="flex items-center gap-4 p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white shrink-0">
-                <Icon className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-title text-2xl font-bold text-slate-900">
-                  {item.value}
-                </div>
-                <div className="text-xs text-slate-500">{item.label}</div>
-              </div>
-            </Card>
+            <SummaryCard
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              icon={item.icon}
+              color="from-amber-500 to-orange-500"
+            />
           );
         })}
       </div>
@@ -349,7 +367,7 @@ const DiscountsPage = () => {
                       </div>
                       {types.map((typeVal) => (
                         <label
-                          key={t}
+                          key={typeVal}
                           className="flex items-center gap-2 cursor-pointer"
                         >
                           <input
@@ -412,47 +430,46 @@ const DiscountsPage = () => {
           style={{ maxHeight: "calc(100vh - 340px)" }}
         >
           <div className="min-w-[800px]">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
+            <div className="rounded-2xl border border-slate-200">
+              <div className="grid grid-cols-[200px_2fr_1fr_1fr_1fr_1fr_120px_120px_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
                 <div>{t("discounts.name")}</div>
+                <div>{t("discounts.code")}</div>
                 <div>{t("discounts.type")}</div>
                 <div>{t("discounts.discount")}</div>
                 <div>{t("discounts.usage")}</div>
                 <div>{t("discounts.status")}</div>
-                <div>{t("discounts.period")}</div>
+                <div>{t("discounts.startDate")}</div>
+                <div>{t("discounts.endDate")}</div>
                 <div>{t("discounts.actions")}</div>
               </div>
 
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 420px)" }}
-              >
+              <div style={{ maxHeight: "calc(100vh - 420px)" }}>
                 {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">
+                  <div className="px-4 py-8 text-sm text-slate-700 text-center">
                     {t("discounts.loading")}
                   </div>
                 ) : pg.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">
+                  <div className="px-4 py-8 text-sm text-slate-700 text-center">
                     {t("discounts.noResults")}
                   </div>
                 ) : (
                   pg.map((m, idx) => (
                     <div
                       key={m.id}
-                      className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
+                      className={`grid grid-cols-[200px_2fr_1fr_1fr_1fr_1fr_120px_120px_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-700 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
                     >
                       <div>
                         <div className="font-title text-base font-semibold text-slate-900">
                           {m.name}
                         </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          {m.startDate}
-                        </div>
                       </div>
                       <div>
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-slate-100 rounded-md text-slate-700">
-                          {m.type}
-                        </span>
+                        <div className="font-title text-base font-semibold text-slate-900">
+                          {m.code}
+                        </div>
+                      </div>
+                      <div className="font-title text-base font-semibold text-slate-900">
+                        {m.type}
                       </div>
                       <div className="font-semibold text-emerald-600">
                         {m.discount}
@@ -467,15 +484,18 @@ const DiscountsPage = () => {
                               }}
                             />
                           </div>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-slate-700">
                             {m.usage}
                           </span>
                         </div>
                       </div>
                       <div>
-                        <Badge>{m.status}</Badge>
+                        <Badge>{m.isActive ? "Active" : "Inactive"}</Badge>
                       </div>
-                      <div className="text-xs text-slate-500">{m.endDate}</div>
+                      <div className="text-xs text-slate-700">
+                        {m.startDate}
+                      </div>
+                      <div className="text-xs text-slate-700">{m.endDate}</div>
                       <ActionBtns item={m} />
                     </div>
                   ))
@@ -487,7 +507,7 @@ const DiscountsPage = () => {
 
         {/* Pagination */}
         <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-          <div className="text-sm text-slate-600">
+          <div className="text-sm text-slate-700">
             {t("discounts.showing", {
               from: showingFrom,
               to: showingTo,
@@ -539,81 +559,266 @@ const DiscountsPage = () => {
 
       {/* CRUD Dialogs */}
       {od && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div
-            ref={dr}
-            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-          >
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+        >
+          <div className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
             {od === "view" && (
               <>
                 <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
                   {t("discounts.campaignDetail")}
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-3 grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-xs text-slate-500 uppercase">
+                    <span className="text-xs text-slate-700 uppercase">
                       {t("discounts.name")}
                     </span>
-                    <div className="text-sm font-medium text-slate-900">
+                    <div className="text-sm font-medium text-slate-500 max-w-40 text-ellipsis overflow-hidden whitespace-nowrap">
                       {si?.name}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      {t("discounts.type")}
+                    <span className="text-xs text-slate-700 uppercase">
+                      {t("discounts.code")}
                     </span>
-                    <div className="text-sm">{si?.type}</div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      {t("discounts.discount")}
-                    </span>
-                    <div className="text-sm">{si?.discount}</div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      {t("discounts.usage")}
-                    </span>
-                    <div className="text-sm">{si?.usage}</div>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      {t("discounts.period")}
-                    </span>
-                    <div className="text-sm">
-                      {si?.startDate} → {si?.endDate}
+                    <div className="text-sm font-medium text-slate-900 max-w-20 text-ellipsis overflow-hidden">
+                      {si?.code}
                     </div>
                   </div>
                   <div>
-                    <span className="text-xs text-slate-500 uppercase">
-                      {t("discounts.status")}
+                    <span className="text-xs text-slate-700 uppercase">
+                      {t("discounts.type")}
                     </span>
-                    <Badge>{si?.status}</Badge>
+                    <div className="text-sm text-slate-500">{si?.type}</div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-700 uppercase">
+                      {t("discounts.discount")}
+                    </span>
+                    <div className="text-sm text-slate-500">{si?.discount}</div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-700 uppercase">
+                      {t("discounts.usage")}
+                    </span>
+                    <div className="text-sm text-slate-500">{si?.usage}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-700 uppercase">
+                      {t("discounts.status")}
+                    </div>
+                    <div
+                      className={
+                        si?.isActive ? "text-green-500" : "text-red-500"
+                      }
+                    >
+                      {si?.isActive ? "Active" : "Inactive"}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-xs text-slate-700 uppercase">
+                      {t("discounts.period")}
+                    </span>
+                    <div className="text-sm text-slate-500">
+                      {si?.startDate} → {si?.endDate}
+                    </div>
                   </div>
                 </div>
-                <Button className="w-full mt-6" onClick={() => setOd(null)}>
+                <Button
+                  className="w-full mt-6 cursor-pointer"
+                  onClick={() => setOd(null)}
+                >
                   {t("catalog.close")}
                 </Button>
               </>
             )}
             {od === "edit" && (
               <>
-                <h2 className="font-title text-xl font-bold mb-4">
+                <h2 className="font-title text-xl font-bold mb-4 text-slate-800">
                   {t("discounts.editCampaign")}
                 </h2>
-                <p className="text-sm text-slate-600">
-                  {t("discounts.editComingSoon")} <strong>{si?.name}</strong>
-                </p>
+                <div className="space-y-4">
+                  <div>
+                    <Label
+                      htmlFor="campaign-name"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.name")}
+                    </Label>
+                    <Input
+                      id="campaign-name"
+                      value={form.name ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, name: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="campaign-code"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.code")}
+                    </Label>
+                    <Input
+                      id="campaign-code"
+                      value={form.code ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, code: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="discount-type"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.type")}
+                    </Label>
+                    <Select
+                      value={form.type ?? ""}
+                      onValueChange={(v) => setForm((p) => ({ ...p, type: v }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t("discounts.selectType")} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PERCENT">
+                          {t("discounts.percentage")}
+                        </SelectItem>
+                        <SelectItem value="FIXED">
+                          {t("discounts.fixedAmount")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="discount-value"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.discount")}
+                    </Label>
+                    <Input
+                      id="discount-value"
+                      type="number"
+                      value={form.value ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, value: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Label
+                      htmlFor="discount-status"
+                      className="text-sm text-slate-500"
+                    >
+                      {t("discounts.status")}
+                    </Label>
+                    <Select
+                      id="discount-status"
+                      value={form.isActive ? "ACTIVE" : "INACTIVE"}
+                      onValueChange={(value) =>
+                        setForm((p) => ({ ...p, isActive: value === "ACTIVE" }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t("discounts.selectStatus")}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">
+                          {t("discounts.active")}
+                        </SelectItem>
+                        <SelectItem value="INACTIVE">
+                          {t("discounts.inactive")}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="discount-startsAt"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.startDate")}
+                    </Label>
+                    <Input
+                      id="discount-startsAt"
+                      type="date"
+                      value={form.startsAt ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, startsAt: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="discount-expiresAt"
+                      className="text-sm text-slate-500 mb-1 block"
+                    >
+                      {t("discounts.endDate")}
+                    </Label>
+                    <Input
+                      id="discount-expiresAt"
+                      type="date"
+                      value={form.expiresAt ?? ""}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, expiresAt: e.target.value }))
+                      }
+                    />
+                  </div>
+                </div>
                 <div className="flex gap-3 mt-6">
                   <Button
                     variant="secondary"
                     className="flex-1"
                     onClick={() => setOd(null)}
+                    disabled={saving}
                   >
                     {t("discounts.cancel")}
                   </Button>
-                  <Button className="flex-1" onClick={() => setOd(null)}>
-                    {t("catalog.save")}
+                  <Button
+                    className="flex-1"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (!si?.slug) return;
+                      setSaving(true);
+                      try {
+                        const payload = {
+                          name: form.name,
+                          code: form.code,
+                          type: form.type,
+                          value:
+                            form.value !== ""
+                              ? parseFloat(form.value)
+                              : undefined,
+                          isActive: form.isActive,
+                          startsAt: form.startsAt || null,
+                          expiresAt: form.expiresAt || null,
+                        };
+                        const res = await discountService.updateDiscount(
+                          si.slug,
+                          payload,
+                        );
+                        const updatedData = res || { ...si, ...payload };
+                        const updated = normalizeDiscount(updatedData, 0);
+                        setItems((prev) =>
+                          prev.map((x) =>
+                            x.id === si.id ? { ...x, ...updated } : x,
+                          ),
+                        );
+                        toastTopRight("success", t("discounts.editSuccess", "Campaign updated successfully!"));
+                        setOd(null);
+                      } catch (err) {
+                        console.error(err);
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  >
+                    {saving ? "Saving…" : t("catalog.save")}
                   </Button>
                 </div>
               </>
@@ -623,19 +828,37 @@ const DiscountsPage = () => {
                 <h2 className="font-title text-xl font-bold mb-4">
                   {t("discounts.deleteCampaign")}
                 </h2>
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm text-slate-700 mb-4">
                   {t("discounts.deleteConfirm", { name: si?.name })}
                 </p>
                 <div className="flex gap-3">
                   <Button
                     variant="secondary"
-                    className="flex-1"
+                    className="flex-1 cursor-pointer"
                     onClick={() => setOd(null)}
+                    disabled={saving}
                   >
                     {t("discounts.cancel")}
                   </Button>
-                  <Button variant="destructive" className="flex-1">
-                    {t("discounts.delete")}
+                  <Button
+                    variant="destructive"
+                    className="flex-1 cursor-pointer"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (!si?.slug) return;
+                      setSaving(true);
+                      try {
+                        await discountService.deleteDiscount(si.slug);
+                        setItems((prev) => prev.filter((x) => x.id !== si.id));
+                        setOd(null);
+                      } catch {
+                        // silent
+                      } finally {
+                        setSaving(false);
+                      }
+                    }}
+                  >
+                    {saving ? "Deleting…" : t("discounts.delete")}
                   </Button>
                 </div>
               </>

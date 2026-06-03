@@ -11,7 +11,6 @@ import {
   Box,
   Layers,
   Wrench,
-  UserCog,
   ClipboardCheck,
   Container,
 } from "lucide-react";
@@ -48,7 +47,8 @@ const adminNavItems = [
     icon: ClipboardCheck,
   },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
-  { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
+  // { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
+  // { to: "/support/admin-chat", labelKey: "nav.adminChat", icon: MessageCircleMore },
   { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },
 ];
 
@@ -78,6 +78,7 @@ const staffNavItems = [
   { to: "/orders", labelKey: "nav.orders", icon: ShoppingCart, end: true },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
   { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
+  // { to: "/support/admin-chat", labelKey: "nav.adminChat", icon: MessageCircleMore },
   { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },
 ];
 

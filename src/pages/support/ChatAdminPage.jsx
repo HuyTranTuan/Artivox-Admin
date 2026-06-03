@@ -7,9 +7,10 @@ import {
   SendHorizontal,
   X,
   Eye,
-  ChevronLeft,
   PanelRightClose,
   PanelRightOpen,
+  MessageSquarePlus,
+  User,
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { Button } from "@components/ui/button";
@@ -55,16 +56,13 @@ const MessageContent = ({ message, onImageClick }) => {
   const { t } = useTranslation();
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
-  const type =
-    message.type ||
-    (message.fileUrl ? (isImageType(mimeType) ? "image" : "file") : "text");
-
-  const isImg = type === "image" || (type === "file" && isImageType(mimeType));
+  const type = message.type || (message.fileUrl ? (isImageType(mimeType) ? 'image' : 'file') : 'text');
+  
+  const isImg =
+    type === "image" ||
+    (type === "file" && isImageType(mimeType));
   const fileUrl = message.fileData || message.fileUrl;
-  const name =
-    message.fileName ||
-    (type !== "text" ? message.content : null) ||
-    t("common.file", "File");
+  const name = message.fileName || (type !== 'text' ? message.content : null) || t("common.file", "File");
 
   if (isImg && fileUrl && !imgErr)
     return (
@@ -127,7 +125,7 @@ const MessageContent = ({ message, onImageClick }) => {
   return <div className="text-sm">{message.content}</div>;
 };
 
-const ChatPage = () => {
+const ChatAdminPage = () => {
   const { user } = useAuthStore();
   const { t } = useTranslation();
   const chatSocketRef = useRef(null);
@@ -137,28 +135,35 @@ const ChatPage = () => {
   const messageEndRef = useRef(null);
 
   const [rooms, setRooms] = useState([]);
+  const [internalUsers, setInternalUsers] = useState([]);
   const [conversations, setConversations] = useState({});
   const [activeRoomId, setActiveRoomId] = useState(null);
   const [message, setMessage] = useState("");
   const [connectionStatus, setConnectionStatus] = useState("connecting");
   const [uploadError, setUploadError] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [customerListOpen, setCustomerListOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [showUserList, setShowUserList] = useState(false); // toggle between room list and user list
   const [chatToast, setChatToast] = useState({
     message: "",
     roomId: null,
     visible: false,
   });
 
-  // ── Load all staff rooms once ──
+  // ── Load all internal rooms and users once ──
   useEffect(() => {
-    chatService
-      .getRooms()
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data?.data || [];
+    Promise.all([
+      chatService.getInternalRooms(),
+      chatService.getInternalUsers()
+    ])
+      .then(([roomsRes, usersRes]) => {
+        const list = Array.isArray(roomsRes) ? roomsRes : roomsRes?.data || [];
         setRooms(list);
         if (list.length) setActiveRoomId(String(list[0].id));
+        
+        const usersList = Array.isArray(usersRes) ? usersRes : usersRes?.data || [];
+        setInternalUsers(usersList);
       })
       .catch(() => setConnectionStatus("error"))
       .finally(() => setLoadingRooms(false));
@@ -169,7 +174,7 @@ const ChatPage = () => {
     if (!activeRoomId) return;
     if (conversations[activeRoomId]) return;
     chatService
-      .getMessages(activeRoomId)
+      .getInternalMessages(activeRoomId)
       .then((data) => {
         const msgs = Array.isArray(data) ? data : data?.data || [];
         setConversations((prev) => ({ ...prev, [activeRoomId]: msgs }));
@@ -177,10 +182,10 @@ const ChatPage = () => {
       .catch(() => {});
   }, [activeRoomId]);
 
-  // ── Mark as read when admin opens a room ──
+  // ── Mark as read when opening a room ──
   useEffect(() => {
     if (!activeRoomId) return;
-    chatService.markAsRead(activeRoomId).catch(() => {});
+    chatService.markInternalAsRead(activeRoomId).catch(() => {});
   }, [activeRoomId]);
 
   // ── Socket.io — connect once ──
@@ -204,21 +209,14 @@ const ChatPage = () => {
     });
 
     // New persisted message from server
-    chatSocket.on("new_message", (msg) => {
-      const rid = String(msg.chatRoomId);
+    chatSocket.on("new_internal_message", (msg) => {
+      const rid = String(msg.roomId || msg.chatRoomId);
       setConversations((prev) => {
         const existing = prev[rid] || [];
-        if (existing.some((m) => String(m.id) === String(msg.id))) return prev;
-
-        // Deduplicate optimistic messages if socket is faster than API response
-        if (
-          msg.senderType === "STAFF" ||
-          msg.senderType === "ADMIN" ||
-          msg.adminId === user?.id
-        ) {
-          const optIndex = existing.findIndex(
-            (m) => String(m.id).startsWith("tmp-") && m.content === msg.content,
-          );
+        if (existing.some(m => String(m.id) === String(msg.id))) return prev;
+        
+        if (msg.senderId === user?.id) {
+          const optIndex = existing.findIndex(m => String(m.id).startsWith("tmp-") && m.content === msg.content);
           if (optIndex !== -1) {
             const newExisting = [...existing];
             newExisting[optIndex] = msg;
@@ -228,28 +226,26 @@ const ChatPage = () => {
             };
           }
         }
-
+        
         return {
           ...prev,
           [rid]: [...existing, msg],
         };
       });
-      // Refresh rooms list so sidebar shows latest message
-      chatService
-        .getRooms()
-        .then((data) => {
-          setRooms(Array.isArray(data) ? data : data?.data || []);
-        })
-        .catch(() => {});
+      // Refresh rooms list
+      chatService.getInternalRooms().then((data) => {
+        setRooms(Array.isArray(data) ? data : data?.data || []);
+      }).catch(() => {});
     });
 
-    // Sender sees "Seen" indicator when recipient reads
-    chatSocket.on("messages_read", ({ chatRoomId }) => {
+    // Sender sees "Seen" indicator
+    chatSocket.on("internal_messages_read", ({ chatRoomId, readerId }) => {
+      if (String(readerId) === String(user?.id)) return;
       const rid = String(chatRoomId);
       setConversations((prev) => ({
         ...prev,
         [rid]: (prev[rid] || []).map((m) =>
-          m.senderType === "STAFF" ? { ...m, isRead: true } : m,
+          String(m.senderId) === String(user?.id) ? { ...m, isRead: true } : m,
         ),
       }));
     });
@@ -257,24 +253,21 @@ const ChatPage = () => {
     chatSocket.on("disconnect", () => setConnectionStatus("disconnected"));
     chatSocket.on("connect_error", () => setConnectionStatus("error"));
 
-    // Notification when a message arrives while NOT in that room
+    // Notification for internal messages
     notifSocket.on("new_notification", (data) => {
-      setChatToast({
-        message: `💬 ${data.title}: ${data.message}`,
-        roomId: data.chatRoomId,
-        visible: true,
-      });
-      setTimeout(
-        () => setChatToast((prev) => ({ ...prev, visible: false })),
-        6000,
-      );
-      if (data.type === "CHAT_MESSAGE") {
-        chatService
-          .getRooms()
-          .then((res) => {
-            setRooms(Array.isArray(res) ? res : res?.data || []);
-          })
-          .catch(() => {});
+      if (data.type === "INTERNAL_MESSAGE") {
+        setChatToast({
+          message: `💬 ${data.title}: ${data.message}`,
+          roomId: data.roomId,
+          visible: true,
+        });
+        setTimeout(
+          () => setChatToast((prev) => ({ ...prev, visible: false })),
+          6000,
+        );
+        chatService.getInternalRooms().then((res) => {
+          setRooms(Array.isArray(res) ? res : res?.data || []);
+        }).catch(() => {});
       }
     });
 
@@ -282,18 +275,18 @@ const ChatPage = () => {
       chatSocket.disconnect();
       notifSocket.disconnect();
     };
-  }, []); // connect once
+  }, [user?.id]); // connect once
 
   // ── Join/leave specific chat room on the /chat socket ──
   useEffect(() => {
     const socket = chatSocketRef.current;
     if (!socket?.connected || !activeRoomId) return;
 
-    socket.emit("room:join", { chatRoomId: activeRoomId });
+    socket.emit("room:join", { chatRoomId: `internal:${activeRoomId}` });
 
     return () => {
       if (socket.connected) {
-        socket.emit("room:leave", { chatRoomId: activeRoomId });
+        socket.emit("room:leave", { chatRoomId: `internal:${activeRoomId}` });
       }
     };
   }, [activeRoomId, connectionStatus]);
@@ -321,8 +314,8 @@ const ChatPage = () => {
     // Optimistic
     const optimistic = {
       id: `tmp-${Date.now()}`,
-      chatRoomId: activeRoomId,
-      senderType: "STAFF",
+      roomId: activeRoomId,
+      senderId: user?.id,
       type,
       content,
       timestamp: new Date().toISOString(),
@@ -334,7 +327,7 @@ const ChatPage = () => {
     }));
 
     try {
-      const savedMsgData = await chatService.sendMessage(activeRoomId, {
+      const savedMsgData = await chatService.sendInternalMessage(activeRoomId, {
         content: type === "text" ? content : metadata.fileName || "File",
         fileUrl: metadata.fileData || null,
         fileType: metadata.mimeType || null,
@@ -342,9 +335,7 @@ const ChatPage = () => {
       const savedMsg = savedMsgData?.data || savedMsgData;
       setConversations((prev) => {
         const existing = prev[activeRoomId] || [];
-        const exists = existing.some(
-          (m) => String(m.id) === String(savedMsg.id),
-        );
+        const exists = existing.some((m) => String(m.id) === String(savedMsg.id));
         return {
           ...prev,
           [activeRoomId]: exists
@@ -359,37 +350,6 @@ const ChatPage = () => {
           (m) => m.id !== optimistic.id,
         ),
       }));
-    }
-  };
-
-  const handleClaimRoom = async () => {
-    if (!activeRoomId) return;
-    try {
-      await chatService.claimRoom(activeRoomId);
-
-      // Reload full room list — claimRoom may have deleted the old assigned
-      // room (existingRoom merge), so stale entries must be purged.
-      const freshData = await chatService.getRooms();
-      const freshList = Array.isArray(freshData)
-        ? freshData
-        : freshData?.data || [];
-      setRooms(freshList);
-
-      // Keep the same active room if it still exists in the fresh list
-      const stillExists = freshList.some((r) => String(r.id) === activeRoomId);
-      if (!stillExists && freshList.length) {
-        setActiveRoomId(String(freshList[0].id));
-      }
-
-      chatSocketRef.current?.emit("room:join", { chatRoomId: activeRoomId });
-      setChatToast({
-        message: t("chat.claimed", "Chat room claimed successfully!"),
-        visible: true,
-      });
-    } catch (err) {
-      setUploadError(
-        err.response?.data?.message || err.message || "Failed to claim room",
-      );
     }
   };
 
@@ -424,11 +384,39 @@ const ChatPage = () => {
     e.target.value = "";
   };
 
+  const handleStartChat = async (participantId) => {
+    try {
+      const res = await chatService.getOrCreateInternalRoom(participantId);
+      const room = res.data || res;
+      
+      // Update room list if not exists
+      setRooms(prev => {
+        if (!prev.find(r => r.id === room.id)) {
+          return [room, ...prev];
+        }
+        return prev;
+      });
+      
+      setActiveRoomId(String(room.id));
+      setShowUserList(false);
+    } catch (err) {
+      setUploadError("Failed to create/fetch chat room.");
+      setTimeout(() => setUploadError(null), 5000);
+    }
+  };
+
   const handleImageClick = useCallback(
     (src, filename) => setImagePreview({ src, filename }),
     [],
   );
   const closeImagePreview = useCallback(() => setImagePreview(null), []);
+
+  const getOtherParticipant = (room) => {
+    if (!room || !user) return null;
+    return String(room.participant1Id) === String(user.id) ? room.participant2 : room.participant1;
+  };
+
+  const otherUser = getOtherParticipant(activeRoom);
 
   return (
     <section className="space-y-6">
@@ -480,18 +468,27 @@ const ChatPage = () => {
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="font-title text-2xl font-bold text-slate-950">
-              {t("chat.supportTitle", "Customer support chat")}
+              Internal Team Chat
             </div>
             <div className="mt-1 text-sm text-slate-500">
-              {t("chat.conversations", {
-                count: rooms.length,
-                defaultValue: "{{count}} conversation{{s}}",
-                s: rooms.length !== 1 ? "s" : "",
-              })}
+              Collaborate directly with other staff members and admins.
             </div>
           </div>
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {connectionStatus}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowUserList(!showUserList);
+                if (!sidebarOpen) setSidebarOpen(true);
+              }}
+              className="gap-2"
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+              New Chat
+            </Button>
+            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              {connectionStatus}
+            </div>
           </div>
         </div>
       </Card>
@@ -505,10 +502,10 @@ const ChatPage = () => {
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
-              className="h-9 w-9 p-0! rounded-lg"
-              onClick={() => setCustomerListOpen(!customerListOpen)}
+              className="h-9 w-9 p-0 rounded-lg"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              {customerListOpen ? (
+              {sidebarOpen ? (
                 <PanelRightClose className="h-5 w-5" />
               ) : (
                 <PanelRightOpen className="h-5 w-5" />
@@ -516,209 +513,225 @@ const ChatPage = () => {
             </Button>
             <div>
               <div className="font-title text-lg font-semibold text-slate-950">
-                {activeRoom?.customer?.fullName ||
-                  t("chat.roomName", {
-                    id: activeRoomId,
-                    defaultValue: "Room {{id}}",
-                  })}
+                {otherUser?.fullName ||
+                  (activeRoomId ? `Room ${activeRoomId}` : "Select a conversation")}
               </div>
-              <div className="text-xs text-slate-400">
-                {t("common.id", "ID")}:{" "}
-                {activeRoom?.customer?.id || activeRoom?.customerId}
-              </div>
+              {otherUser && (
+                <div className="text-xs text-slate-400 capitalize">
+                  {otherUser.role} • {otherUser.email}
+                </div>
+              )}
             </div>
           </div>
           <div className="text-xs text-slate-400">
             {activeMessages.length
               ? `${t("chat.last", "Last")}: ${formatTime(activeMessages[activeMessages.length - 1].createdAt || activeMessages[activeMessages.length - 1].timestamp)}`
-              : t("chat.noHistory", "No history")}
+              : ""}
           </div>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Customer list sidebar */}
-          {customerListOpen && (
+          {/* Sidebar */}
+          {sidebarOpen && (
             <div
-              className="border-r border-slate-200 overflow-y-auto shrink-0 bg-slate-50/50"
-              style={{ width: 250, height: "calc(100vh - 350px)" }}
+              className="border-r border-slate-200 overflow-y-auto shrink-0 bg-slate-50/50 flex flex-col"
+              style={{ width: 280 }}
             >
-              {loadingRooms ? (
-                <div className="flex items-center justify-center h-20 text-sm text-slate-400">
-                  {t("common.loading", "Loading...")}
-                </div>
-              ) : rooms.length === 0 ? (
-                <div className="flex items-center justify-center h-20 text-sm text-slate-400">
-                  {t("chat.noConversations", "No conversations")}
+              {showUserList ? (
+                // Users list
+                <div className="p-2">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">
+                    Start a New Chat
+                  </div>
+                  {internalUsers.length === 0 ? (
+                    <div className="text-sm text-slate-400 px-2 py-4">No other team members found.</div>
+                  ) : (
+                    internalUsers.map(u => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onClick={() => handleStartChat(u.id)}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition hover:bg-slate-200/50"
+                      >
+                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt={u.fullName} className="h-full w-full object-cover" />
+                          ) : (
+                            <User className="h-4 w-4 text-slate-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-semibold text-slate-900 truncate">{u.fullName}</div>
+                          <div className="text-[10px] text-slate-500 capitalize">{u.role}</div>
+                        </div>
+                      </button>
+                    ))
+                  )}
                 </div>
               ) : (
-                rooms.map((room) => {
-                  const msgs = conversations[String(room.id)] || [];
-                  const last = msgs[msgs.length - 1];
-                  const isActive = String(room.id) === activeRoomId;
-                  return (
-                    <button
-                      key={room.id}
-                      type="button"
-                      onClick={() => setActiveRoomId(String(room.id))}
-                      className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-100 ${
-                        isActive
-                          ? "bg-amber-50 border-l-2 border-l-amber-500"
-                          : "border-l-2 border-l-transparent"
-                      }`}
-                    >
-                      <div className="text-sm font-semibold text-slate-900 truncate">
-                        {room.customer?.fullName ||
-                          t("chat.customerLabel", {
-                            id: room.customerId,
-                            defaultValue: "Customer {{id}}",
-                          })}
-                      </div>
-                      {!room.adminId && (
-                        <div className="inline-block mt-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
-                          UNASSIGNED
-                        </div>
-                      )}
-                      <div className="text-xs text-slate-500 truncate mt-0.5">
-                        {last?.content ||
-                          t("chat.noMessagesYet", "No messages yet")}
-                      </div>
-                    </button>
-                  );
-                })
+                // Rooms list
+                <>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">
+                    Active Chats
+                  </div>
+                  {loadingRooms ? (
+                    <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                      {t("common.loading", "Loading...")}
+                    </div>
+                  ) : rooms.length === 0 ? (
+                    <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                      {t("chat.noConversations", "No conversations")}
+                    </div>
+                  ) : (
+                    rooms.map((room) => {
+                      const msgs = conversations[String(room.id)] || [];
+                      const last = msgs[msgs.length - 1];
+                      const isActive = String(room.id) === activeRoomId;
+                      const participant = getOtherParticipant(room);
+                      
+                      return (
+                        <button
+                          key={room.id}
+                          type="button"
+                          onClick={() => setActiveRoomId(String(room.id))}
+                          className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-100 ${
+                            isActive
+                              ? "bg-amber-50 border-l-2 border-l-amber-500"
+                              : "border-l-2 border-l-transparent"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="h-6 w-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                              {participant?.avatarUrl ? (
+                                <img src={participant.avatarUrl} alt={participant.fullName} className="h-full w-full object-cover" />
+                              ) : (
+                                <User className="h-3 w-3 text-slate-400" />
+                              )}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-900 truncate">
+                              {participant?.fullName || `Staff ${participant?.id || ""}`}
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-500 truncate mt-0.5 pl-8">
+                            {last?.content || t("chat.noMessagesYet", "No messages yet")}
+                          </div>
+                        </button>
+                      );
+                    })
+                  )}
+                </>
               )}
             </div>
           )}
 
           {/* Messages */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div
-              className="space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6"
-              style={{ height: "calc(100vh - 360px)" }}
-            >
+            <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6">
               {activeMessages.length ? (
-                activeMessages.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex ${
-                      item.senderType?.toUpperCase() === "ADMIN" ||
-                      item.senderType?.toUpperCase() === "STAFF" ||
-                      item.sender === "admin"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
+                activeMessages.map((item) => {
+                  const isMe = String(item.senderId) === String(user?.id);
+                  return (
                     <div
-                      className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-                        item.senderType?.toUpperCase() === "ADMIN" ||
-                        item.senderType?.toUpperCase() === "STAFF" ||
-                        item.sender === "admin"
-                          ? "bg-slate-950 text-white"
-                          : "border border-slate-200 bg-white text-slate-700"
+                      key={item.id}
+                      className={`flex ${
+                        isMe
+                          ? "justify-end"
+                          : "justify-start"
                       }`}
                     >
-                      <MessageContent
-                        message={item}
-                        onImageClick={handleImageClick}
-                      />
                       <div
-                        className={`mt-2 flex items-center gap-1 text-[11px] ${
-                          item.senderType?.toUpperCase() === "ADMIN" ||
-                          item.senderType?.toUpperCase() === "STAFF" ||
-                          item.sender === "admin"
-                            ? "text-white/70 justify-end"
-                            : "text-slate-400 justify-start"
+                        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                          isMe
+                            ? "bg-slate-950 text-white"
+                            : "border border-slate-200 bg-white text-slate-700"
                         }`}
                       >
-                        {formatTime(item.createdAt || item.timestamp)}
-                        {(item.senderType?.toUpperCase() === "ADMIN" ||
-                          item.senderType?.toUpperCase() === "STAFF" ||
-                          item.sender === "admin") &&
-                          item.isRead && (
+                        <MessageContent
+                          message={item}
+                          onImageClick={handleImageClick}
+                        />
+                        <div
+                          className={`mt-2 flex items-center gap-1 text-[11px] ${
+                            isMe
+                              ? "text-white/70 justify-end"
+                              : "text-slate-400 justify-start"
+                          }`}
+                        >
+                          {formatTime(item.createdAt || item.timestamp)}
+                          {isMe && item.isRead && (
                             <span className="ml-1 opacity-70">✓✓</span>
                           )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                  {t("chat.noMessagesYet", "No messages yet.")}
+                  {activeRoomId ? t("chat.noMessagesYet", "No messages yet.") : "Select a chat from the left sidebar or start a new one."}
                 </div>
               )}
               <div ref={messageEndRef} />
             </div>
 
             {/* Input */}
-            {!activeRoom?.adminId ? (
-              <div className="border-t border-slate-200 bg-amber-50 px-6 py-4 flex flex-col items-center justify-center">
-                <p className="text-amber-800 text-sm mb-3">
-                  This chat is currently unassigned. Claim it to start
-                  responding.
-                </p>
-                <Button
-                  onClick={handleClaimRoom}
-                  className="bg-amber-500 hover:bg-amber-600"
-                >
-                  Claim Chat
-                </Button>
-              </div>
-            ) : (
-              <form
-                onSubmit={handleSubmit}
-                className="border-t border-slate-200 bg-white px-6 py-4"
-              >
-                <div className="flex items-end gap-3">
-                  <div className="flex flex-1 items-end gap-2">
-                    <Input
-                      className="min-h-[48px]"
-                      placeholder={t("chat.typeReply", "Type support reply...")}
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      disabled={!activeRoomId}
-                    />
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleFileSelect(e, "file")}
-                    />
-                    <input
-                      ref={imageInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => handleFileSelect(e, "image")}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-12 w-12 p-0"
-                      title={t("chat.attachFile", "Attach file (max 15MB)")}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Paperclip style={{ width: 18, height: 18 }} />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="h-12 w-12 p-0"
-                      title={t("chat.attachImage", "Attach image (max 15MB)")}
-                      onClick={() => imageInputRef.current?.click()}
-                    >
-                      <ImagePlus style={{ width: 18, height: 18 }} />
-                    </Button>
-                  </div>
+            <form
+              onSubmit={handleSubmit}
+              className="border-t border-slate-200 bg-white px-6 py-4"
+            >
+              <div className="flex items-end gap-3">
+                <div className="flex flex-1 items-end gap-2">
+                  <Input
+                    className="min-h-[48px]"
+                    placeholder={t("chat.typeReply", "Type message...")}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    disabled={!activeRoomId}
+                  />
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e, "file")}
+                  />
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e, "image")}
+                  />
                   <Button
-                    type="submit"
-                    className="h-12 gap-2 px-5"
-                    disabled={!message.trim() || !activeRoomId}
+                    type="button"
+                    variant="ghost"
+                    className="h-12 w-12 p-0"
+                    title={t("chat.attachFile", "Attach file (max 15MB)")}
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!activeRoomId}
                   >
-                    <SendHorizontal style={{ width: 18, height: 18 }} />{" "}
-                    {t("common.send", "Send")}
+                    <Paperclip style={{ width: 18, height: 18 }} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-12 w-12 p-0"
+                    title={t("chat.attachImage", "Attach image (max 15MB)")}
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={!activeRoomId}
+                  >
+                    <ImagePlus style={{ width: 18, height: 18 }} />
                   </Button>
                 </div>
-              </form>
-            )}
+                <Button
+                  type="submit"
+                  className="h-12 gap-2 px-5"
+                  disabled={!message.trim() || !activeRoomId}
+                >
+                  <SendHorizontal style={{ width: 18, height: 18 }} />{" "}
+                  {t("common.send", "Send")}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       </Card>
@@ -726,4 +739,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
+export default ChatAdminPage;

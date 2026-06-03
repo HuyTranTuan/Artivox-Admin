@@ -23,6 +23,8 @@ import { Input } from "@components/ui/input";
 import { Badge } from "@components/ui/badge";
 import { settingsService } from "@services/settingsService";
 import { useTranslation } from "@hooks/useTranslation";
+import { useAuthStore } from "@/store/authStore";
+import Loading from "@/components/Loading";
 
 const DEFAULT_AVATAR_COLOR = "bg-slate-950";
 
@@ -32,6 +34,7 @@ const PersonalSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const { user, refreshUserAvatar } = useAuthStore();
 
   // Profile form
   const [profile, setProfile] = useState({
@@ -68,9 +71,7 @@ const PersonalSettingsPage = () => {
   });
 
   // UI feedback
-  const [toast, setToast] = useState(null); // { type: "success" | "error", message }
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+  const [toast, setToast] = useState(null);
   // ---------------------------------- Effects ---------------------------------
   // Simulate fetching profile + notifications
   useEffect(() => {
@@ -149,6 +150,7 @@ const PersonalSettingsPage = () => {
       const result = await settingsService.uploadAvatar(file);
       setProfile((prev) => ({ ...prev, avatar: result.url }));
       showToast("success", t("settings.avatarUpdated", "Avatar updated"));
+      refreshUserAvatar(result.url);
     } catch {
       showToast(
         "error",
@@ -165,6 +167,7 @@ const PersonalSettingsPage = () => {
       await settingsService.removeAvatar();
       setProfile((prev) => ({ ...prev, avatar: null }));
       showToast("success", t("settings.avatarRemoved", "Avatar removed"));
+      refreshUserAvatar(null || "");
     } catch {
       showToast(
         "error",
@@ -268,35 +271,9 @@ const PersonalSettingsPage = () => {
     }
   };
 
-  // Delete account
-  const handleDeleteAccount = async () => {
-    try {
-      await settingsService.deleteAccount();
-      showToast(
-        "success",
-        t("settings.accountDeleted", "Account has been deleted (soft)"),
-      );
-      setShowDeleteConfirm(false);
-    } catch {
-      showToast(
-        "error",
-        t("settings.accountDeleteFailed", "Failed to delete account"),
-      );
-    }
-  };
-
   // ---------------------------------- Loading --------------------------------
   if (loading) {
-    return (
-      <section className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-3 text-slate-500">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span className="text-sm">
-            {t("settings.loading", "Loading settings...")}
-          </span>
-        </div>
-      </section>
-    );
+    return <Loading text={false} height={"20"} width={"20"} />;
   }
 
   // ---------------------------------- Render --------------------------------
@@ -379,7 +356,7 @@ const PersonalSettingsPage = () => {
             </p>
           </div>
           <div className="ml-auto">
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">
+            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 p-2 rounded-md text-xl pointer-events-none">
               {profile.role}
             </Badge>
           </div>
@@ -513,7 +490,7 @@ const PersonalSettingsPage = () => {
               <div className="flex justify-end gap-3 pt-2">
                 <Button type="submit" className="gap-2" disabled={saving}>
                   {saving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loading text={false} width={"4"} height={"4"} />
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
@@ -523,6 +500,68 @@ const PersonalSettingsPage = () => {
                 </Button>
               </div>
             </form>
+          </Card>
+
+          {/* Two-Factor Authentication */}
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
+                <Shield className="h-5 w-5 text-slate-600" />
+              </div>
+              <div>
+                <h2 className="font-title text-lg font-semibold text-slate-900">
+                  {t("settings.twoFactorAuth", "Two-Factor Authentication")}
+                </h2>
+                <p className="text-xs text-slate-500">
+                  {t(
+                    "settings.twoFactorSubtitle",
+                    "Add an extra layer of security to your account",
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+              <div>
+                <div className="text-sm font-medium text-slate-900">
+                  {t("settings.twoFactorAuthShort", "Two-Factor Auth")}
+                </div>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  {profile.twoFactorEnabled
+                    ? t(
+                        "settings.2faProtected",
+                        "Your account is protected by 2FA",
+                      )
+                    : t(
+                        "settings.2faEnable",
+                        "Enable 2FA for additional security",
+                      )}
+                </div>
+              </div>
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  checked={profile.twoFactorEnabled}
+                  onChange={handleToggle2FA}
+                  className="sr-only"
+                  id="toggle-2fa"
+                />
+                <label
+                  htmlFor="toggle-2fa"
+                  className={`block h-6 w-11 rounded-full transition cursor-pointer ${
+                    profile.twoFactorEnabled ? "bg-slate-950" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`block h-5 w-5 rounded-full bg-white shadow-sm transition transform translate-y-[2px] ${
+                      profile.twoFactorEnabled
+                        ? "translate-x-[22px]"
+                        : "translate-x-[2px]"
+                    }`}
+                  />
+                </label>
+              </div>
+            </div>
           </Card>
 
           {/* Avatar Upload Card */}
@@ -744,68 +783,6 @@ const PersonalSettingsPage = () => {
             </form>
           </Card>
 
-          {/* Two-Factor Authentication */}
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-slate-600" />
-              </div>
-              <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
-                  {t("settings.twoFactorAuth", "Two-Factor Authentication")}
-                </h2>
-                <p className="text-xs text-slate-500">
-                  {t(
-                    "settings.twoFactorSubtitle",
-                    "Add an extra layer of security to your account",
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
-              <div>
-                <div className="text-sm font-medium text-slate-900">
-                  {t("settings.twoFactorAuthShort", "Two-Factor Auth")}
-                </div>
-                <div className="text-xs text-slate-500 mt-0.5">
-                  {profile.twoFactorEnabled
-                    ? t(
-                        "settings.2faProtected",
-                        "Your account is protected by 2FA",
-                      )
-                    : t(
-                        "settings.2faEnable",
-                        "Enable 2FA for additional security",
-                      )}
-                </div>
-              </div>
-              <div className="relative">
-                <input
-                  type="checkbox"
-                  checked={profile.twoFactorEnabled}
-                  onChange={handleToggle2FA}
-                  className="sr-only"
-                  id="toggle-2fa"
-                />
-                <label
-                  htmlFor="toggle-2fa"
-                  className={`block h-6 w-11 rounded-full transition cursor-pointer ${
-                    profile.twoFactorEnabled ? "bg-slate-950" : "bg-slate-300"
-                  }`}
-                >
-                  <span
-                    className={`block h-5 w-5 rounded-full bg-white shadow-sm transition transform translate-y-[2px] ${
-                      profile.twoFactorEnabled
-                        ? "translate-x-[22px]"
-                        : "translate-x-[2px]"
-                    }`}
-                  />
-                </label>
-              </div>
-            </div>
-          </Card>
-
           {/* Notifications */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
@@ -912,83 +889,8 @@ const PersonalSettingsPage = () => {
               ))}
             </div>
           </Card>
-
-          {/* Danger Zone */}
-          <Card className="p-6 border-rose-200">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-rose-50 flex items-center justify-center">
-                <AlertTriangle className="h-5 w-5 text-rose-600" />
-              </div>
-              <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
-                  {t("settings.dangerZone", "Danger Zone")}
-                </h2>
-                <p className="text-xs text-slate-500">
-                  {t(
-                    "settings.dangerZoneSubtitle",
-                    "Irreversible account actions",
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between rounded-xl border border-rose-200 p-4">
-              <div>
-                <div className="text-sm font-medium text-slate-900">
-                  {t("settings.deleteAccount", "Delete Account")}
-                </div>
-                <div className="text-xs text-slate-500 mt-0.5">
-                  {t(
-                    "settings.deleteAccountDesc",
-                    "Permanently delete your account and all associated data",
-                  )}
-                </div>
-              </div>
-              <Button
-                variant="destructive"
-                className="gap-2"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
-                <Trash2 className="h-4 w-4" />
-                {t("common.delete", "Delete")}
-              </Button>
-            </div>
-          </Card>
         </div>
       </div>
-
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h2 className="mb-4 font-title text-xl font-bold text-slate-900">
-              {t("settings.deleteAccount", "Delete Account")}
-            </h2>
-            <p className="mb-4 text-sm text-slate-600">
-              {t(
-                "settings.deleteAccountConfirm",
-                "Are you sure you want to delete your account? This action cannot be undone.",
-              )}
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                {t("common.cancel", "Cancel")}
-              </Button>
-              <Button
-                variant="destructive"
-                className="flex-1"
-                onClick={handleDeleteAccount}
-              >
-                {t("common.delete", "Delete")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
 };

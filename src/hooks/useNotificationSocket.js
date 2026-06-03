@@ -91,14 +91,32 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
         title: data.title,
         description: data.message,
         type: "CHAT_MESSAGE",
-        read: false,
+        isRead: false,
         createdAt: data.createdAt,
         metadata: { chatRoomId: data.chatRoomId, customerId: data.customerId },
       });
     });
 
+    socket.on("notifications_read", (data) => {
+      if (data.chatRoomId) {
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.metadata && String(n.metadata.chatRoomId) === String(data.chatRoomId)
+              ? { ...n, isRead: true }
+              : n
+          )
+        );
+      }
+    });
+
     return () => { socket.disconnect(); };
   }, [enabled, staffId, handleNewNotification]);
+
+  const markAsRead = useCallback((id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  }, []);
 
   return {
     notifications,
@@ -107,5 +125,6 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
     isLoading,
     addNotification: handleNewNotification,
     addChatMessage: handleNewChatMessage,
+    markAsRead,
   };
 };

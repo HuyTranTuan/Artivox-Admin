@@ -28,10 +28,8 @@ export const notificationService = {
   // Mark notification as read
   markAsRead: async (id) => {
     try {
-      const response = await axiosClient.patch(`/notifications/${id}`, {
-        read: true,
-      });
-      return response.data.data;
+      const response = await axiosClient.patch(`/notifications/${id}/read`);
+      return response;
     } catch (error) {
       console.warn("Failed to mark notification as read:", error);
       return null;
@@ -44,7 +42,7 @@ export const notificationService = {
       const response = await axiosClient.patch("/notifications/batch/read", {
         ids,
       });
-      return response.data.data;
+      return response;
     } catch (error) {
       console.warn("Failed to mark notifications as read:", error);
       return [];
@@ -77,7 +75,7 @@ export const notificationService = {
   getUnreadCount: async () => {
     try {
       const response = await axiosClient.get("/notifications/unread/count");
-      return response.data.data?.count || 0;
+      return response?.count || 0;
     } catch (error) {
       console.warn("Failed to fetch unread count:", error);
       return 0;

@@ -20,6 +20,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { customerService } from "@services/customerService";
+import { exportToCsv } from "@utils/exportCsv";
 
 const generateMockCustomers = () => {
   const statuses = ["Active", "Inactive", "Suspended"];
@@ -117,7 +118,8 @@ const CustomersPage = () => {
     let mounted = true;
     const load = async () => {
       try {
-        const data = await customerService.getCustomers();
+        const res = await customerService.listCustomers();
+        const data = res?.data || res;
         if (mounted)
           setCustomers(
             Array.isArray(data) && data.length ? data : generateMockCustomers(),
@@ -320,7 +322,7 @@ const CustomersPage = () => {
             ) : null}
             <Button
               variant="ghost"
-              className="h-10 w-10 p-0"
+              className="h-10 w-10 p-0!"
               onClick={search.submit}
             >
               <Search style={{ width: 18, height: 18 }} />
@@ -329,11 +331,25 @@ const CustomersPage = () => {
 
           <div className="flex items-center gap-2">
             <Button
-              variant="ghost"
-              className="h-10 w-10 p-0"
+              variant="outline"
+              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer hidden sm:flex"
               aria-label={t("customers.export")}
+              onClick={() => exportToCsv(
+                filtered.map((c) => ({
+                  Name: c.fullName || c.name,
+                  Email: c.email,
+                  Phone: c.phone,
+                  Status: c.status,
+                  Tier: c.tier,
+                  Orders: c.orderCount || c.totalOrders,
+                  Spent: c.totalAmountSpent || c.totalSpent,
+                  Joined: c.createdAt || c.joinedAt
+                })),
+                "customers"
+              )}
+              disabled={!filtered.length}
             >
-              <Download style={{ width: 18, height: 18 }} />
+              <Download className="h-4 w-4" /> Export CSV
             </Button>
           </div>
         </div>
@@ -353,7 +369,7 @@ const CustomersPage = () => {
 
           <div className="min-w-[900px]">
             <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_200px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
+              <div className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -371,8 +387,9 @@ const CustomersPage = () => {
                 <div>{t("customers.columns.joined")}</div>
                 <div>{t("customers.columns.status")}</div>
                 <div>{t("customers.columns.tier")}</div>
-                <div>{t("customers.columns.orders")}</div>
-                <div>{t("customers.columns.actions")}</div>
+                <div className="text-center">
+                  {t("customers.columns.actions")}
+                </div>
               </div>
 
               <div
@@ -387,7 +404,7 @@ const CustomersPage = () => {
                   paginated.map((customer) => (
                     <div
                       key={customer.id}
-                      className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr_200px] gap-3 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-50 transition"
+                      className="grid grid-cols-[40px_2fr_1.5fr_1.5fr_1fr_1fr_1fr_1fr] gap-3 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-50 transition"
                     >
                       <div>
                         <input
@@ -398,7 +415,7 @@ const CustomersPage = () => {
                         />
                       </div>
                       <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                        {renderEditableCell(customer, "name", "truncate")}
+                        {renderEditableCell(customer, "fullName", "truncate")}
                       </div>
                       <div className="text-xs truncate">
                         {renderEditableCell(customer, "email", "truncate")}
@@ -407,7 +424,7 @@ const CustomersPage = () => {
                         {renderEditableCell(customer, "phone")}
                       </div>
                       <div className="text-xs text-slate-500">
-                        {customer.joinedAt}
+                        {customer.createdAt}
                       </div>
                       <div>
                         <span
@@ -416,13 +433,12 @@ const CustomersPage = () => {
                           {customer.status}
                         </span>
                       </div>
-                      <div>{renderEditableCell(customer, "tier")}</div>
                       <div>
                         <div className="text-sm font-medium">
-                          {customer.totalOrders}
+                          {customer.orderCount}
                         </div>
                         <div className="text-[10px] text-slate-400">
-                          {fmt(customer.totalSpent)}
+                          {fmt(customer.totalAmountSpent)}
                         </div>
                       </div>
                       <div className="relative z-20 flex justify-end gap-1.5">
@@ -444,7 +460,7 @@ const CustomersPage = () => {
                             </button>
                           </div>
                         ) : (
-                          <>
+                          <div className="flex justify-center gap-1.5 w-full">
                             <button
                               onClick={() =>
                                 navigate(`/customers/${customer.id}`)
@@ -471,7 +487,7 @@ const CustomersPage = () => {
                             >
                               <Trash2 style={{ width: 18, height: 18 }} />
                             </button>
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>
