@@ -40,6 +40,8 @@ const NotificationDetailPage = lazy(() => import("@pages/notifications/Notificat
 const OrderApprovalPage = lazy(() => import("@pages/orders/OrderApprovalPage"));
 const StaffAiChatPage = lazy(() => import("@pages/support/StaffAiChatPage"));
 const ChatAdminPage = lazy(() => import("@pages/support/ChatAdminPage"));
+const SearchResultPage = lazy(() => import("@pages/search/SearchResultPage"));
+const StaffPermissionsPage = lazy(() => import("@pages/staff/StaffPermissionsPage"));
 
 const withLazyLoad = (Component) => (
   <Suspense fallback={<Loading />}>
@@ -72,6 +74,11 @@ const AppRouter = createBrowserRouter([
           {
             path: "dashboard",
             element: <DashboardRedirect />,
+          },
+          // Search
+          {
+            path: "search",
+            element: withLazyLoad(SearchResultPage),
           },
           // Articles
           {
@@ -201,6 +208,11 @@ const AppRouter = createBrowserRouter([
           {
             path: "customers/:id",
             element: withLazyLoad(CustomerDetailPage),
+          },
+          // Staff Permissions
+          {
+            path: "staff-permissions",
+            element: withLazyLoad(StaffPermissionsPage),
           },
           // Notifications
           {

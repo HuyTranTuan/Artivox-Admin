@@ -179,85 +179,87 @@ const ChartsSection = ({ charts }) => {
             </button>
           </div>
         </div>
-        <div className="w-full overflow-hidden">
-          <svg
-            viewBox="0 0 600 200"
-            className="w-full h-auto"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
-              </linearGradient>
-            </defs>
-            {[0, 1, 2, 3, 4].map((i) => {
-              const y = 20 + (i / 4) * (200 - 40);
-              return (
-                <line
-                  key={i}
-                  x1="20"
-                  y1={y}
-                  x2={600 - 20}
-                  y2={y}
-                  stroke="#e2e8f0"
-                  strokeWidth="1"
-                />
-              );
-            })}
-            <path
-              d={buildAreaPath(lineSeries, 600, 200)}
-              fill="url(#areaGrad)"
-            />
-            <path
-              d={buildLinePath(lineSeries, 600, 200)}
-              fill="none"
-              stroke="#f59e0b"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            {lineSeries.map((d, i) => {
-              if (lineSeries.length < 2) return null;
-              const values = lineSeries.map((r) => r.value);
-              const maxV = Math.max(...values);
-              const minV = Math.min(...values);
-              const range = maxV - minV || 1;
-              const stepX = (600 - 40) / (lineSeries.length - 1);
-              const x = 20 + i * stepX;
-              const y = 200 - 20 - ((d.value - minV) / range) * (200 - 40);
-              return (
-                <circle
-                  key={d.label}
-                  cx={x}
-                  cy={y}
-                  r="4"
-                  fill="#fff"
-                  stroke="#f59e0b"
-                  strokeWidth="2"
-                />
-              );
-            })}
-            {lineSeries
-              .filter((_, i) => i % 5 === 0 || i === lineSeries.length - 1)
-              .map((d, i, arr) => {
-                if (lineSeries.length < 2) return null;
-                const stepX = (600 - 40) / (lineSeries.length - 1);
-                const idx = lineSeries.indexOf(d);
-                const x = 20 + idx * stepX;
+        <div className="w-full overflow-x-auto pb-2">
+          <div className="min-w-[600px]">
+            <svg
+              viewBox="0 0 600 200"
+              className="w-full h-auto"
+              preserveAspectRatio="none"
+            >
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
+                </linearGradient>
+              </defs>
+              {[0, 1, 2, 3, 4].map((i) => {
+                const y = 20 + (i / 4) * (200 - 40);
                 return (
-                  <text
-                    key={d.label}
-                    x={x}
-                    y={200 - 4}
-                    textAnchor="middle"
-                    className="text-[10px] fill-slate-500"
-                  >
-                    {d.label}
-                  </text>
+                  <line
+                    key={i}
+                    x1="20"
+                    y1={y}
+                    x2={600 - 20}
+                    y2={y}
+                    stroke="#e2e8f0"
+                    strokeWidth="1"
+                  />
                 );
               })}
-          </svg>
+              <path
+                d={buildAreaPath(lineSeries, 600, 200)}
+                fill="url(#areaGrad)"
+              />
+              <path
+                d={buildLinePath(lineSeries, 600, 200)}
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              {lineSeries.map((d, i) => {
+                if (lineSeries.length < 2) return null;
+                const values = lineSeries.map((r) => r.value);
+                const maxV = Math.max(...values);
+                const minV = Math.min(...values);
+                const range = maxV - minV || 1;
+                const stepX = (600 - 40) / (lineSeries.length - 1);
+                const x = 20 + i * stepX;
+                const y = 200 - 20 - ((d.value - minV) / range) * (200 - 40);
+                return (
+                  <circle
+                    key={d.label}
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill="#fff"
+                    stroke="#f59e0b"
+                    strokeWidth="2"
+                  />
+                );
+              })}
+              {lineSeries
+                .filter((_, i) => i % 5 === 0 || i === lineSeries.length - 1)
+                .map((d, i, arr) => {
+                  if (lineSeries.length < 2) return null;
+                  const stepX = (600 - 40) / (lineSeries.length - 1);
+                  const idx = lineSeries.indexOf(d);
+                  const x = 20 + idx * stepX;
+                  return (
+                    <text
+                      key={d.label}
+                      x={x}
+                      y={200 - 4}
+                      textAnchor="middle"
+                      className="text-[10px] fill-slate-500"
+                    >
+                      {d.label}
+                    </text>
+                  );
+                })}
+            </svg>
+          </div>
         </div>
       </Card>
 
@@ -269,25 +271,27 @@ const ChartsSection = ({ charts }) => {
         <div className="text-sm text-slate-500 mb-6">
           {t("dashboard.breakdownByCategory")}
         </div>
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-center">
-          <div className="flex-1 max-w-xs">
-            <PieChartComponent data={pieData} width={320} height={320} />
-          </div>
-          <div className="flex-1 gap-2 sm:gap-4 flex flex-row md:flex-col md:items-start">
-            {pieData.map((c) => (
-              <div key={c.name} className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: c.color }}
-                />
-                <span className="text-sm font-medium text-slate-900">
-                  {c.name}
-                </span>
-                <span className="text-xs text-slate-500">
-                  {formatPrice(c.value)}
-                </span>
-              </div>
-            ))}
+        <div className="overflow-x-auto pb-2">
+          <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-center min-w-[400px]">
+            <div className="flex-1 max-w-xs shrink-0">
+              <PieChartComponent data={pieData} width={320} height={320} />
+            </div>
+            <div className="flex-1 gap-2 sm:gap-4 flex flex-row md:flex-col md:items-start shrink-0">
+              {pieData.map((c) => (
+                <div key={c.name} className="flex items-center gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: c.color }}
+                  />
+                  <span className="text-sm font-medium text-slate-900">
+                    {c.name}
+                  </span>
+                  <span className="text-xs text-slate-500">
+                    {formatPrice(c.value)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </Card>
@@ -315,39 +319,41 @@ const TablesSection = ({ tables }) => {
             </div>
             <UserCheck className="h-5 w-5 text-slate-400" />
           </div>
-          <div className="space-y-3">
-            {(tables?.topStaffByArticles || []).map((staff, i) => (
-              <div
-                key={staff.id || i}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
-                  {staff?.fullName?.charAt(0)?.toUpperCase() || "S"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                    {staff?.fullName || t("common.unknown")}
+          <div className="overflow-x-auto pb-2">
+            <div className="min-w-[600px] space-y-3">
+              {(tables?.topStaffByArticles || []).map((staff, i) => (
+                <div
+                  key={staff.id || i}
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
+                    {staff?.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
-                  <div className="text-xs text-slate-600">
-                    {staff?._count?.articles || staff?.articleCount || 0}{" "}
-                    {t("dashboard.articles")}
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-600">{staff?.phone}</div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-600">{staff?.email}</div>
-                </div>
-                {staff?.id ? (
-                  <div className="text-right shrink-0">
-                    <div className="font-title text-sm font-bold text-slate-900">
-                      #{i + 1}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                      {staff?.fullName || t("common.unknown")}
+                    </div>
+                    <div className="text-xs text-slate-600">
+                      {staff?._count?.articles || staff?.articleCount || 0}{" "}
+                      {t("dashboard.articles")}
                     </div>
                   </div>
-                ) : null}
-              </div>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-600 truncate">{staff?.phone}</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-600 truncate">{staff?.email}</div>
+                  </div>
+                  {staff?.id ? (
+                    <div className="text-right shrink-0">
+                      <div className="font-title text-sm font-bold text-slate-900">
+                        #{i + 1}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+            </div>
           </div>
         </Card>
 
@@ -363,37 +369,39 @@ const TablesSection = ({ tables }) => {
             </div>
             <MessageCircle className="h-5 w-5 text-slate-400" />
           </div>
-          <div className="space-y-3">
-            {(tables.topStaffByChatRooms || []).map((staff, i) => (
-              <div
-                key={staff.id || i}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">
-                  {staff.fullName?.charAt(0)?.toUpperCase() || "S"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                    {staff.fullName || t("common.unknown")}
+          <div className="overflow-x-auto pb-2">
+            <div className="min-w-[600px] space-y-3">
+              {(tables.topStaffByChatRooms || []).map((staff, i) => (
+                <div
+                  key={staff.id || i}
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">
+                    {staff.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {staff._count?.chatRooms || staff.chatCount || 0}{" "}
-                    {t("dashboard.chats")}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                      {staff.fullName || t("common.unknown")}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {staff._count?.chatRooms || staff.chatCount || 0}{" "}
+                      {t("dashboard.chats")}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-600 truncate">{staff?.phone}</div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm text-slate-600 truncate">{staff?.email}</div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-title text-sm font-bold text-slate-900">
+                      #{i + 1}
+                    </div>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-600">{staff?.phone}</div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-slate-600">{staff?.email}</div>
-                </div>
-                <div className="text-right shrink-0">
-                  <div className="font-title text-sm font-bold text-slate-900">
-                    #{i + 1}
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </Card>
       </div>
@@ -411,34 +419,36 @@ const TablesSection = ({ tables }) => {
           </div>
           <Box className="h-5 w-5 text-slate-400" />
         </div>
-        <div className="space-y-3">
-          {(tables.topProductsWithDetails || []).map((p, i) => (
-            <div
-              key={p.productId || i}
-              className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-sm shrink-0">
-                {i + 1}
+        <div className="overflow-x-auto pb-2">
+          <div className="min-w-[500px] space-y-3">
+            {(tables.topProductsWithDetails || []).map((p, i) => (
+              <div
+                key={p.productId || i}
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-sm shrink-0">
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                    {p.name || t("common.unknownProduct")}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {p.totalSold || 0} {t("dashboard.sold")} ·{" "}
+                    {p.type || t("common.na")}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="font-title text-sm font-bold text-slate-900">
+                    {formatPrice(p.estimatedRevenue)}
+                  </div>
+                  <div className="text-xs text-slate-500">
+                    {t("dashboard.revenueLabel")}
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-title text-sm font-semibold text-slate-900 truncate">
-                  {p.name || t("common.unknownProduct")}
-                </div>
-                <div className="text-xs text-slate-500">
-                  {p.totalSold || 0} {t("dashboard.sold")} ·{" "}
-                  {p.type || t("common.na")}
-                </div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="font-title text-sm font-bold text-slate-900">
-                  {formatPrice(p.estimatedRevenue)}
-                </div>
-                <div className="text-xs text-slate-500">
-                  {t("dashboard.revenueLabel")}
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </Card>
     </>

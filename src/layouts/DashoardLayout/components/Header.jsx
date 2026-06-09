@@ -85,7 +85,7 @@ export const Header = () => {
     user?.id,
     !!user?.id,
   );
-  
+
   const notifications = socketNotifications.notifications;
 
   const { t } = useTranslation();
@@ -177,7 +177,17 @@ export const Header = () => {
                 value={search.value}
                 onChange={(e) => search.setValue(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") search.submit();
+                  if (e.key === "Enter") {
+                    if (search.value.trim()) {
+                      navigate(
+                        `/search?q=${encodeURIComponent(search.value.trim())}`,
+                      );
+                      search.clear();
+                      search.setIsOpen(false);
+                    } else {
+                      search.submit();
+                    }
+                  }
                 }}
               />
               {search.value ? (
@@ -194,7 +204,17 @@ export const Header = () => {
           <Button
             variant="ghost"
             className="h-10 w-10 rounded-xl p-0!"
-            onClick={search.submit}
+            onClick={() => {
+              if (search.isOpen && search.value.trim()) {
+                navigate(
+                  `/search?q=${encodeURIComponent(search.value.trim())}`,
+                );
+                search.clear();
+                search.setIsOpen(false);
+              } else {
+                search.submit();
+              }
+            }}
           >
             <Search className="[&>svg]:w-8 [&>svg]:h-8 ![&>svg]:stroke-3" />
           </Button>
@@ -229,7 +249,7 @@ export const Header = () => {
 
           {notificationOpen && (
             <div
-              className={`absolute right-0 top-full mt-2 w-80 rounded-xl border shadow-xl px-1 py-1 ${theme === "dark" ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}
+              className={`absolute right-0 top-full mt-2 w-80 max-h-[300px] overflow-y-auto rounded-xl border shadow-xl px-1 py-1 ${theme === "dark" ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-white"}`}
               style={{ zIndex: 900 }}
             >
               <div className="flex items-center justify-between px-4 py-2">
@@ -266,20 +286,20 @@ export const Header = () => {
                         }
                         setNotificationOpen(false);
                       }}
-                      className={`rounded-lg px-4 py-2.5 transition cursor-pointer ${item.isRead ? "hover:bg-slate-50" : "bg-amber-300 hover:bg-amber-100/80"}`}
+                      className={`group rounded-lg px-4 py-2.5 transition cursor-pointer ${item.isRead ? "hover:bg-amber-300" : "bg-amber-300 hover:bg-amber-100/80"}`}
                     >
                       <div className="flex items-start gap-2.5">
                         <span
-                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.isRead ? "bg-slate-200" : "bg-amber-500"}`}
+                          className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${item.isRead ? "bg-slate-200 group-hover:bg-green-600" : "bg-amber-500"}`}
                         />
                         <div className="flex-1 min-w-0">
                           <div
-                            className={`text-sm font-semibold truncate ${theme === "dark" ? "text-white" : "text-slate-900"}`}
+                            className={`text-sm font-semibold truncate ${theme === "dark" ? "text-white group-hover:text-slate-800" : "text-slate-900"}`}
                           >
                             {item.title}
                           </div>
                           <div
-                            className={`mt-0.5 text-xs truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}
+                            className={`mt-0.5 text-xs truncate ${theme === "dark" ? "text-white/70 group-hover:text-slate-800" : "text-slate-500"}`}
                           >
                             {item.description}
                           </div>
@@ -303,18 +323,29 @@ export const Header = () => {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className={`flex flex-col items-center gap-2 cursor-pointer focus:outline-none rounded-lg px-1.5 py-1 transition ${theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
+            className={`flex items-center gap-2.5 cursor-pointer focus:outline-none rounded-lg px-2 py-1.5 transition ${theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
           >
-            <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-base font-bold text-white shrink-0">
+            <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-sm font-bold text-white shrink-0">
               {user?.avatar ? (
-                <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" />
+                <img
+                  src={user.avatar}
+                  alt="Avatar"
+                  className="h-full w-full object-cover"
+                />
               ) : (
-                user?.name?.charAt(0)?.toUpperCase() || "U"
+                user?.fullName?.charAt(0)?.toUpperCase() ||
+                user?.name?.charAt(0)?.toUpperCase() ||
+                "U"
               )}
             </div>
-            <div className="hidden lg:block min-w-0 max-w-30">
+            <div className="hidden lg:block min-w-0 max-w-40 text-left">
               <div
-                className={`text-[11px] leading-tight truncate ${theme === "dark" ? "text-white/70" : "text-slate-500"}`}
+                className={`text-xs font-semibold truncate leading-none ${theme === "dark" ? "text-white" : "text-slate-900"}`}
+              >
+                {user?.fullName || user?.name || "User"}
+              </div>
+              <div
+                className={`text-[10px] truncate mt-0.5 leading-none ${theme === "dark" ? "text-slate-400" : "text-slate-500"}`}
               >
                 {user?.email || "user@artivox.vn"}
               </div>

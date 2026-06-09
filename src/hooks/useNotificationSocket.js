@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { setupNotificationListener } from "@services/notificationSocket";
 import { notificationService } from "@services/notificationService";
 import { io } from "socket.io-client";
+import { useAuthStore } from "@store/authStore";
 
 export const useNotificationSocket = (staffId, userId, enabled = true) => {
   const [notifications, setNotifications] = useState([]);
@@ -53,7 +54,7 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
 
   // Setup socket listener (existing mock/ws)
   useEffect(() => {
-    if (!enabled || !staffId || !userId || !fetchedRef.current) return;
+    if (!enabled || !staffId || !userId) return;
 
     try {
       unsubscribeRef.current = setupNotificationListener({
@@ -62,17 +63,13 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
         onNotification: handleNewNotification,
         onChatMessage: handleNewChatMessage,
       });
-
-      setSocketStatus("connected");
     } catch (error) {
       console.error("Failed to setup notification listener:", error);
-      setSocketStatus("error");
     }
 
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
-        setSocketStatus("disconnected");
       }
     };
   }, [enabled, staffId, userId, handleNewNotification, handleNewChatMessage]);
@@ -81,8 +78,23 @@ export const useNotificationSocket = (staffId, userId, enabled = true) => {
   useEffect(() => {
     if (!enabled || !staffId) return;
 
+    const token = useAuthStore.getState().accessToken;
+
     const socket = io(`${import.meta.env.VITE_SOCKET_URL || "http://localhost:3600"}/notifications`, {
       transports: ["websocket"],
+      auth: { token: token ? `Bearer ${token}` : undefined }
+    });
+
+    socket.on("connect", () => {
+      setSocketStatus("connected");
+    });
+
+    socket.on("disconnect", () => {
+      setSocketStatus("disconnected");
+    });
+
+    socket.on("connect_error", () => {
+      setSocketStatus("error");
     });
 
     socket.on("chat_notification", (data) => {

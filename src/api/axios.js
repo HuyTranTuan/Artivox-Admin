@@ -24,6 +24,9 @@ const _send = async (method, path, data, config) => {
     return response?.data;
   } catch (error) {
     switch (error.response?.status) {
+      case 500:
+        toastTopRight("error", HTTP_CODE.HTTP_STATUS[500]);
+        break;
       case 409:
         toastTopRight("error", HTTP_CODE.HTTP_STATUS[409]);
         break;

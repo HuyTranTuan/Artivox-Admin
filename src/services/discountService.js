@@ -13,8 +13,14 @@ export const discountService = {
   },
 
   // Fetch all discounts for admin
-  getDiscountsAdmin: async () => {
-    const response = await http.get("/discounts/admin");
+  getDiscountsAdmin: async (params = {}) => {
+    const { limit = 20, skip = 0, search } = params;
+    const query = new URLSearchParams();
+    if (limit) query.set("limit", limit);
+    if (skip) query.set("skip", skip);
+    if (search) query.set("search", search);
+    const qs = query.toString();
+    const response = await http.get(`/discounts/admin${qs ? `?${qs}` : ""}`);
     return response;
   },
 

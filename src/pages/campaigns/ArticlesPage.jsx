@@ -1,42 +1,36 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Eye,
-  FilePenLine,
-  Languages,
-  Plus,
-  Pencil,
-  RefreshCw,
-  Trash2,
-  CheckCircle,
-} from "lucide-react";
+import { Eye, FilePenLine, Languages, Pencil, Trash2, CheckCircle } from "lucide-react";
 import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
-import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import {
+  DataTable,
+  TableToolbar,
+  TablePagination,
+  useDataTable,
+} from "@components/DataTable";
 import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 import { useUiStore } from "@store/uiStore";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
+import { useExpandableSearch } from "@hooks/useExpandableSearch";
+import { useDebounce } from "@hooks/useDebounce";
+import SummaryCard from "@/components/SummaryCard";
 
 const normalizeArticle = (currentLang, rawItem, index = 0) => {
   const translation =
-    rawItem?.translations?.find(
-      (translate) => translate.locale === currentLang,
-    ) ||
+    rawItem?.translations?.find((t) => t.locale === currentLang) ||
     rawItem?.translations?.[0] ||
     {};
   const articleId = rawItem?.id || rawItem?._id || `article-${index}`;
-
   return {
     id: articleId,
     slug: rawItem?.slug || String(articleId),
     title: translation.title || `Article ${index + 1}`,
-    summary: translation.summary || `Article ${index + 1} summary`,
-    content: translation.content || "", // Extracted from translations
-    coverImage: rawItem?.coverImage || null, // Extracted from root
-    locale: translation.locale || rawItem?.locale || rawItem?.language || "EN",
+    summary: translation.summary || "",
+    locale: translation.locale || rawItem?.locale || "EN",
     author: rawItem?.author?.fullName || rawItem?.authorName || "Unknown",
     status: rawItem?.deletedAt
       ? "Deleted"
@@ -44,8 +38,6 @@ const normalizeArticle = (currentLang, rawItem, index = 0) => {
         ? "Published"
         : "Draft",
     publishedAt: rawItem?.publishedAt || rawItem?.publishDate || null,
-    createdAt: rawItem?.createdAt || null,
-    updatedAt: rawItem?.updatedAt || null,
     views: Number(rawItem?.views ?? rawItem?.viewCount ?? 0),
   };
 };
@@ -57,23 +49,17 @@ const ArticlesPage = () => {
   const { user } = useAuthStore();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const search = useExpandableSearch();
+  const debouncedSearch = useDebounce(search.value, 300);
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
   const permission = useMemo(() => {
     if (!user?.permission) return {};
     if (typeof user.permission === "object") return user.permission;
     try {
-      const validJsonString = user.permission.replace(
-        /([a-zA-Z0-9_]+)(?=\s*:)/g,
-        '"$1"',
-      );
-      return JSON.parse(validJsonString);
-    } catch (e) {
-      console.error("Failed to parse permission string", e);
-      return {};
-    }
+      return JSON.parse(user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'));
+    } catch { return {}; }
   }, [user]);
-
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
   const canDelete = isAdmin || permission.del;
@@ -81,218 +67,182 @@ const ArticlesPage = () => {
   const loadArticles = useCallback(async () => {
     setLoading(true);
     try {
-      const articles = await articleService.getArticles();
-      const normalized = articles.map((article) =>
-        normalizeArticle(lang, article),
-      );
-      setArticles(normalized);
-    } catch {
-      setArticles([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      const data = await articleService.getArticles();
+      setArticles(data.map((a, i) => normalizeArticle(lang, a, i)));
+    } catch { setArticles([]); }
+    finally { setLoading(false); }
+  }, [lang]);
 
-  useEffect(() => {
-    loadArticles();
-  }, [loadArticles]);
+  useEffect(() => { loadArticles(); }, [loadArticles]);
 
-  const handleView = (slug) => {
-    navigate(`/articles/${slug}`);
-  };
+  const filtered = useMemo(() => {
+    const kw = debouncedSearch.toLowerCase();
+    if (!kw) return articles;
+    return articles.filter(
+      (a) =>
+        a.title.toLowerCase().includes(kw) ||
+        a.author.toLowerCase().includes(kw) ||
+        a.status.toLowerCase().includes(kw),
+    );
+  }, [articles, debouncedSearch]);
+
+  const dt = useDataTable({
+    rows: filtered,
+    keyField: "id",
+    pageSize: 20,
+    exportFilename: "articles",
+    onExportRow: (r) => ({
+      title: r.title,
+      author: r.author,
+      locale: r.locale,
+      status: r.status,
+      views: r.views,
+      publishedAt: r.publishedAt,
+    }),
+  });
 
   const handleDelete = async (slug) => {
-    if (window.confirm("Are you sure to delete this article?")) {
-      try {
-        await articleService.deleteArticle(slug);
-        loadArticles();
-      } catch (error) {
-        console.error("Failed to delete article", error);
-      }
-    }
+    if (!window.confirm("Delete this article?")) return;
+    try { await articleService.deleteArticle(slug); loadArticles(); }
+    catch (e) { console.error(e); }
   };
 
   const handleApprove = async (id) => {
-    if (window.confirm("Are you sure to publish this article?")) {
-      try {
-        await articleService.approveArticle(id);
-        loadArticles();
-      } catch (error) {
-        console.error("Failed to approve article", error);
-      }
-    }
+    if (!window.confirm("Publish this article?")) return;
+    try { await articleService.approveArticle(id); loadArticles(); }
+    catch (e) { console.error(e); }
   };
 
   const dynamicStats = useMemo(() => {
-    const active = articles.filter(
-      (a) =>
-        a.status === "Published" ||
-        a.status === "ACTIVE" ||
-        a.status === "active",
-    ).length;
-    const localesArray = [
-      ...new Set(articles.map((a) => a.locale).filter(Boolean)),
-    ];
-    const locales = localesArray.length > 0 ? localesArray.join(" / ") : "EN";
-    const totalViews = articles
-      .filter((a) => a.status === "Published")
-      .reduce((acc, a) => acc + (Number(a.views) || 0), 0);
-    const formattedViews =
-      totalViews >= 1000
-        ? (totalViews / 1000).toFixed(1) + "K"
-        : totalViews.toString();
-
+    const active = filtered.filter((a) => a.status === "Published").length;
+    const locales = [...new Set(articles.map((a) => a.locale).filter(Boolean))].join(" / ") || "EN";
+    const totalViews = articles.filter((a) => a.status === "Published").reduce((acc, a) => acc + a.views, 0);
     return [
-      {
-        label: t("articles.activeCampaigns"),
-        value: active.toString(),
-        icon: FilePenLine,
-      },
+      { label: t("articles.activeCampaigns"), value: String(active), icon: FilePenLine },
       { label: t("articles.localeCoverage"), value: locales, icon: Languages },
-      { label: t("articles.totalViews"), value: formattedViews, icon: Eye },
+      { label: t("articles.totalViews"), value: totalViews >= 1000 ? (totalViews / 1000).toFixed(1) + "K" : String(totalViews), icon: Eye },
     ];
-  }, [articles, t]);
+  }, [articles, filtered, t]);
+
+  const columns = [
+    {
+      key: "title",
+      label: t("articles.titleLabel"),
+      width: "2fr",
+      render: (row) => (
+        <div>
+          <div
+            className="font-semibold text-slate-900 cursor-pointer hover:text-amber-600 transition-colors"
+            onClick={() => navigate(`/articles/${row.slug}`)}
+          >
+            {row.title}
+          </div>
+          <div className="text-xs text-slate-400 mt-0.5">
+            {toSafeNumber(row.views).toLocaleString("en-US")} views
+          </div>
+        </div>
+      ),
+    },
+    { key: "locale", label: t("articles.locale") },
+    { key: "author", label: t("articles.author") },
+    {
+      key: "status",
+      label: t("articles.status"),
+      render: (row) => <Badge>{row.status}</Badge>,
+    },
+    {
+      key: "publishedAt",
+      label: t("articles.published"),
+      render: (row) => formatDate(row.publishedAt),
+    },
+    {
+      key: "actions",
+      label: t("articles.actions"),
+      sortable: false,
+      width: "120px",
+      render: (row) => (
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => navigate(`/articles/${row.slug}`)}
+            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+          >
+            <Eye style={{ width: 16, height: 16 }} />
+          </button>
+          {canUpdate && (
+            <button
+              onClick={() => navigate(`/articles/${row.slug}/edit`)}
+              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+            >
+              <Pencil style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+          {isAdmin && !row.publishedAt && (
+            <button
+              onClick={() => handleApprove(row.id)}
+              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
+            >
+              <CheckCircle style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => handleDelete(row.slug)}
+              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+            >
+              <Trash2 style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <section className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {dynamicStats.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Card key={item.label} className="flex items-center gap-4 p-5">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-white shrink-0">
-                <Icon className="h-5 w-5" />
-              </div>
-              <div>
-                <div className="font-title text-2xl font-bold text-slate-900">
-                  {item.value}
-                </div>
-                <div className="text-xs text-slate-500">{item.label}</div>
-              </div>
-            </Card>
-          );
-        })}
+        {dynamicStats.map((item) => (
+          <SummaryCard key={item.label} label={item.label} value={item.value} icon={item.icon} />
+        ))}
       </div>
 
       <Card className="p-6">
-        <div className="mb-5 flex items-center justify-between">
-          <div className="font-title text-xl font-bold text-slate-950">
-            {t("articles.title")}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              className="h-10 w-10 p-0!"
-              onClick={loadArticles}
-            >
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-            <Button
-              className="gap-2"
-              onClick={() => navigate("/articles/create")}
-              disabled={!canCreate}
-            >
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <TableToolbar
+          title={t("articles.title")}
+          onAddNew={canCreate ? () => navigate("/articles/create") : null}
+          onRefresh={loadArticles}
+          onExportCsv={dt.handleExport}
+          search={search}
+          searchPlaceholder="Search articles..."
+          filterOptions={[
+            { key: "status", label: "Status", values: ["Published", "Draft", "Deleted"] },
+          ]}
+          activeFilters={{}}
+          onFilterChange={() => {}}
+        />
 
-        <div
-          className="overflow-x-auto"
-          style={{ maxHeight: "calc(100vh - 340px)" }}
-        >
-          <div className="min-w-200">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                <div>{t("articles.titleLabel")}</div>
-                <div>{t("articles.locale")}</div>
-                <div>{t("articles.author")}</div>
-                <div>{t("articles.status")}</div>
-                <div>{t("articles.published")}</div>
-                <div>{t("articles.actions")}</div>
-              </div>
+        <DataTable
+          columns={columns}
+          rows={dt.paginated}
+          keyField="id"
+          loading={loading}
+          emptyMessage={t("articles.empty")}
+          sortField={dt.sortField}
+          sortDir={dt.sortDir}
+          onSort={dt.toggleSort}
+          checkedIds={dt.checkedIds}
+          onToggleRow={dt.toggleRow}
+          onToggleAll={dt.toggleAll}
+          allChecked={dt.allChecked}
+          someChecked={dt.someChecked}
+        />
 
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 420px)" }}
-              >
-                {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">
-                    {t("articles.loading")}
-                  </div>
-                ) : articles.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500">
-                    {t("articles.empty")}
-                  </div>
-                ) : (
-                  articles.map((item, idx) => (
-                    <div
-                      key={item.id}
-                      className={`grid grid-cols-[2fr_1fr_1fr_1fr_1fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 transition ${idx % 2 === 1 ? "bg-slate-100" : "bg-white"} hover:bg-orange-100`}
-                    >
-                      <div>
-                        <div
-                          className="font-title text-base font-semibold text-slate-900 cursor-pointer hover:text-amber-600"
-                          onClick={() => navigate(`/articles/${item.slug}`)}
-                        >
-                          {item.title}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-500">
-                          {toSafeNumber(item.views).toLocaleString("en-US")}{" "}
-                          {t("articles.views")}
-                        </div>
-                      </div>
-                      <div>{item.locale}</div>
-                      <div>{item.author}</div>
-                      <div>
-                        <Badge>{item.status}</Badge>
-                      </div>
-                      <div>{formatDate(item.publishedAt)}</div>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={() => handleView(item.slug)}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Eye style={{ width: 18, height: 18 }} />
-                        </button>
-                        {canUpdate && (
-                          <button
-                            onClick={() =>
-                              navigate(`/articles/${item.slug}/edit`)
-                            }
-                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                            style={{ padding: 5 }}
-                          >
-                            <Pencil style={{ width: 18, height: 18 }} />
-                          </button>
-                        )}
-                        {isAdmin && !item.publishedAt && (
-                          <button
-                            onClick={() => handleApprove(item.id)}
-                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
-                            style={{ padding: 5 }}
-                          >
-                            <CheckCircle style={{ width: 18, height: 18 }} />
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button
-                            onClick={() => handleDelete(item.slug)}
-                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                            style={{ padding: 5 }}
-                          >
-                            <Trash2 style={{ width: 18, height: 18 }} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        <TablePagination
+          currentPage={dt.currentPage}
+          totalPages={dt.totalPages}
+          totalItems={dt.totalItems}
+          pageSize={20}
+          onPage={dt.setPage}
+        />
       </Card>
     </section>
   );

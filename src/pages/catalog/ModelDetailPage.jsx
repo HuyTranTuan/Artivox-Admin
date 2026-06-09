@@ -64,17 +64,12 @@ const ModelDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 p-0 rounded-lg"
+          className="h-10 w-10 p-0! rounded-lg text-amber-500! cursor-pointer"
           onClick={() => navigate("/catalog/models")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="font-title text-2xl font-bold text-slate-950">
-            {model.name}
-          </h1>
-          <p className="text-sm text-slate-500 font-mono">{model.slug}</p>
-        </div>
+        <h1 className="font-title text-2xl font-bold">{model.name}</h1>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
@@ -199,7 +194,7 @@ const ModelDetailPage = () => {
             </div>
           </div>
           <Button
-            className="w-full mt-6"
+            className="w-full mt-6 cursor-pointer"
             variant="secondary"
             onClick={() => navigate("/catalog/models")}
           >

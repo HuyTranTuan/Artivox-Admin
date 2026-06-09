@@ -30,8 +30,8 @@ const CreateCollectionPage = () => {
       const fetchCollection = async () => {
         try {
           const res = await collectionService.getCollectionBySlug(slug);
-          if (res.data?.data) {
-            const data = res.data.data;
+          if (res) {
+            const data = res;
             setForm({
               name: data.name || "",
               slug: data.slug || "",
@@ -112,35 +112,35 @@ const CreateCollectionPage = () => {
   }
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between">
+    <section className="flex flex-col lg:flex-row lg:space-x-6 lg:space-y-0 space-y-6">
+      <Card className="p-6 space-y-5 lg:w-2/3 w-full">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/catalog/collections")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-amber-400 hover:text-white cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h2 className="font-title text-xl font-bold">
+          <h2 className="font-title text-xl font-bold text-slate-950">
             {isEditMode
               ? t("catalog.editCollection")
               : t("catalog.addNewCollection")}
           </h2>
+          <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            {isEditMode ? (
+              <span className="lg:block hidden">
+                {t("catalog.saveChanges")}
+              </span>
+            ) : (
+              <span className="lg:block hidden">{t("catalog.create")}</span>
+            )}
+          </Button>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="gap-2">
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          {isEditMode ? t("catalog.saveChanges") : t("catalog.create")}
-        </Button>
-      </div>
-
-      <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
-          {t("catalog.collectionInfo")}
-        </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-800">
@@ -172,9 +172,9 @@ const CreateCollectionPage = () => {
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
-            rows={3}
+            rows={6}
             placeholder={t("catalog.collectionDescriptionPlaceholder")}
-            className="h-28 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white placeholder:text-slate-500 resize-none"
+            className="h-36 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-slate-950 placeholder:text-slate-500 resize-none"
           />
         </div>
         <div>

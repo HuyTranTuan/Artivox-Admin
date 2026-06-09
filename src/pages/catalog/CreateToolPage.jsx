@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -15,11 +15,19 @@ import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { useTranslation } from "@hooks/useTranslation";
 import { toolsService } from "@services/toolsService";
+import { collectionService } from "@services/collectionService";
 
 const CreateToolPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    collectionService.getCollections({ limit: 100, isActive: true })
+      .then(res => setCollections(res.data?.items || res.items || res.data || []))
+      .catch(console.error);
+  }, []);
 
   const [form, setForm] = useState({
     name: "",
@@ -260,7 +268,7 @@ const CreateToolPage = () => {
             )}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
               {t("catalog.price")} (VND)
@@ -284,6 +292,23 @@ const CreateToolPage = () => {
               placeholder="0"
               className="text-gray-700 placeholder-gray-500 bg-white"
             />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Collection
+            </label>
+            <select
+              value={form.collectionId || ""}
+              onChange={(e) => handleChange("collectionId", e.target.value)}
+              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
+            >
+              <option value="">Select Collection</option>
+              {collections.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">

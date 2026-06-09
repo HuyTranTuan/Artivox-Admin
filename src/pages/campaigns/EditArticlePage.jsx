@@ -151,28 +151,6 @@ const EditArticlePage = () => {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleCancel}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
-            {t("articles.editArticle")}
-          </h2>
-        </div>
-        <Button
-          onClick={handleSave}
-          className="gap-2"
-          disabled={!canUpdate || isSaving}
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
-        </Button>
-      </div>
-
       {error && (
         <div className="p-4 rounded-lg bg-red-50 text-red-600 text-sm">
           {error}
@@ -180,6 +158,27 @@ const EditArticlePage = () => {
       )}
 
       <Card className="p-6 space-y-5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancel}
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-amber-500 hover:text-white cursor-pointer"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <h2 className="font-title text-xl font-bold text-slate-900">
+              {t("catalog.edit")}
+            </h2>
+          </div>
+          <Button
+            onClick={handleSave}
+            className="gap-2"
+            disabled={!canUpdate || isSaving}
+          >
+            <Save className="h-4 w-4" />
+            {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
+          </Button>
+        </div>
         {/* Slug / URL */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -215,7 +214,7 @@ const EditArticlePage = () => {
             className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
           <p className="mt-1 text-xs text-slate-500">
-            {t("articles.coverImageHelp") ||
+            {t("articles.coverImage") ||
               "Upload a new image to replace the current one."}
           </p>
         </div>

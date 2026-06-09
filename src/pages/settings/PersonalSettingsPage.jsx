@@ -34,7 +34,7 @@ const PersonalSettingsPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const { user, refreshUserAvatar } = useAuthStore();
+  const { user, refreshUserAvatar, updateUser } = useAuthStore();
 
   // Profile form
   const [profile, setProfile] = useState({
@@ -126,6 +126,11 @@ const PersonalSettingsPage = () => {
         bio: profile.bio,
         language: profile.language,
         timezone: profile.timezone,
+      });
+      updateUser({
+        fullName: profile.name,
+        email: profile.email,
+        phone: profile.phone,
       });
       showToast(
         "success",

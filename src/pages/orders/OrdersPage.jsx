@@ -1,404 +1,85 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Eye,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  ArrowUpDown,
-  Upload,
-} from "lucide-react";
+import { Eye } from "lucide-react";
 import { Card } from "@components/ui/card";
-import { Button } from "@components/ui/button";
-import { Input } from "@components/ui/input";
-import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
-import { useDebounce } from "@hooks/useDebounce";
+import { DataTable, TableToolbar, TablePagination, useDataTable } from "@components/DataTable";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
-import { useUiStore } from "@store/uiStore";
+import { useDebounce } from "@hooks/useDebounce";
 import { useTranslation } from "@hooks/useTranslation";
-import { exportToCsv } from "@utils/exportCsv";
-
-const fmtDate = (dateStr) => {
-  if (!dateStr) return "—";
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;
-  } catch {
-    return dateStr;
-  }
-};
-
-const statusColor = {
-  PENDING: "text-amber-600",
-  PAID: "text-emerald-600",
-  REFUND_PENDING: "text-rose-600",
-  PROCESSING: "text-blue-600",
-  SHIPPED: "text-indigo-600",
-  DELIVERED: "text-emerald-600",
-  CANCELLED: "text-slate-500",
-};
-
-// Removed MOCK_ORDERS
-
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { orderService } from "@services/orderService";
 
+const fmtDate = (d) => {
+  if (!d) return "—";
+  try { const x = new Date(d); return isNaN(x) ? d : `${String(x.getDate()).padStart(2,"0")}/${String(x.getMonth()+1).padStart(2,"0")}/${x.getFullYear()}`; }
+  catch { return d; }
+};
+
+const statusColor = { PENDING:"text-amber-600", PAID:"text-emerald-600", REFUND_PENDING:"text-rose-600", PROCESSING:"text-blue-600", SHIPPED:"text-indigo-600", DELIVERED:"text-emerald-600", CANCELLED:"text-slate-500" };
+
 const OrdersPage = () => {
   const navigate = useNavigate();
-  const { currentLanguage: lang } = useUiStore();
   const { t } = useTranslation();
 
-  const {
-    data: orders,
-    loading,
-    error,
-    page: currentPage,
-    totalPages,
-    totalItems: apiTotalItems,
-    setPage,
-    nextPage,
-    prevPage,
-    refetch,
-  } = usePaginatedApi((params) => orderService.listOrders({ ...params }), {
-    defaultLimit: 20,
-    pageParam: "page",
-  });
+  const { data: orders, loading, page: currentPage, totalPages, totalItems, setPage, refetch } = usePaginatedApi(
+    (params) => orderService.listOrders({ ...params }),
+    { defaultLimit: 20, pageParam: "page" },
+  );
 
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-  const [sortField, setSortField] = useState(null);
-  const [sortDir, setSortDir] = useState("asc");
+  const [activeFilters, setActiveFilters] = useState({ status: null });
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
-  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch, selectedStatus, sortField, sortDir]);
+  useEffect(() => { setPage(1); }, [debouncedSearch, activeFilters]);
 
-  const statusOptions = [
-    ...new Set(orders.filter(o => o.status !== "PENDING").map((o) => o.status).filter(Boolean)),
-  ];
+  const fmtPrice = (v) => v ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v) : "—";
 
   const filtered = useMemo(() => {
-    let result = orders.filter((o) => o.status !== "PENDING");
-    const keyword = debouncedSearch.toLowerCase();
-    if (keyword) {
-      result = result.filter(
-        (o) =>
-          (o.code || o.id || "").toLowerCase().includes(keyword) ||
-          (o.customer?.name || o.customer || "")
-            .toLowerCase()
-            .includes(keyword),
-      );
-    }
-    if (selectedStatus) {
-      result = result.filter((o) => o.status === selectedStatus);
-    }
-    if (sortField) {
-      result.sort((a, b) => {
-        const va = a[sortField];
-        const vb = b[sortField];
-        if (typeof va === "string") {
-          return sortDir === "asc"
-            ? va.localeCompare(vb)
-            : vb.localeCompare(va);
-        }
-        return sortDir === "asc" ? va - vb : vb - va;
-      });
-    }
-    return result;
-  }, [orders, debouncedSearch, selectedStatus, sortField, sortDir]);
+    let r = orders.filter((o) => o.status !== "PENDING");
+    const kw = debouncedSearch.toLowerCase();
+    if (kw) r = r.filter((o) => (o.code || o.id || "").toLowerCase().includes(kw) || (o.customer?.name || o.customer || "").toLowerCase().includes(kw));
+    if (activeFilters.status) r = r.filter((o) => o.status === activeFilters.status);
+    return r;
+  }, [orders, debouncedSearch, activeFilters]);
 
-  const itemsPerPage = 20;
-  const derivedTotalItems = filtered.length;
-  const derivedTotalPages = Math.max(1, Math.ceil(derivedTotalItems / itemsPerPage));
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  const paginated = filtered.slice(startIdx, startIdx + itemsPerPage);
+  const statusOptions = useMemo(() => [...new Set(orders.filter((o) => o.status !== "PENDING").map((o) => o.status).filter(Boolean))], [orders]);
 
-  const fmtPrice = (v) =>
-    v
-      ? new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(v)
-      : "—";
+  const dt = useDataTable({
+    rows: filtered, keyField: "id", pageSize: 20, exportFilename: "orders",
+    onExportRow: (r) => ({ Code: r.code || r.id, Customer: r.customer?.name || r.customer || "—", Amount: r.totalAmount || r.amount, Status: r.status, Date: r.createdAt }),
+  });
 
-  const toggleSort = (field) => {
-    if (sortField === field) {
-      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortDir("asc");
-    }
-  };
-
-  const handleView = (item) => {
-    navigate(`/orders/${item.id || item.code}`);
-  };
+  const columns = [
+    { key: "id", label: t("orders.code"), width: "1.2fr", render: (r) => <div className="font-semibold text-slate-900 text-xs truncate">{r.code || r.id}</div> },
+    { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => <div className="text-sm">{typeof r.customer === "object" ? r.customer?.name || r.customer?.fullName || "—" : r.customer || "—"}</div> },
+    { key: "totalAmount", label: t("orders.amount"), render: (r) => <div className="font-semibold">{fmtPrice(r.totalAmount || r.amount)}</div> },
+    { key: "status", label: t("orders.status"), render: (r) => <span className={`text-xs font-medium ${statusColor[r.status] || "text-slate-500"}`}>{r.status}</span> },
+    { key: "createdAt", label: t("orders.date"), render: (r) => <span className="text-xs">{fmtDate(r.createdAt)}</span> },
+    {
+      key: "actions", label: t("orders.actions"), sortable: false, width: "80px",
+      render: (row) => (
+        <button onClick={() => navigate(`/orders/${row.id || row.code}`)} className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition" style={{ padding: 5 }}>
+          <Eye style={{ width: 16, height: 16 }} />
+        </button>
+      ),
+    },
+  ];
 
   return (
     <section className="space-y-6">
       <Card className="p-6">
-        <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h1 className="font-title text-2xl font-bold text-slate-950">
-              {t("orders.title")}
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              {t("orders.subtitle")}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer hidden sm:flex"
-              onClick={() => exportToCsv(
-                filtered.map((o) => ({
-                  Code: o.code || o.id,
-                  Customer: o.customer?.name || o.customer || "—",
-                  Amount: o.totalAmount || o.amount,
-                  Status: o.status,
-                  Date: o.createdAt
-                })),
-                "orders"
-              )}
-              disabled={!filtered.length}
-            >
-              <Upload className="h-4 w-4 rotate-180" /> Export CSV
-            </Button>
-            <div ref={search.containerRef} className="flex items-center gap-2">
-              {search.isOpen ? (
-                <div className="relative w-64">
-                  <Input
-                    ref={search.inputRef}
-                    className="pl-4 pr-10"
-                    placeholder={t("orders.searchPlaceholder")}
-                    value={search.value}
-                    onChange={(e) => search.setValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") search.submit();
-                    }}
-                  />
-                  {search.value ? (
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                      onClick={search.clear}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-              <Button
-                variant="ghost"
-                className="h-10 w-10 p-0!"
-                onClick={search.submit}
-              >
-                <Search style={{ width: 18, height: 18 }} />
-              </Button>
-            </div>
-            <div className="relative">
-              <Button
-                variant={filterOpen ? "default" : "ghost"}
-                className="h-10 w-10 p-0!"
-                onClick={() => setFilterOpen(!filterOpen)}
-              >
-                <Filter className="h-5 w-5" />
-              </Button>
-              {filterOpen && (
-                <div
-                  ref={filterRef}
-                  className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-40"
-                >
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">
-                        {t("orders.filterStatus")}
-                      </div>
-                      {statusOptions.map((st) => (
-                        <label
-                          key={st}
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedStatus === st}
-                            onChange={() =>
-                              setSelectedStatus(
-                                selectedStatus === st ? null : st,
-                              )
-                            }
-                            className="rounded"
-                          />
-                          <span className="text-sm text-slate-600">{st}</span>
-                        </label>
-                      ))}
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full"
-                      onClick={() => {
-                        setSelectedStatus(null);
-                        setFilterOpen(false);
-                      }}
-                    >
-                      {t("orders.clearFilters")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="overflow-x-auto"
-          style={{ maxHeight: "calc(100vh - 340px)" }}
-        >
-          <div className="min-w-[900px]">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[1.2fr_1.5fr_1fr_1fr_1fr_180px] gap-3 border-b border-slate-300 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 sticky top-0 z-10">
-                <div
-                  className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("code")}
-                >
-                  {t("orders.code")} <ArrowUpDown className="h-3 w-3" />
-                </div>
-                <div
-                  className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("customer")}
-                >
-                  {t("orders.customer")} <ArrowUpDown className="h-3 w-3" />
-                </div>
-                <div
-                  className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("totalAmount")}
-                >
-                  {t("orders.amount")} <ArrowUpDown className="h-3 w-3" />
-                </div>
-                <div
-                  className="flex items-center gap-1 cursor-pointer"
-                  onClick={() => toggleSort("status")}
-                >
-                  {t("orders.status")} <ArrowUpDown className="h-3 w-3" />
-                </div>
-                <div>{t("orders.date")}</div>
-                <div>{t("orders.actions")}</div>
-              </div>
-
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 420px)" }}
-              >
-                {loading ? (
-                  <div className="px-4 py-8 text-center text-sm text-slate-500">
-                    {t("orders.loading")}
-                  </div>
-                ) : paginated.length === 0 ? (
-                  <div className="px-4 py-8 text-center text-sm text-slate-500">
-                    {t("orders.noOrders")}
-                  </div>
-                ) : (
-                  paginated.map((item, idx) => (
-                    <div
-                      key={item.id || item.code || idx}
-                      className={`grid grid-cols-[1.2fr_1.5fr_1fr_1fr_1fr_180px] gap-3 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 items-center ${idx % 2 === 0 ? "bg-slate-50/50" : "bg-white"} hover:bg-orange-50 transition cursor-pointer`}
-                      onClick={() => handleView(item)}
-                    >
-                      <div className="font-title text-sm font-semibold text-slate-900">
-                        {item.code || item.id}
-                      </div>
-                      <div className="text-sm text-slate-700">
-                        {item.customer?.name || item.customer || "—"}
-                      </div>
-                      <div className="font-semibold text-slate-900">
-                        {fmtPrice(item.totalAmount || item.amount)}
-                      </div>
-                      <div>
-                        <span
-                          className={`text-xs font-medium ${statusColor[item.status] || "text-slate-500"}`}
-                        >
-                          {item.status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        {fmtDate(item.createdAt)}
-                      </div>
-                      <div className="flex gap-1.5">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleView(item);
-                          }}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-                          style={{ padding: 5 }}
-                        >
-                          <Eye style={{ width: 18, height: 18 }} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-center justify-between border-t border-slate-200 pt-6">
-          <div className="text-sm text-slate-600">
-            {t("orders.showing")} {derivedTotalItems ? startIdx + 1 : 0}-
-            {Math.min(startIdx + itemsPerPage, derivedTotalItems)}{" "}
-            {t("orders.of")} {derivedTotalItems}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={prevPage}
-              disabled={currentPage === 1 || loading}
-            >
-              <ChevronLeft className="h-4 w-4" /> {t("orders.previous")}
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, derivedTotalPages) }, (_, index) => {
-                let page;
-                if (derivedTotalPages <= 5) page = index + 1;
-                else if (currentPage <= 3) page = index + 1;
-                else if (currentPage >= derivedTotalPages - 2)
-                  page = derivedTotalPages - 4 + index;
-                else page = currentPage - 2 + index;
-                return (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 w-8 p-0!"
-                    onClick={() => setPage(page)}
-                  >
-                    {page}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={nextPage}
-              disabled={currentPage === derivedTotalPages || loading}
-            >
-              {t("orders.next")} <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <TableToolbar
+          title={t("orders.title")}
+          onRefresh={refetch}
+          onExportCsv={dt.handleExport}
+          search={search}
+          searchPlaceholder={t("orders.searchPlaceholder")}
+          filterOptions={[{ key: "status", label: t("orders.filterStatus"), values: statusOptions }]}
+          activeFilters={activeFilters}
+          onFilterChange={(key, val) => setActiveFilters((p) => ({ ...p, [key]: val }))}
+        />
+        <DataTable columns={columns} rows={dt.paginated} keyField="id" loading={loading} emptyMessage={t("orders.noOrders", "No orders found.")} sortField={dt.sortField} sortDir={dt.sortDir} onSort={dt.toggleSort} checkedIds={dt.checkedIds} onToggleRow={dt.toggleRow} onToggleAll={dt.toggleAll} allChecked={dt.allChecked} someChecked={dt.someChecked} />
+        <TablePagination currentPage={dt.currentPage} totalPages={dt.totalPages} totalItems={dt.totalItems} pageSize={20} onPage={dt.setPage} />
       </Card>
     </section>
   );

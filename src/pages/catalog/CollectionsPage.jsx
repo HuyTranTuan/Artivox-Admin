@@ -1,28 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Plus,
-  Eye,
-  Edit,
-  Trash2,
-  Loader2,
-} from "lucide-react";
+import { Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { Input } from "@components/ui/input";
-import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
-import { useDebounce } from "@hooks/useDebounce";
+import { Badge } from "@components/ui/badge";
+import {
+  DataTable,
+  TableToolbar,
+  TablePagination,
+  useDataTable,
+} from "@components/DataTable";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
+import { useDebounce } from "@hooks/useDebounce";
 import { useTranslation } from "@hooks/useTranslation";
+import { formatDate } from "@utils/formatUtils";
+import { ImageIcon } from "lucide-react";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
-
-const ROWS_PER_PAGE = 20;
+import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 
 const CollectionsPage = () => {
   const navigate = useNavigate();
@@ -30,297 +26,353 @@ const CollectionsPage = () => {
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
-  const permission = validJsonString ? JSON.parse(validJsonString) : {};
+  const permission = (() => {
+    try {
+      return JSON.parse(
+        (user?.permission || "{}").replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'),
+      );
+    } catch {
+      return {};
+    }
+  })();
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
   const canDelete = isAdmin || permission.del;
 
-  const {
-    data: items,
-    loading,
-    error,
-    page: currentPage,
-    totalPages,
-    totalItems: total,
-    setPage,
-    nextPage,
-    prevPage,
-    refetch,
-  } = usePaginatedApi(
-    (params) => collectionService.getCollections({ ...params }),
-    { defaultLimit: ROWS_PER_PAGE, pageParam: "page" },
-  );
-
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedFilters, setSelectedFilters] = useState({ status: null });
+  const [activeFilters, setActiveFilters] = useState({ status: null });
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [deleting, setDeleting] = useState(false);
-
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
-  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
+
+  const {
+    data: items,
+    loading,
+    page: currentPage,
+    totalPages,
+    totalItems,
+    setPage,
+    refetch,
+  } = usePaginatedApi(
+    (params) =>
+      collectionService.getCollections({
+        ...params,
+        search: debouncedSearch,
+        isActive:
+          activeFilters.status === "Active"
+            ? true
+            : activeFilters.status === "Inactive"
+              ? false
+              : undefined,
+      }),
+    {
+      defaultLimit: 20,
+      pageParam: "page",
+      refreshDeps: [debouncedSearch, activeFilters],
+    },
+  );
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedFilters]);
+  }, [debouncedSearch, activeFilters, setPage]);
 
   const handleDelete = async () => {
-    if (selectedItem) {
-      setDeleting(true);
-      try {
-        await collectionService.deleteCollection(selectedItem.slug);
-        setOpenDialog(null);
-        refetch();
-      } catch (err) {
-        console.error("Delete collection failed:", err);
-      } finally {
-        setDeleting(false);
-      }
+    if (!selectedItem) return;
+    setDeleting(true);
+    try {
+      await collectionService.deleteCollection(selectedItem.slug);
+      setOpenDialog(null);
+      refetch();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setDeleting(false);
     }
   };
 
-  const filteredItems = useMemo(
-    () =>
-      items.filter((item) => {
-        const itemStatus = item.isActive ? "Active" : "Inactive";
-        const matchesSearch =
-          debouncedSearch === "" ||
-          item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          item.description
-            ?.toLowerCase()
-            .includes(debouncedSearch.toLowerCase());
-        return (
-          matchesSearch &&
-          (!selectedFilters.status || itemStatus === selectedFilters.status)
-        );
-      }),
-    [items, debouncedSearch, selectedFilters],
-  );
+  const dt = useDataTable({
+    rows: items,
+    keyField: "id",
+    pageSize: 20,
+    exportFilename: "collections",
+    onExportRow: (i) => ({
+      Name: i.name,
+      Slug: i.slug,
+      Description: i.description,
+      Items: i.itemCount,
+      Status: i.isActive ? "Active" : "Inactive",
+      Created: formatDate(i.createdAt),
+      Updated: formatDate(i.updatedAt),
+    }),
+  });
 
-  const paginatedItems = filteredItems;
+  const columns = [
+    {
+      key: "image",
+      label: t("catalog.image"),
+      width: "80px",
+      sortable: false,
+      render: (item) => (
+        <div className="h-12 w-12 rounded bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden">
+          {item.image ? (
+            <img
+              src={item.image}
+              alt={item.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <ImageIcon className="h-5 w-5 text-slate-400" />
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "name",
+      label: t("catalog.name"),
+      width: "2fr",
+      render: (r) => (
+        <div>
+          <div className="font-semibold text-slate-900 truncate">
+            {r.name || r.title}
+          </div>
+          <div className="text-xs text-slate-500 mt-1">{r.slug}</div>
+        </div>
+      ),
+    },
+    {
+      key: "description",
+      label: t("catalog.description"),
+      width: "2fr",
+      render: (r) => (
+        <div
+          className="text-xs text-slate-500 line-clamp-2"
+          title={r.description}
+        >
+          {r.description || "-"}
+        </div>
+      ),
+    },
+    {
+      key: "itemCount",
+      label: t("catalog.items"),
+      width: "1fr",
+      render: (r) => (
+        <span className="text-sm font-medium">{r.itemCount || 0}</span>
+      ),
+    },
+    {
+      key: "status",
+      label: t("catalog.status"),
+      width: "1fr",
+      render: (r) => (
+        <span
+          className={`px-2 py-1 rounded text-xs font-semibold ${
+            r.isActive
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          {r.isActive ? t("catalog.active") : t("catalog.inactive")}
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: t("catalog.createdAt"),
+      width: "1fr",
+      render: (r) => (
+        <span className="text-xs text-slate-500">
+          {formatDate(r.createdAt)}
+        </span>
+      ),
+    },
+    {
+      key: "updatedAt",
+      label: t("catalog.updatedAt"),
+      width: "1fr",
+      render: (r) => (
+        <span className="text-xs text-slate-500">
+          {formatDate(r.updatedAt)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      label: t("catalog.actions"),
+      sortable: false,
+      width: "110px",
+      render: (row) => (
+        <div className="flex gap-1.5">
+          <button
+            onClick={() =>
+              navigate(`/catalog/collections/${row.slug || row.id}`)
+            }
+            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+            style={{ padding: 5 }}
+          >
+            <Eye style={{ width: 16, height: 16 }} />
+          </button>
+          {canUpdate && (
+            <button
+              onClick={() =>
+                navigate(`/catalog/collections/edit/${row.slug || row.id}`)
+              }
+              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+              style={{ padding: 5 }}
+            >
+              <Edit style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => {
+                setSelectedItem(row);
+                setOpenDialog("delete");
+              }}
+              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+              style={{ padding: 5 }}
+            >
+              <Trash2 style={{ width: 16, height: 16 }} />
+            </button>
+          )}
+        </div>
+      ),
+    },
+  ];
 
   return (
     <section className="space-y-6">
       <Card className="p-6">
-        <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="font-title text-2xl font-bold text-slate-950">
-              {t("catalog.collections")}
-            </h1>
-            <Button
-              variant="outline-orange"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
-              onClick={() => navigate("/catalog/collections/create")}
-              disabled={!canCreate}
-            >
-              <Plus className="h-5 w-5" /> {t("catalog.addNew")}
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <div ref={search.containerRef} className="flex items-center gap-2">
-              {search.isOpen ? (
-                <div className="relative w-64">
-                  <Input
-                    ref={search.inputRef}
-                    className="pr-10"
-                    placeholder={t("catalog.searchPlaceholder")}
-                    value={search.value}
-                    onChange={(e) => search.setValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") search.submit();
-                    }}
-                  />
-                  {search.value ? (
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                      onClick={search.clear}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-              <Button
-                variant="ghost"
-                className="h-10 w-10 p-0!"
-                onClick={search.submit}
-              >
-                <Search style={{ width: 18, height: 18 }} />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div
-          className="overflow-x-auto"
-          style={{ maxHeight: "calc(100vh - 300px)" }}
-        >
-          <div className="min-w-[700px]">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <div className="grid grid-cols-[2fr_1fr_2fr_120px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                <div>{t("catalog.name")}</div>
-                <div>{t("catalog.slug")}</div>
-                <div>{t("catalog.description")}</div>
-                <div>{t("catalog.actions")}</div>
+        <TableToolbar
+          title={t("catalog.collections")}
+          onAddNew={
+            canCreate ? () => navigate("/catalog/collections/create") : null
+          }
+          onRefresh={refetch}
+          onExportCsv={dt.handleExport}
+          search={search}
+          searchPlaceholder={t("catalog.searchPlaceholder")}
+          filterOptions={[
+            {
+              key: "status",
+              label: t("catalog.status"),
+              values: ["Active", "Inactive"],
+            },
+          ]}
+          activeFilters={activeFilters}
+          onFilterChange={(key, val) =>
+            setActiveFilters((p) => ({ ...p, [key]: val }))
+          }
+          viewMode={dt.viewMode}
+          onViewChange={dt.setViewMode}
+        />
+        {dt.viewMode === "list" ? (
+          <DataTable
+            columns={columns}
+            rows={dt.paginated}
+            keyField="id"
+            loading={loading}
+            emptyMessage={t("catalog.noCollections")}
+            sortField={dt.sortField}
+            sortDir={dt.sortDir}
+            onSort={dt.toggleSort}
+            checkedIds={dt.checkedIds}
+            onToggleRow={dt.toggleRow}
+            onToggleAll={dt.toggleAll}
+            allChecked={dt.allChecked}
+            someChecked={dt.someChecked}
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+              <div className="col-span-full flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
               </div>
-              <div
-                className="overflow-y-auto"
-                style={{ maxHeight: "calc(100vh - 380px)" }}
-              >
-                {loading ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                    {t("catalog.loading")}
+            ) : dt.paginated.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-sm text-slate-500">
+                {t("catalog.noCollections")}
+              </div>
+            ) : (
+              dt.paginated.map((item) => (
+                <div
+                  key={item.id}
+                  className="border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition cursor-pointer"
+                  onClick={() => navigate(`/catalog/collections/${item.slug}`)}
+                >
+                  <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                    {item.name}
                   </div>
-                ) : paginatedItems.length === 0 ? (
-                  <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                    {t("catalog.noResults")}
+                  <div className="text-xs text-slate-500 mb-3 font-mono">
+                    {item.slug}
                   </div>
-                ) : (
-                  paginatedItems.map((item) => (
-                    <div
-                      key={item.id || item.slug}
-                      className="grid grid-cols-[2fr_1fr_2fr_120px] gap-4 border-b border-slate-200 px-4 py-4 text-sm text-slate-600 hover:bg-orange-100 transition cursor-pointer"
-                      onClick={() =>
-                        navigate(`/catalog/collections/${item.slug}`)
-                      }
-                    >
-                      <div>
-                        <div className="font-title text-base font-semibold text-slate-900">
-                          {item.name}
-                        </div>
-                      </div>
-                      <div className="text-slate-500 font-mono text-xs self-center">
-                        {item.slug}
-                      </div>
-                      <div className="text-xs text-slate-500 truncate self-center">
-                        {item.description || "—"}
-                      </div>
-                      <div className="flex gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <Badge className="mb-0">
+                      {item.isActive
+                        ? t("catalog.active")
+                        : t("catalog.inactive")}
+                    </Badge>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/catalog/collections/${item.slug}`);
+                        }}
+                        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+                      >
+                        <Eye style={{ width: 16, height: 16 }} />
+                      </button>
+                      {canUpdate && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/catalog/collections/${item.slug}`);
+                            navigate(`/catalog/collections/edit/${item.slug || item.id}`);
                           }}
-                          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-                          style={{ padding: 5 }}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                         >
-                          <Eye style={{ width: 18, height: 18 }} />
+                          <Edit style={{ width: 16, height: 16 }} />
                         </button>
-                        {canUpdate && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(
-                                `/catalog/collections/edit/${item.slug}`,
-                              );
-                            }}
-                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
-                            style={{ padding: 5 }}
-                          >
-                            <Edit style={{ width: 16, height: 16 }} />
-                          </button>
-                        )}
-                        {canDelete && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedItem(item);
-                              setOpenDialog("delete");
-                            }}
-                            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-red-200 text-red-600 hover:bg-red-50 transition"
-                            style={{ padding: 5 }}
-                          >
-                            <Trash2 style={{ width: 16, height: 16 }} />
-                          </button>
-                        )}
-                      </div>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedItem(item);
+                            setOpenDialog("delete");
+                          }}
+                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+                        >
+                          <Trash2 style={{ width: 16, height: 16 }} />
+                        </button>
+                      )}
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-          <div className="text-sm text-slate-600">
-            {filteredItems.length > 0 ? (
-              <>
-                {t("catalog.pageOf", {
-                  page: currentPage,
-                  total: totalPages,
-                  count: filteredItems.length,
-                })}
-              </>
-            ) : (
-              t("catalog.noResults")
+                  </div>
+                </div>
+              ))
             )}
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              {t("catalog.previous")}
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNumber;
-                if (totalPages <= 5) pageNumber = i + 1;
-                else if (currentPage <= 3) pageNumber = i + 1;
-                else if (currentPage >= totalPages - 2)
-                  pageNumber = totalPages - 4 + i;
-                else pageNumber = currentPage - 2 + i;
-                return (
-                  <Button
-                    key={pageNumber}
-                    variant={currentPage === pageNumber ? "default" : "ghost"}
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => setPage(pageNumber)}
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
-              disabled={currentPage === totalPages}
-            >
-              {t("catalog.next")}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        )}
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={20}
+          onPage={setPage}
+        />
       </Card>
 
-      {/* Delete Confirmation Dialog */}
-      {openDialog === "delete" && selectedItem && (
+      {openDialog === "delete" && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
             className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
-              {t("catalog.deleteTitle")}
+            <h2 className="font-title text-xl font-bold mb-3">
+              {t("catalog.confirmDelete")}
             </h2>
-            <p className="text-sm text-slate-600 mb-4">
-              {t("catalog.deleteConfirm", { name: selectedItem.name })}
+            <p className="text-sm text-slate-600 mb-5">
+              {t("catalog.deleteConfirmMsg", { name: selectedItem?.name })}
             </p>
             <div className="flex gap-3">
               <Button
@@ -337,8 +389,11 @@ const CollectionsPage = () => {
                 onClick={handleDelete}
                 disabled={deleting}
               >
-                {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {t("catalog.delete")}
+                {deleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  t("catalog.delete")
+                )}
               </Button>
             </div>
           </div>

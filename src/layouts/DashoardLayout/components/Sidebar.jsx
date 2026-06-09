@@ -13,6 +13,7 @@ import {
   Wrench,
   ClipboardCheck,
   Container,
+  Shield,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@utils/cn";
@@ -47,6 +48,7 @@ const adminNavItems = [
     icon: ClipboardCheck,
   },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
+  { to: "/staff-permissions", labelKey: "Staff Permissions", icon: Shield },
   // { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
   // { to: "/support/admin-chat", labelKey: "nav.adminChat", icon: MessageCircleMore },
   { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },

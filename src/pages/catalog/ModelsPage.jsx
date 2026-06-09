@@ -1,26 +1,25 @@
-import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Eye,
   Edit,
   Trash2,
-  Grid3x3,
-  List,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   X,
   Plus,
   ImageIcon,
   GripVertical,
   Loader2,
-  Download,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { Input } from "@components/ui/input";
+import {
+  DataTable,
+  TableToolbar,
+  TablePagination,
+  useDataTable,
+} from "@components/DataTable";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
@@ -31,7 +30,7 @@ import { formatDate } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
 import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
-import { exportToCsv } from "@utils/exportCsv";
+import { collectionService } from "@services/collectionService";
 
 const ThumbnailPreview = ({ images, onClick }) => {
   if (!images || images.length === 0) {
@@ -81,12 +80,9 @@ const ModelsPage = () => {
   const canUpdate = isAdmin || permission.update;
   const canDelete = isAdmin || permission.del;
 
-  const [viewMode, setViewMode] = useState("table");
-  const [filterOpen, setFilterOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedFilters, setSelectedFilters] = useState({
-    category: null,
+  const [activeFilters, setActiveFilters] = useState({
     status: null,
   });
   const [form, setForm] = useState({
@@ -98,6 +94,7 @@ const ModelsPage = () => {
     isActive: true,
     previewFileUrl: "",
     sourceFileUrl: "",
+    collectionId: "",
   });
   const [thumbnailBefore, setThumbnailBefore] = useState(null);
   const [thumbnailAfter, setThumbnailAfter] = useState(null);
@@ -106,6 +103,16 @@ const ModelsPage = () => {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    collectionService
+      .getCollections({ limit: 100, isActive: true })
+      .then((res) =>
+        setCollections(res.data?.items || res.items || res.data || []),
+      )
+      .catch(console.error);
+  }, []);
 
   const thumbnailBeforeRef = useRef(null);
   const thumbnailAfterRef = useRef(null);
@@ -114,7 +121,6 @@ const ModelsPage = () => {
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
-  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
   const fetchModels = useCallback(
     (params) =>
@@ -122,13 +128,13 @@ const ModelsPage = () => {
         ...params,
         search: debouncedSearch || undefined,
         isActive:
-          selectedFilters.status === "Active"
+          activeFilters.status === "Active"
             ? true
-            : selectedFilters.status === "Inactive"
+            : activeFilters.status === "Inactive"
               ? false
               : undefined,
       }),
-    [debouncedSearch, selectedFilters.status],
+    [debouncedSearch, activeFilters.status],
   );
 
   const {
@@ -139,14 +145,16 @@ const ModelsPage = () => {
     totalPages,
     totalItems: total,
     setPage,
-    nextPage,
-    prevPage,
     refetch,
-  } = usePaginatedApi(fetchModels, { defaultLimit: 20, pageParam: "page" });
+  } = usePaginatedApi(fetchModels, {
+    defaultLimit: 20,
+    pageParam: "page",
+    refreshDeps: [debouncedSearch, activeFilters.status],
+  });
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, selectedFilters.status]);
+  }, [debouncedSearch, activeFilters.status]);
 
   const openGallery = (images, index = 0) => {
     setGalleryImages(images || []);
@@ -154,27 +162,89 @@ const ModelsPage = () => {
     setGalleryOpen(true);
   };
 
-  const statuses = ["Active", "Inactive"];
+  const dt = useDataTable({
+    rows: items,
+    keyField: "id",
+    pageSize: 20,
+    exportFilename: "models",
+    onExportRow: (i) => ({
+      Name: i.name,
+      Slug: i.slug,
+      Price: i.basePrice,
+      Stock: i.stock,
+      Status: i.isActive ? "Active" : "Inactive",
+      Created: formatDate(i.createdAt),
+    }),
+  });
 
-  const filteredItems = useMemo(
-    () =>
-      items.filter((item) => {
-        const itemStatus = item.isActive ? "Active" : "Inactive";
-        const matchesSearch =
-          debouncedSearch === "" ||
-          item.name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-          item.description
-            ?.toLowerCase()
-            .includes(debouncedSearch.toLowerCase());
-        return (
-          matchesSearch &&
-          (!selectedFilters.status || itemStatus === selectedFilters.status)
-        );
-      }),
-    [items, debouncedSearch, selectedFilters],
-  );
-
-  const paginatedItems = filteredItems;
+  const columns = [
+    {
+      key: "image",
+      label: t("catalog.image"),
+      width: "80px",
+      sortable: false,
+      render: (item) => (
+        <ThumbnailPreview
+          images={item.images}
+          onClick={(e) => {
+            e.stopPropagation();
+            openGallery(item.images);
+          }}
+        />
+      ),
+    },
+    {
+      key: "name",
+      label: t("catalog.name"),
+      width: "2fr",
+      render: (item) => (
+        <div className="font-title text-base font-semibold text-slate-900">
+          {item.name}
+        </div>
+      ),
+    },
+    {
+      key: "basePrice",
+      label: t("catalog.price"),
+      width: "1fr",
+      render: (item) => <div>{item.basePrice?.toLocaleString()} VND</div>,
+    },
+    {
+      key: "isActive",
+      label: t("catalog.status"),
+      width: "1fr",
+      render: (item) => (
+        <Badge>
+          {item.isActive ? t("catalog.active") : t("catalog.inactive")}
+        </Badge>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: t("catalog.createdAt"),
+      width: "1fr",
+      render: (item) => (
+        <div className="text-xs text-slate-500">
+          {formatDate(item.createdAt)}
+        </div>
+      ),
+    },
+    {
+      key: "stock",
+      label: t("catalog.stock"),
+      width: "1fr",
+      render: (item) => (
+        <div className="text-xs text-slate-500">{item.stock}</div>
+      ),
+    },
+    {
+      key: "actions",
+      label: t("catalog.actions"),
+      width: "150px",
+      sortable: false,
+      render: (item) => renderActionButtons(item),
+    },
+  ];
 
   const handleEdit = (item) => {
     setSelectedItem(item);
@@ -188,6 +258,7 @@ const ModelsPage = () => {
       isActive: item.isActive,
       previewFileUrl: item.model3D?.previewFileUrl || "",
       sourceFileUrl: item.model3D?.sourceFileUrl || "",
+      collectionId: item.collectionId?.toString() || "",
     });
 
     const thumbBefore = item.images?.find(
@@ -249,6 +320,11 @@ const ModelsPage = () => {
         formData.append("isActive", form.isActive);
         formData.append("previewFileUrl", form.previewFileUrl);
         formData.append("sourceFileUrl", form.sourceFileUrl);
+        if (form.collectionId) {
+          formData.append("collectionId", form.collectionId);
+        } else {
+          formData.append("collectionId", "");
+        }
 
         if (thumbnailBefore?.file) {
           const ext = thumbnailBefore.file.name.split(".").pop();
@@ -437,10 +513,29 @@ const ModelsPage = () => {
                 onChange={(e) =>
                   setForm({ ...form, isActive: e.target.value === "active" })
                 }
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
+                className={`w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700`}
               >
                 <option value="active">{t("catalog.active")}</option>
                 <option value="inactive">{t("catalog.inactive")}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-slate-700">
+                Collection
+              </label>
+              <select
+                value={form.collectionId || ""}
+                onChange={(e) =>
+                  setForm({ ...form, collectionId: e.target.value })
+                }
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
+              >
+                <option value="">Select Collection</option>
+                {collections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -595,369 +690,141 @@ const ModelsPage = () => {
   return (
     <section className="space-y-6">
       <Card className="p-6">
-        <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="font-title text-2xl font-bold text-slate-950">
-              {t("catalog.models")}
-            </h1>
+        <TableToolbar
+          title={t("catalog.models")}
+          onAddNew={canCreate ? () => navigate("/catalog/models/create") : null}
+          onRefresh={refetch}
+          onExportCsv={dt.handleExport}
+          search={search}
+          searchPlaceholder={t("catalog.searchPlaceholder")}
+          filterOptions={[
+            {
+              key: "status",
+              label: t("catalog.status"),
+              values: ["Active", "Inactive"],
+            },
+          ]}
+          activeFilters={activeFilters}
+          onFilterChange={(key, val) =>
+            setActiveFilters((p) => ({ ...p, [key]: val }))
+          }
+          viewMode={dt.viewMode}
+          onViewChange={dt.setViewMode}
+        />
 
-            <Button
-              variant="outline-orange"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer"
-              onClick={() => navigate("/catalog/models/create")}
-              disabled={!canCreate}
-            >
-              <Plus className="h-5 w-5" /> {t("catalog.addNew")}
-            </Button>
-
-            <Button
-              variant="outline"
-              className="gap-2 rounded-lg px-4 py-2 h-auto text-sm font-semibold cursor-pointer bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800"
-              onClick={() =>
-                exportToCsv(
-                  filteredItems.map((i) => ({
-                    Name: i.name,
-                    Slug: i.slug,
-                    Price: i.basePrice,
-                    Stock: i.stock,
-                    Status: i.isActive ? "Active" : "Inactive",
-                    Created: i.createdAt,
-                  })),
-                  "models",
-                )
-              }
-              disabled={!filteredItems.length}
-            >
-              <Download className="h-4 w-4" /> Export CSV
-            </Button>
-          </div>
-          <div className="flex items-center gap-2">
-            <div ref={search.containerRef} className="flex items-center gap-2">
-              {search.isOpen ? (
-                <div className="relative w-64">
-                  <Input
-                    ref={search.inputRef}
-                    className="pl-4 pr-10 placeholder:text-gray-400"
-                    placeholder={t("catalog.searchPlaceholder")}
-                    value={search.value}
-                    onChange={(e) => search.setValue(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") search.submit();
-                    }}
-                  />
-                  {search.value ? (
-                    <button
-                      type="button"
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-                      onClick={search.clear}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-              <Button
-                variant="ghost"
-                className="h-10 w-10 p-0! cursor-pointer"
-                onClick={search.submit}
-              >
-                <Search className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="relative">
-              <Button
-                variant={filterOpen ? "default" : "ghost"}
-                className="h-10 w-10 p-0! cursor-pointer"
-                onClick={() => setFilterOpen(!filterOpen)}
-              >
-                <Filter className="h-5 w-5" />
-              </Button>
-              {filterOpen && (
-                <div
-                  ref={filterRef}
-                  className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-lg p-4 w-64 z-40"
-                >
-                  <div className="space-y-4">
-                    <div>
-                      <div className="text-xs font-semibold text-slate-900 mb-2">
-                        {t("catalog.status")}
-                      </div>
-                      {statuses.map((status) => (
-                        <label
-                          key={status}
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedFilters.status === status}
-                            onChange={() =>
-                              setSelectedFilters((prev) => ({
-                                ...prev,
-                                status: prev.status === status ? null : status,
-                              }))
-                            }
-                            className="rounded"
-                          />
-                          <span className="text-sm text-slate-600">
-                            {status === "Active"
-                              ? t("catalog.active")
-                              : t("catalog.inactive")}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full cursor-pointer"
-                      onClick={() => setSelectedFilters({ status: null })}
-                    >
-                      {t("catalog.clearFilters")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-              <Button
-                variant={viewMode === "table" ? "default" : "ghost"}
-                size="sm"
-                className="h-8 w-8 p-0!"
-                onClick={() => setViewMode("table")}
-              >
-                <List className="h-4 w-4 text-gray-600 cursor-pointer" />
-              </Button>
-              <Button
-                variant={viewMode === "grid" ? "default" : "ghost"}
-                size="sm"
-                className="h-8 w-8 p-0!"
-                onClick={() => setViewMode("grid")}
-              >
-                <Grid3x3 className="h-4 w-4 text-gray-600 cursor-pointer" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-            <span className="ml-3 text-sm text-slate-500">
-              {t("catalog.loading")}
-            </span>
-          </div>
+        {dt.viewMode === "list" ? (
+          <DataTable
+            columns={columns}
+            rows={dt.paginated}
+            keyField="id"
+            loading={loading}
+            emptyMessage={t("catalog.noModels")}
+            sortField={dt.sortField}
+            sortDir={dt.sortDir}
+            onSort={dt.toggleSort}
+            checkedIds={dt.checkedIds}
+            onToggleRow={dt.toggleRow}
+            onToggleAll={dt.toggleAll}
+            allChecked={dt.allChecked}
+            someChecked={dt.someChecked}
+          />
         ) : (
-          <>
-            {viewMode === "table" && (
-              <div
-                className="overflow-x-auto"
-                style={{ maxHeight: "calc(100vh - 300px)" }}
-              >
-                <div className="min-w-225">
-                  <div className="overflow-hidden rounded-2xl border border-slate-200">
-                    <div className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_150px] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] font-bold text-slate-900 border-b border-slate-300 sticky top-0 z-10">
-                      <div>{t("catalog.image")}</div>
-                      <div>{t("catalog.name")}</div>
-                      <div>{t("catalog.price")}</div>
-                      <div>{t("catalog.status")}</div>
-                      <div>{t("catalog.createdAt")}</div>
-                      <div>{t("catalog.stock")}</div>
-                      <div>{t("catalog.actions")}</div>
-                    </div>
-                    <div
-                      className="overflow-y-auto"
-                      style={{ maxHeight: "calc(100vh - 380px)" }}
-                    >
-                      {paginatedItems.length === 0 ? (
-                        <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                          {t("catalog.noModels")}
-                        </div>
-                      ) : (
-                        paginatedItems.map((item) => (
-                          <div
-                            key={item.id}
-                            className="grid grid-cols-[80px_2fr_1fr_1fr_1fr_1fr_150px] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 items-center hover:bg-orange-100 cursor-pointer transition"
-                            onClick={() => handleRowClick(item.slug)}
-                          >
-                            <ThumbnailPreview
-                              images={item.images}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openGallery(item.images);
-                              }}
-                            />
-                            <div>
-                              <div className="font-title text-base font-semibold text-slate-900">
-                                {item.name}
-                              </div>
-                            </div>
-                            <div>{item.basePrice?.toLocaleString()} VND</div>
-                            <div>
-                              <Badge>
-                                {item.isActive
-                                  ? t("catalog.active")
-                                  : t("catalog.inactive")}
-                              </Badge>
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {formatDate(item.createdAt)}
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              {item.stock}
-                            </div>
-                            {renderActionButtons(item)}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {loading ? (
+              <div className="col-span-full flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+                <span className="ml-3 text-sm text-slate-500">
+                  {t("catalog.loading")}
+                </span>
               </div>
-            )}
-
-            {viewMode === "grid" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {paginatedItems.length === 0 ? (
-                  <div className="col-span-full text-center py-8 text-sm text-slate-500">
-                    {t("catalog.noModels")}
-                  </div>
-                ) : (
-                  paginatedItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group cursor-pointer"
-                      onClick={() => handleRowClick(item.slug)}
-                    >
-                      <div
-                        className="relative h-48 bg-slate-100 cursor-pointer overflow-hidden"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openGallery(item.images);
-                        }}
-                      >
-                        {item.images && item.images.length > 0 ? (
-                          <>
-                            <img
-                              src={item.images[0].url}
-                              alt={item.name}
-                              className="h-full w-full object-cover transition group-hover:scale-105"
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                              }}
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-                              <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 bg-white/90 rounded-full px-4 py-2 text-sm font-semibold text-slate-800">
-                                <ImageIcon className="h-4 w-4" />{" "}
-                                {t("catalog.viewGallery")} ({item.images.length}
-                                )
-                              </div>
-                            </div>
-                            {item.images.length > 1 && (
-                              <div className="absolute top-2 right-2 flex gap-1">
-                                {item.images.slice(0, 3).map((_, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="h-2 w-2 rounded-full bg-white/80"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center">
-                            <div className="text-center text-slate-400">
-                              <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                              <span className="text-xs">
-                                {t("catalog.noImages")}
-                              </span>
-                            </div>
+            ) : dt.paginated.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-sm text-slate-500">
+                {t("catalog.noModels")}
+              </div>
+            ) : (
+              dt.paginated.map((item) => (
+                <div
+                  key={item.id}
+                  className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group cursor-pointer"
+                  onClick={() => handleRowClick(item.slug)}
+                >
+                  <div
+                    className="relative h-48 bg-slate-100 cursor-pointer overflow-hidden"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openGallery(item.images);
+                    }}
+                  >
+                    {item.images && item.images.length > 0 ? (
+                      <>
+                        <img
+                          src={item.images[0].url}
+                          alt={item.name}
+                          className="h-full w-full object-cover transition group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
+                          <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 bg-white/90 rounded-full px-4 py-2 text-sm font-semibold text-slate-800">
+                            <ImageIcon className="h-4 w-4" />{" "}
+                            {t("catalog.viewGallery")} ({item.images.length})
+                          </div>
+                        </div>
+                        {item.images.length > 1 && (
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            {item.images.slice(0, 3).map((_, idx) => (
+                              <div
+                                key={idx}
+                                className="h-2 w-2 rounded-full bg-white/80"
+                              />
+                            ))}
                           </div>
                         )}
+                      </>
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <div className="text-center text-slate-400">
+                          <ImageIcon className="h-10 w-10 mx-auto mb-2" />
+                          <span className="text-xs">
+                            {t("catalog.noImages")}
+                          </span>
+                        </div>
                       </div>
-                      <div className="p-4">
-                        <div className="font-title text-base font-semibold text-slate-900 mb-1">
-                          {item.name}
-                        </div>
-                        <div className="text-xs text-slate-500 mb-3">
-                          {item.basePrice?.toLocaleString()} VND •{" "}
-                          {t("catalog.createdAt")} {formatDate(item.createdAt)}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Badge className="mb-0">
-                            {item.isActive
-                              ? t("catalog.active")
-                              : t("catalog.inactive")}
-                          </Badge>
-                          <div className="flex gap-1">
-                            {renderActionButtons(item)}
-                          </div>
-                        </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                      {item.name}
+                    </div>
+                    <div className="text-xs text-slate-500 mb-3">
+                      {item.basePrice?.toLocaleString()} VND •{" "}
+                      {t("catalog.createdAt")} {formatDate(item.createdAt)}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Badge className="mb-0">
+                        {item.isActive
+                          ? t("catalog.active")
+                          : t("catalog.inactive")}
+                      </Badge>
+                      <div className="flex gap-1">
+                        {renderActionButtons(item)}
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-              <div className="text-sm text-slate-600">
-                {total > 0 ? (
-                  <>
-                    {t("catalog.pageOf", {
-                      page: currentPage,
-                      total: totalPages,
-                      count: total,
-                    })}
-                  </>
-                ) : (
-                  t("catalog.noResults")
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={prevPage}
-                  disabled={currentPage === 1 || loading}
-                >
-                  <ChevronLeft className="h-4 w-4" /> {t("catalog.previous")}
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNumber;
-                    if (totalPages <= 5) pageNumber = i + 1;
-                    else if (currentPage <= 3) pageNumber = i + 1;
-                    else if (currentPage >= totalPages - 2)
-                      pageNumber = totalPages - 4 + i;
-                    else pageNumber = currentPage - 2 + i;
-                    return (
-                      <Button
-                        key={pageNumber}
-                        variant={
-                          currentPage === pageNumber ? "default" : "ghost"
-                        }
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => setPage(pageNumber)}
-                        disabled={loading}
-                      >
-                        {pageNumber}
-                      </Button>
-                    );
-                  })}
+                  </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={nextPage}
-                  disabled={currentPage === totalPages || loading}
-                >
-                  {t("catalog.next")} <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </>
+              ))
+            )}
+          </div>
         )}
+
+        <TablePagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={total}
+          pageSize={20}
+          onPage={setPage}
+        />
       </Card>
 
       {openDialog === "create" || openDialog === "edit"

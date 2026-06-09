@@ -81,8 +81,12 @@ const StaffDashboardPage = () => {
       {/* ── Basic Info ── */}
       <Card className="p-6 bg-slate-50 border border-slate-100">
         <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-700 font-title text-2xl font-bold">
-            {profile.fullName?.charAt(0)?.toUpperCase() || "S"}
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-700 font-title text-2xl font-bold overflow-hidden shrink-0">
+            {profile.avatar ? (
+              <img src={profile.avatar} alt="Avatar" className="h-full w-full object-cover" />
+            ) : (
+              profile.fullName?.charAt(0)?.toUpperCase() || "S"
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 flex-1 w-full">
             <div>
@@ -169,27 +173,29 @@ const StaffDashboardPage = () => {
                 "Distribution of my handled orders",
               )}
             </div>
-            <div className="space-y-3">
-              {Object.entries(orderStatus).map(([status, count]) => (
-                <div key={status} className="flex items-center gap-3">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[status] || "bg-slate-100 text-slate-600"}`}
-                  >
-                    {status}
-                  </span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-2">
-                    <div
-                      className="h-2 rounded-full bg-amber-400"
-                      style={{
-                        width: `${Math.min((count / (widgets.myOrders || 1)) * 100, 100)}%`,
-                      }}
-                    />
+            <div className="overflow-x-auto pb-2">
+              <div className="min-w-[400px] space-y-3">
+                {Object.entries(orderStatus).map(([status, count]) => (
+                  <div key={status} className="flex items-center gap-3">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[status] || "bg-slate-100 text-slate-600"}`}
+                    >
+                      {status}
+                    </span>
+                    <div className="flex-1 bg-slate-100 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-amber-400"
+                        style={{
+                          width: `${Math.min((count / (widgets.myOrders || 1)) * 100, 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-900 w-6 text-right">
+                      {count}
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-slate-900 w-6 text-right">
-                    {count}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </Card>
         )}
@@ -203,28 +209,30 @@ const StaffDashboardPage = () => {
             <div className="text-sm text-slate-500 mb-4">
               {t("dashboard.highestSpending", "Highest spending customers")}
             </div>
-            <div className="space-y-3">
-              {topCustomers.map((c, i) => (
-                <div
-                  key={c.customerId || i}
-                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
-                    {c.customerName?.charAt(0)?.toUpperCase() || "?"}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-slate-900 truncate">
-                      {c.customerName}
+            <div className="overflow-x-auto pb-2">
+              <div className="min-w-[500px] space-y-3">
+                {topCustomers.map((c, i) => (
+                  <div
+                    key={c.customerId || i}
+                    className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 transition"
+                  >
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
+                      {c.customerName?.charAt(0)?.toUpperCase() || "?"}
                     </div>
-                    <div className="text-xs text-slate-500">
-                      {c.orderCount} orders
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-slate-900 truncate">
+                        {c.customerName}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {c.orderCount} orders
+                      </div>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900 shrink-0">
+                      {formatPrice(c.totalSpent)}
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-slate-900 shrink-0">
-                    {formatPrice(c.totalSpent)}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </Card>
         )}
@@ -239,40 +247,42 @@ const StaffDashboardPage = () => {
           <div className="text-sm text-slate-500 mb-4">
             {t("dashboard.lastFiveOrders", "Last 5 orders I handled")}
           </div>
-          <div className="space-y-3">
-            {recentOrders.map((order, i) => (
-              <div
-                key={order.id || i}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-sm shrink-0">
-                  {i + 1}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold text-slate-900 truncate">
-                    {order.customerName}
+          <div className="overflow-x-auto pb-2">
+            <div className="min-w-[600px] space-y-3">
+              {recentOrders.map((order, i) => (
+                <div
+                  key={order.id || i}
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                >
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-sm shrink-0">
+                    {i + 1}
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {order.customerEmail}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}
-                  >
-                    {order.status}
-                  </span>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-slate-900">
-                      {formatPrice(order.totalAmount)}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-slate-900 truncate">
+                      {order.customerName}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {order.itemCount} items
+                      {order.customerEmail}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[order.status] || "bg-slate-100 text-slate-600"}`}
+                    >
+                      {order.status}
+                    </span>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-slate-900">
+                        {formatPrice(order.totalAmount)}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {order.itemCount} items
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </Card>
       )}

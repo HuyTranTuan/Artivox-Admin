@@ -185,7 +185,7 @@ const ChatPage = () => {
 
   // ── Socket.io — connect once ──
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
+    const token = useAuthStore.getState().accessToken;
 
     const chatSocket = io(`${SOCKET_URL}/chat`, {
       transports: ["websocket"],
@@ -287,16 +287,24 @@ const ChatPage = () => {
   // ── Join/leave specific chat room on the /chat socket ──
   useEffect(() => {
     const socket = chatSocketRef.current;
-    if (!socket?.connected || !activeRoomId) return;
+    if (!socket || !activeRoomId) return;
 
-    socket.emit("room:join", { chatRoomId: activeRoomId });
+    const joinRoom = () => {
+      socket.emit("room:join", { chatRoomId: activeRoomId });
+    };
+
+    if (socket.connected) {
+      joinRoom();
+    }
+    socket.on("connect", joinRoom);
 
     return () => {
+      socket.off("connect", joinRoom);
       if (socket.connected) {
         socket.emit("room:leave", { chatRoomId: activeRoomId });
       }
     };
-  }, [activeRoomId, connectionStatus]);
+  }, [activeRoomId]);
 
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -365,7 +373,9 @@ const ChatPage = () => {
   const handleClaimRoom = async () => {
     if (!activeRoomId) return;
     try {
-      await chatService.claimRoom(activeRoomId);
+      const result = await chatService.claimRoom(activeRoomId);
+      const newRoom = result.data || result;
+      const newRoomId = String(newRoom.id);
 
       // Reload full room list — claimRoom may have deleted the old assigned
       // room (existingRoom merge), so stale entries must be purged.
@@ -375,13 +385,9 @@ const ChatPage = () => {
         : freshData?.data || [];
       setRooms(freshList);
 
-      // Keep the same active room if it still exists in the fresh list
-      const stillExists = freshList.some((r) => String(r.id) === activeRoomId);
-      if (!stillExists && freshList.length) {
-        setActiveRoomId(String(freshList[0].id));
-      }
-
-      chatSocketRef.current?.emit("room:join", { chatRoomId: activeRoomId });
+      setActiveRoomId(newRoomId);
+      chatSocketRef.current?.emit("room:join", { chatRoomId: newRoomId });
+      
       setChatToast({
         message: t("chat.claimed", "Chat room claimed successfully!"),
         visible: true,
@@ -478,20 +484,15 @@ const ChatPage = () => {
 
       <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="font-title text-2xl font-bold text-slate-950">
-              {t("chat.supportTitle", "Customer support chat")}
-            </div>
-            <div className="mt-1 text-sm text-slate-500">
-              {t("chat.conversations", {
-                count: rooms.length,
-                defaultValue: "{{count}} conversation{{s}}",
-                s: rooms.length !== 1 ? "s" : "",
-              })}
-            </div>
+          <div className="font-title text-2xl font-bold text-slate-950">
+            {t("chat.supportTitle", "Customer support chat")}
           </div>
-          <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            {connectionStatus}
+          <div className="mt-1 text-sm text-slate-500">
+            {t("chat.conversations", {
+              count: rooms.length,
+              defaultValue: "{{count}} conversation{{s}}",
+              s: rooms.length !== 1 ? "s" : "",
+            })}
           </div>
         </div>
       </Card>
@@ -540,7 +541,7 @@ const ChatPage = () => {
           {customerListOpen && (
             <div
               className="border-r border-slate-200 overflow-y-auto shrink-0 bg-slate-50/50"
-              style={{ width: 250, height: "calc(100vh - 350px)" }}
+              style={{ width: 250, height: "calc(100vh - 410px)" }}
             >
               {loadingRooms ? (
                 <div className="flex items-center justify-center h-20 text-sm text-slate-400">
@@ -593,7 +594,7 @@ const ChatPage = () => {
           <div className="flex-1 flex flex-col min-w-0">
             <div
               className="space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6"
-              style={{ height: "calc(100vh - 360px)" }}
+              style={{ height: "calc(100vh - 440px)" }}
             >
               {activeMessages.length ? (
                 activeMessages.map((item) => (

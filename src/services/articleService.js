@@ -1,7 +1,7 @@
 import axiosClient from "@api/axios";
 
-const getArticles = async () => {
-  const response = await axiosClient.get("/articles");
+const getArticles = async (params = {}) => {
+  const response = await axiosClient.get("/articles", { params });
   return response || [];
 };
 

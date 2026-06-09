@@ -33,10 +33,22 @@ export const useAuthStore = create(
       refreshUserAvatar: (avatar) =>
         set((state) => ({
           ...state,
-          user: {
-            ...state.user,
-            avatar,
-          },
+          user: state.user
+            ? {
+                ...state.user,
+                avatar,
+              }
+            : null,
+        })),
+      updateUser: (userData) =>
+        set((state) => ({
+          ...state,
+          user: state.user
+            ? {
+                ...state.user,
+                ...userData,
+              }
+            : null,
         })),
     }),
     {
