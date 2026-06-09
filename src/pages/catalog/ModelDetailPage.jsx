@@ -5,7 +5,6 @@ import { ArrowLeft, Package, Eye, Box, CalendarDays, User } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
@@ -16,7 +15,6 @@ const ModelDetailPage = () => {
 
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -54,7 +52,9 @@ const ModelDetailPage = () => {
             className="mt-4"
             onClick={() => navigate("/catalog/models")}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />{t('catalog.back')}</Button>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t("catalog.back")}
+          </Button>
         </Card>
       </section>
     );

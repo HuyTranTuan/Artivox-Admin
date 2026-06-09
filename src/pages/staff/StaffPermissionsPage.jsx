@@ -5,7 +5,6 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { DataTable, TableToolbar, useDataTable } from "@components/DataTable";
-import { useTranslation } from "@hooks/useTranslation";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { staffService } from "@services/staffService";
 import useToast from "@hooks/useToast";
@@ -13,7 +12,6 @@ import useToast from "@hooks/useToast";
 const StaffPermissionsPage = () => {
   const { t } = useTranslate();
 
-  const { t } = useTranslation();
   const { toastTopRight } = useToast();
 
   const fetchStaff = useCallback(async () => {
@@ -187,7 +185,9 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-emerald-600 transition-colors">{t('catalog.create')}</span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-emerald-600 transition-colors">
+                {t("catalog.create")}
+              </span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer group">
@@ -213,7 +213,9 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-amber-600 transition-colors">{t('update')}</span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-amber-600 transition-colors">
+                {t("update")}
+              </span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer group">
@@ -239,7 +241,9 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-rose-600 transition-colors">{t('catalog.delete')}</span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-rose-600 transition-colors">
+                {t("catalog.delete")}
+              </span>
             </label>
           </div>
         );
