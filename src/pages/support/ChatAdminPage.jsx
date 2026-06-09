@@ -1,4 +1,3 @@
-import { useTranslate } from "@/i18n/useTranslate";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Download,
@@ -54,18 +53,20 @@ const downloadFile = async (url, name) => {
 const isImageType = (t) => t?.startsWith("image/");
 
 const MessageContent = ({ message, onImageClick }) => {
-  const { t } = useTranslate();
-
   const { t } = useTranslation();
+
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
-  const type = message.type || (message.fileUrl ? (isImageType(mimeType) ? 'image' : 'file') : 'text');
-  
-  const isImg =
-    type === "image" ||
-    (type === "file" && isImageType(mimeType));
+  const type =
+    message.type ||
+    (message.fileUrl ? (isImageType(mimeType) ? "image" : "file") : "text");
+
+  const isImg = type === "image" || (type === "file" && isImageType(mimeType));
   const fileUrl = message.fileData || message.fileUrl;
-  const name = message.fileName || (type !== 'text' ? message.content : null) || t("common.file", "File");
+  const name =
+    message.fileName ||
+    (type !== "text" ? message.content : null) ||
+    t("common.file", "File");
 
   if (isImg && fileUrl && !imgErr)
     return (
@@ -158,14 +159,16 @@ const ChatAdminPage = () => {
   useEffect(() => {
     Promise.all([
       chatService.getInternalRooms(),
-      chatService.getInternalUsers()
+      chatService.getInternalUsers(),
     ])
       .then(([roomsRes, usersRes]) => {
         const list = Array.isArray(roomsRes) ? roomsRes : roomsRes?.data || [];
         setRooms(list);
         if (list.length) setActiveRoomId(String(list[0].id));
-        
-        const usersList = Array.isArray(usersRes) ? usersRes : usersRes?.data || [];
+
+        const usersList = Array.isArray(usersRes)
+          ? usersRes
+          : usersRes?.data || [];
         setInternalUsers(usersList);
       })
       .catch(() => setConnectionStatus("error"))
@@ -216,10 +219,12 @@ const ChatAdminPage = () => {
       const rid = String(msg.roomId || msg.chatRoomId);
       setConversations((prev) => {
         const existing = prev[rid] || [];
-        if (existing.some(m => String(m.id) === String(msg.id))) return prev;
-        
+        if (existing.some((m) => String(m.id) === String(msg.id))) return prev;
+
         if (msg.senderId === user?.id) {
-          const optIndex = existing.findIndex(m => String(m.id).startsWith("tmp-") && m.content === msg.content);
+          const optIndex = existing.findIndex(
+            (m) => String(m.id).startsWith("tmp-") && m.content === msg.content,
+          );
           if (optIndex !== -1) {
             const newExisting = [...existing];
             newExisting[optIndex] = msg;
@@ -229,16 +234,19 @@ const ChatAdminPage = () => {
             };
           }
         }
-        
+
         return {
           ...prev,
           [rid]: [...existing, msg],
         };
       });
       // Refresh rooms list
-      chatService.getInternalRooms().then((data) => {
-        setRooms(Array.isArray(data) ? data : data?.data || []);
-      }).catch(() => {});
+      chatService
+        .getInternalRooms()
+        .then((data) => {
+          setRooms(Array.isArray(data) ? data : data?.data || []);
+        })
+        .catch(() => {});
     });
 
     // Sender sees "Seen" indicator
@@ -268,9 +276,12 @@ const ChatAdminPage = () => {
           () => setChatToast((prev) => ({ ...prev, visible: false })),
           6000,
         );
-        chatService.getInternalRooms().then((res) => {
-          setRooms(Array.isArray(res) ? res : res?.data || []);
-        }).catch(() => {});
+        chatService
+          .getInternalRooms()
+          .then((res) => {
+            setRooms(Array.isArray(res) ? res : res?.data || []);
+          })
+          .catch(() => {});
       }
     });
 
@@ -338,7 +349,9 @@ const ChatAdminPage = () => {
       const savedMsg = savedMsgData?.data || savedMsgData;
       setConversations((prev) => {
         const existing = prev[activeRoomId] || [];
-        const exists = existing.some((m) => String(m.id) === String(savedMsg.id));
+        const exists = existing.some(
+          (m) => String(m.id) === String(savedMsg.id),
+        );
         return {
           ...prev,
           [activeRoomId]: exists
@@ -391,15 +404,15 @@ const ChatAdminPage = () => {
     try {
       const res = await chatService.getOrCreateInternalRoom(participantId);
       const room = res.data || res;
-      
+
       // Update room list if not exists
-      setRooms(prev => {
-        if (!prev.find(r => r.id === room.id)) {
+      setRooms((prev) => {
+        if (!prev.find((r) => r.id === room.id)) {
           return [room, ...prev];
         }
         return prev;
       });
-      
+
       setActiveRoomId(String(room.id));
       setShowUserList(false);
     } catch (err) {
@@ -416,7 +429,9 @@ const ChatAdminPage = () => {
 
   const getOtherParticipant = (room) => {
     if (!room || !user) return null;
-    return String(room.participant1Id) === String(user.id) ? room.participant2 : room.participant1;
+    return String(room.participant1Id) === String(user.id)
+      ? room.participant2
+      : room.participant1;
   };
 
   const otherUser = getOtherParticipant(activeRoom);
@@ -470,8 +485,12 @@ const ChatAdminPage = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="font-title text-2xl font-bold text-slate-950">{t('internalTeamChat')}</div>
-            <div className="mt-1 text-sm text-slate-500">{t('collaborateDirectlyWithOtherStaffMembersAndAdmins')}</div>
+            <div className="font-title text-2xl font-bold text-slate-950">
+              {t("internalTeamChat")}
+            </div>
+            <div className="mt-1 text-sm text-slate-500">
+              {t("collaborateDirectlyWithOtherStaffMembersAndAdmins")}
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Button
@@ -482,7 +501,9 @@ const ChatAdminPage = () => {
               }}
               className="gap-2"
             >
-              <MessageSquarePlus className="h-4 w-4" />{t('newChat')}</Button>
+              <MessageSquarePlus className="h-4 w-4" />
+              {t("newChat")}
+            </Button>
             <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               {connectionStatus}
             </div>
@@ -511,7 +532,9 @@ const ChatAdminPage = () => {
             <div>
               <div className="font-title text-lg font-semibold text-slate-950">
                 {otherUser?.fullName ||
-                  (activeRoomId ? `Room ${activeRoomId}` : "Select a conversation")}
+                  (activeRoomId
+                    ? `Room ${activeRoomId}`
+                    : "Select a conversation")}
               </div>
               {otherUser && (
                 <div className="text-xs text-slate-400 capitalize">
@@ -537,11 +560,15 @@ const ChatAdminPage = () => {
               {showUserList ? (
                 // Users list
                 <div className="p-2">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">{t('startANewChat')}</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">
+                    {t("startANewChat")}
+                  </div>
                   {internalUsers.length === 0 ? (
-                    <div className="text-sm text-slate-400 px-2 py-4">{t('noOtherTeamMembersFound')}</div>
+                    <div className="text-sm text-slate-400 px-2 py-4">
+                      {t("noOtherTeamMembersFound")}
+                    </div>
                   ) : (
-                    internalUsers.map(u => (
+                    internalUsers.map((u) => (
                       <button
                         key={u.id}
                         type="button"
@@ -550,14 +577,22 @@ const ChatAdminPage = () => {
                       >
                         <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
                           {u.avatarUrl ? (
-                            <img src={u.avatarUrl} alt={u.fullName} className="h-full w-full object-cover" />
+                            <img
+                              src={u.avatarUrl}
+                              alt={u.fullName}
+                              className="h-full w-full object-cover"
+                            />
                           ) : (
                             <User className="h-4 w-4 text-slate-400" />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 truncate">{u.fullName}</div>
-                          <div className="text-[10px] text-slate-500 capitalize">{u.role}</div>
+                          <div className="text-sm font-semibold text-slate-900 truncate">
+                            {u.fullName}
+                          </div>
+                          <div className="text-[10px] text-slate-500 capitalize">
+                            {u.role}
+                          </div>
                         </div>
                       </button>
                     ))
@@ -566,7 +601,9 @@ const ChatAdminPage = () => {
               ) : (
                 // Rooms list
                 <>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">{t('activeChats')}</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">
+                    {t("activeChats")}
+                  </div>
                   {loadingRooms ? (
                     <div className="flex items-center justify-center h-20 text-sm text-slate-400">
                       {t("common.loading", "Loading...")}
@@ -581,7 +618,7 @@ const ChatAdminPage = () => {
                       const last = msgs[msgs.length - 1];
                       const isActive = String(room.id) === activeRoomId;
                       const participant = getOtherParticipant(room);
-                      
+
                       return (
                         <button
                           key={room.id}
@@ -596,17 +633,23 @@ const ChatAdminPage = () => {
                           <div className="flex items-center gap-2 mb-1">
                             <div className="h-6 w-6 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
                               {participant?.avatarUrl ? (
-                                <img src={participant.avatarUrl} alt={participant.fullName} className="h-full w-full object-cover" />
+                                <img
+                                  src={participant.avatarUrl}
+                                  alt={participant.fullName}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 <User className="h-3 w-3 text-slate-400" />
                               )}
                             </div>
                             <div className="text-sm font-semibold text-slate-900 truncate">
-                              {participant?.fullName || `Staff ${participant?.id || ""}`}
+                              {participant?.fullName ||
+                                `Staff ${participant?.id || ""}`}
                             </div>
                           </div>
                           <div className="text-xs text-slate-500 truncate mt-0.5 pl-8">
-                            {last?.content || t("chat.noMessagesYet", "No messages yet")}
+                            {last?.content ||
+                              t("chat.noMessagesYet", "No messages yet")}
                           </div>
                         </button>
                       );
@@ -627,9 +670,7 @@ const ChatAdminPage = () => {
                     <div
                       key={item.id}
                       className={`flex ${
-                        isMe
-                          ? "justify-end"
-                          : "justify-start"
+                        isMe ? "justify-end" : "justify-start"
                       }`}
                     >
                       <div
@@ -661,7 +702,9 @@ const ChatAdminPage = () => {
                 })
               ) : (
                 <div className="flex h-full items-center justify-center text-sm text-slate-400">
-                  {activeRoomId ? t("chat.noMessagesYet", "No messages yet.") : "Select a chat from the left sidebar or start a new one."}
+                  {activeRoomId
+                    ? t("chat.noMessagesYet", "No messages yet.")
+                    : "Select a chat from the left sidebar or start a new one."}
                 </div>
               )}
               <div ref={messageEndRef} />

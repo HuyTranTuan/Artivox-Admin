@@ -1,4 +1,3 @@
-import { useTranslate } from "@/i18n/useTranslate";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -20,11 +19,10 @@ import { formatDate } from "@utils/formatUtils";
 import Loading from "@/components/Loading";
 
 const ToolDetailPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const [tool, setTool] = useState(null);
   const [loading, setLoading] = useState(true);
   const [galleryOpen, setGalleryOpen] = useState(false);
@@ -62,7 +60,9 @@ const ToolDetailPage = () => {
             className="mt-4"
             onClick={() => navigate("/catalog/tools")}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />{t('catalog.back')}</Button>
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            {t("catalog.back")}
+          </Button>
         </Card>
       </section>
     );
