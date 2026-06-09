@@ -1,4 +1,3 @@
-import { useTranslate } from "@/i18n/useTranslate";
 import { useState } from "react";
 
 import { Button } from "@components/ui/button";
@@ -7,9 +6,10 @@ import { Input } from "@components/ui/input";
 import { PasswordInput } from "@components/ui/password-input";
 import { useAuth } from "@hooks/useAuth";
 import { signInSchema } from "@validators/auth.schema";
+import useTranslation from "@/hooks/useTranslation";
 
 const SignInForm = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { handleSignIn } = useAuth();
   let storedUser = null;
