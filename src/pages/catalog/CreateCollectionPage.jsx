@@ -1,16 +1,13 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import { useTranslation } from "@hooks/useTranslation";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
-import { useTranslation } from "@hooks/useTranslation";
 import { collectionService } from "@services/collectionService";
 
 const CreateCollectionPage = () => {
-  const { t } = useTranslate();
-
   const { slug } = useParams();
   const isEditMode = !!slug;
   const navigate = useNavigate();
@@ -239,7 +236,7 @@ const CreateCollectionPage = () => {
             <div className="text-xs text-slate-700">
               <p className="font-medium text-slate-700">{t("catalog.image")}</p>
               <p>{t("catalog.recommendedSize", { size: "1200x800" })}</p>
-              <p className="text-[10px] mt-0.5">{t('pngJpgWebp')}</p>
+              <p className="text-[10px] mt-0.5">{t("pngJpgWebp")}</p>
             </div>
             {image && (
               <button

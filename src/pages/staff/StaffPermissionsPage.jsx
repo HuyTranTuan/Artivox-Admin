@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import { useTranslation } from "@hooks/useTranslation";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Shield } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -10,7 +10,7 @@ import { staffService } from "@services/staffService";
 import useToast from "@hooks/useToast";
 
 const StaffPermissionsPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { toastTopRight } = useToast();
 

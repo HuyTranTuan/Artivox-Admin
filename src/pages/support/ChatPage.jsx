@@ -1,4 +1,3 @@
-import { useTranslate } from "@/i18n/useTranslate";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Download,
@@ -8,7 +7,6 @@ import {
   SendHorizontal,
   X,
   Eye,
-  ChevronLeft,
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
@@ -53,9 +51,8 @@ const downloadFile = async (url, name) => {
 const isImageType = (t) => t?.startsWith("image/");
 
 const MessageContent = ({ message, onImageClick }) => {
-  const { t } = useTranslate();
-
   const { t } = useTranslation();
+
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
   const type =
@@ -290,7 +287,7 @@ const ChatPage = () => {
             setRooms(Array.isArray(res) ? res : res?.data || []);
           })
           .catch(() => {});
-          
+
         // Remove from fetchedRooms so it refetches when clicked
         if (data.chatRoomId) {
           setFetchedRooms((prev) => {
@@ -411,7 +408,7 @@ const ChatPage = () => {
 
       setActiveRoomId(newRoomId);
       chatSocketRef.current?.emit("room:join", { chatRoomId: newRoomId });
-      
+
       setChatToast({
         message: t("chat.claimed", "Chat room claimed successfully!"),
         visible: true,
@@ -599,7 +596,9 @@ const ChatPage = () => {
                           })}
                       </div>
                       {!room.adminId && (
-                        <div className="inline-block mt-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{t('unassigned')}</div>
+                        <div className="inline-block mt-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                          {t("unassigned")}
+                        </div>
                       )}
                       <div className="text-xs text-slate-500 truncate mt-0.5">
                         {last?.content ||
@@ -674,11 +673,15 @@ const ChatPage = () => {
             {/* Input */}
             {!activeRoom?.adminId ? (
               <div className="border-t border-slate-200 bg-amber-50 px-6 py-4 flex flex-col items-center justify-center">
-                <p className="text-amber-800 text-sm mb-3">{t('thisChatIsCurrentlyUnassignedClaimItToStartResponding')}</p>
+                <p className="text-amber-800 text-sm mb-3">
+                  {t("thisChatIsCurrentlyUnassignedClaimItToStartResponding")}
+                </p>
                 <Button
                   onClick={handleClaimRoom}
                   className="bg-amber-500 hover:bg-amber-600"
-                >{t('claimChat')}</Button>
+                >
+                  {t("claimChat")}
+                </Button>
               </div>
             ) : (
               <form
