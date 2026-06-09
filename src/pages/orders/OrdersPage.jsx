@@ -37,7 +37,15 @@ const OrdersPage = () => {
   const filtered = useMemo(() => {
     let r = orders.filter((o) => o.status !== "PENDING");
     const kw = debouncedSearch.toLowerCase();
-    if (kw) r = r.filter((o) => (o.code || o.id || "").toLowerCase().includes(kw) || (o.customer?.name || o.customer || "").toLowerCase().includes(kw));
+    if (kw) r = r.filter((o) => {
+      const codeStr = (o.code || o.id || "").toString().toLowerCase();
+      let custStr = "";
+      if (o.customer) {
+        if (typeof o.customer === "string") custStr = o.customer.toLowerCase();
+        else if (typeof o.customer === "object") custStr = (o.customer.fullName || o.customer.name || o.customer.email || o.customer.phone || o.customer.id || "").toString().toLowerCase();
+      }
+      return codeStr.includes(kw) || custStr.includes(kw);
+    });
     if (activeFilters.status) r = r.filter((o) => o.status === activeFilters.status);
     return r;
   }, [orders, debouncedSearch, activeFilters]);
@@ -46,12 +54,29 @@ const OrdersPage = () => {
 
   const dt = useDataTable({
     rows: filtered, keyField: "id", pageSize: 20, exportFilename: "orders",
-    onExportRow: (r) => ({ Code: r.code || r.id, Customer: r.customer?.name || r.customer || "—", Amount: r.totalAmount || r.amount, Status: r.status, Date: r.createdAt }),
+    onExportRow: (r) => {
+      let custStr = "—";
+      if (r.customer) {
+        if (typeof r.customer === "string") custStr = r.customer;
+        else if (typeof r.customer === "object") custStr = r.customer.fullName || r.customer.name || r.customer.email || r.customer.phone || r.customer.id || "—";
+      }
+      return { Code: r.code || r.id, Customer: typeof custStr === 'object' ? JSON.stringify(custStr) : custStr, Amount: r.totalAmount || r.amount, Status: r.status, Date: r.createdAt };
+    },
   });
 
   const columns = [
     { key: "id", label: t("orders.code"), width: "1.2fr", render: (r) => <div className="font-semibold text-slate-900 text-xs truncate">{r.code || r.id}</div> },
-    { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => <div className="text-sm">{typeof r.customer === "object" && r.customer !== null ? r.customer.name || r.customer.fullName || r.customer.email || "—" : r.customer || "—"}</div> },
+    { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => {
+      let custStr = "—";
+      if (r.customer) {
+        if (typeof r.customer === "string") custStr = r.customer;
+        else if (typeof r.customer === "object") {
+          const idStr = r.customer.id ? String(r.customer.id) : "";
+          custStr = r.customer.fullName || r.customer.name || r.customer.email || r.customer.phone || idStr || "—";
+        }
+      }
+      return <div className="text-sm">{String(custStr)}</div>;
+    }},
     { key: "totalAmount", label: t("orders.amount"), render: (r) => <div className="font-semibold">{fmtPrice(r.totalAmount || r.amount)}</div> },
     { key: "status", label: t("orders.status"), render: (r) => <span className={`text-xs font-medium ${statusColor[r.status] || "text-slate-500"}`}>{r.status}</span> },
     { key: "createdAt", label: t("orders.date"), render: (r) => <span className="text-xs">{fmtDate(r.createdAt)}</span> },

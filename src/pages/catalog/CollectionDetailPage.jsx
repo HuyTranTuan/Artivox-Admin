@@ -121,8 +121,7 @@ const CollectionDetailPage = () => {
               </p>
             </div>
           </div>
-
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
             <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 border-b border-slate-300">
               <div>{t('catalog.product')}</div>
               <div>{t('catalog.type')}</div>
@@ -131,25 +130,15 @@ const CollectionDetailPage = () => {
             {(collection.products || []).length === 0 ? (
               <div className="px-4 py-8 text-sm text-slate-500 text-center">{t('catalog.noProducts')}</div>
             ) : (
-              collection.products.map((product) => (
-                <div
-                  key={product.id || product.slug}
-                  className="grid grid-cols-[2fr_1fr_1fr] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600 hover:bg-slate-50 transition"
-                >
-                  <div className="font-medium text-slate-900">
-                    {product.name}
+              <div className="divide-y divide-slate-100">
+                {collection.products.map((product) => (
+                  <div key={product.id} className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
+                    <div className="text-sm font-medium text-slate-900">{product.name}</div>
+                    <div className="text-xs text-slate-500">{product.type}</div>
+                    <div className="text-sm text-slate-900">${product.basePrice}</div>
                   </div>
-                  <div>{product.type}</div>
-                  <div>
-                    {product.price
-                      ? new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(product.price)
-                      : "—"}
-                  </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         </Card>
