@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -13,6 +14,8 @@ const discountTypes = [
 ];
 
 const CreateDiscountPage = () => {
+  const { t } = useTranslate();
+
   const { slug } = useParams();
   const isEditMode = !!slug;
   const navigate = useNavigate();
@@ -141,7 +144,7 @@ const CreateDiscountPage = () => {
               onChange={(e) =>
                 handleChange("code", e.target.value.toUpperCase())
               }
-              placeholder="SUMMER20"
+              placeholder={t('summer20')}
             />
           </div>
           <div>
@@ -151,28 +154,24 @@ const CreateDiscountPage = () => {
             <Input
               value={form.name}
               onChange={(e) => handleChange("name", e.target.value)}
-              placeholder="Summer Sale 2026"
+              placeholder={t('summerSale2026')}
             />
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Slug
-          </label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('articles.slug')}</label>
           <Input
             value={form.slug}
             onChange={(e) => handleChange("slug", e.target.value)}
-            placeholder="summer-sale-2026"
+            placeholder={t('summersale2026')}
           />
         </div>
 
         {/* Discount Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Discount Type
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('catalog.discountType')}</label>
             <select
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
@@ -210,20 +209,18 @@ const CreateDiscountPage = () => {
               type="number"
               value={form.minOrderAmount}
               onChange={(e) => handleChange("minOrderAmount", e.target.value)}
-              placeholder="e.g. 100000"
+              placeholder={t('eg100000')}
               min="0"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Max Usage Limit
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('maxUsageLimit')}</label>
             <Input
               type="number"
               value={form.maxUses}
               onChange={(e) => handleChange("maxUses", e.target.value)}
-              placeholder="e.g. 100"
+              placeholder={t('eg100')}
               min="1"
             />
           </div>
@@ -232,9 +229,7 @@ const CreateDiscountPage = () => {
         {/* Start & End Date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Start Date
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('catalog.startDate')}</label>
             <Input
               type="date"
               value={form.startsAt}
@@ -243,9 +238,7 @@ const CreateDiscountPage = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              End Date
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('catalog.endDate')}</label>
             <Input
               type="date"
               value={form.expiresAt}
@@ -256,9 +249,7 @@ const CreateDiscountPage = () => {
 
         {/* Status */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Status
-          </label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('articles.status')}</label>
           <select
             value={form.isActive ? "active" : "inactive"}
             onChange={(e) =>
@@ -266,8 +257,8 @@ const CreateDiscountPage = () => {
             }
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="active">{t('catalog.active')}</option>
+            <option value="inactive">{t('catalog.inactive')}</option>
           </select>
         </div>
       </Card>

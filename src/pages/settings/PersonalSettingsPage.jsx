@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -29,6 +30,8 @@ import Loading from "@/components/Loading";
 const DEFAULT_AVATAR_COLOR = "bg-slate-950";
 
 const PersonalSettingsPage = () => {
+  const { t } = useTranslate();
+
   const { t } = useTranslation();
   // ---------------------------------- State ----------------------------------
   const [loading, setLoading] = useState(true);
@@ -465,8 +468,8 @@ const PersonalSettingsPage = () => {
                       className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
                     >
                       <option>English (US)</option>
-                      <option>Vietnamese</option>
-                      <option>Japanese</option>
+                      <option>{t('vietnamese')}</option>
+                      <option>{t('japanese')}</option>
                     </select>
                   </div>
                 </div>

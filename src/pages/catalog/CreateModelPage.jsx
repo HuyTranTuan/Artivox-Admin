@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,6 +19,8 @@ import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
 
 const CreateModelPage = () => {
+  const { t } = useTranslate();
+
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -173,7 +176,7 @@ const CreateModelPage = () => {
         <div className="text-xs text-slate-400">
           <p className="font-medium text-slate-600">{label}</p>
           <p>{recommended}</p>
-          <p className="text-[10px] mt-0.5">PNG, JPG, WEBP</p>
+          <p className="text-[10px] mt-0.5">{t('pngJpgWebp')}</p>
         </div>
         {value && (
           <button
@@ -282,15 +285,13 @@ const CreateModelPage = () => {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Collection
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('collection')}</label>
             <select
               value={form.collectionId || ""}
               onChange={(e) => handleChange("collectionId", e.target.value)}
               className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-slate-50 text-gray-600"
             >
-              <option value="">Select Collection</option>
+              <option value="">{t('selectCollection')}</option>
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

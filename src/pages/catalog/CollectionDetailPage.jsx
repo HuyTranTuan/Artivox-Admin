@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, Eye } from "lucide-react";
@@ -8,6 +9,8 @@ import { collectionService } from "@services/collectionService";
 import Loading from "@/components/Loading";
 
 const CollectionDetailPage = () => {
+  const { t } = useTranslate();
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const [collection, setCollection] = useState(null);
@@ -39,14 +42,12 @@ const CollectionDetailPage = () => {
     return (
       <section className="space-y-6">
         <Card className="p-6">
-          <div className="text-sm text-slate-500">Collection not found</div>
+          <div className="text-sm text-slate-500">{t('collectionNotFound')}</div>
           <Button
             variant="ghost"
             className="mt-4"
             onClick={() => navigate("/catalog/collections")}
-          >
-            Back to Collections
-          </Button>
+          >{t('backToCollections')}</Button>
         </Card>
       </section>
     );
@@ -74,35 +75,31 @@ const CollectionDetailPage = () => {
               <Package className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
-                Collection Info
-              </h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">{t('catalog.collectionInfo')}</h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase">Name</div>
+              <div className="text-xs text-slate-500 uppercase">{t('catalog.name')}</div>
               <div className="text-sm font-medium text-slate-900 mt-1">
                 {collection.name}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">Slug</div>
+              <div className="text-xs text-slate-500 uppercase">{t('articles.slug')}</div>
               <div className="text-sm font-mono text-slate-700 mt-1">
                 {collection.slug}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                Description
-              </div>
+              <div className="text-xs text-slate-500 uppercase">{t('catalog.description')}</div>
               <div className="text-sm text-slate-700 mt-1">
                 {collection.description || "—"}
               </div>
             </div>
             {collection.status && (
               <div>
-                <div className="text-xs text-slate-500 uppercase">Status</div>
+                <div className="text-xs text-slate-500 uppercase">{t('articles.status')}</div>
                 <div className="mt-1">
                   <Badge>{collection.status}</Badge>
                 </div>
@@ -118,9 +115,7 @@ const CollectionDetailPage = () => {
               <Eye className="h-5 w-5 text-slate-600" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
-                Products
-              </h2>
+              <h2 className="font-title text-lg font-semibold text-slate-900">{t('catalog.products')}</h2>
               <p className="text-xs text-slate-500">
                 {collection.products?.length || 0} items
               </p>
@@ -129,14 +124,12 @@ const CollectionDetailPage = () => {
 
           <div className="overflow-hidden rounded-2xl border border-slate-200">
             <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 border-b border-slate-300">
-              <div>Product</div>
-              <div>Type</div>
-              <div>Price</div>
+              <div>{t('catalog.product')}</div>
+              <div>{t('catalog.type')}</div>
+              <div>{t('catalog.price')}</div>
             </div>
             {(collection.products || []).length === 0 ? (
-              <div className="px-4 py-8 text-sm text-slate-500 text-center">
-                No products in this collection
-              </div>
+              <div className="px-4 py-8 text-sm text-slate-500 text-center">{t('catalog.noProducts')}</div>
             ) : (
               collection.products.map((product) => (
                 <div

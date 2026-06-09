@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -12,6 +13,8 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
  * - Dark overlay backdrop
  */
 const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
+  const { t } = useTranslate();
+
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imgError, setImgError] = useState(false);
 
@@ -84,7 +87,7 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
               <div className="flex h-64 w-64 items-center justify-center rounded-xl bg-slate-800 text-slate-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">🖼️</div>
-                  <div className="text-sm">Image unavailable</div>
+                  <div className="text-sm">{t('imageUnavailable')}</div>
                 </div>
               </div>
             )}

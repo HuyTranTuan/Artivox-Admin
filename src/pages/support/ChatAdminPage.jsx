@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Download,
@@ -53,6 +54,8 @@ const downloadFile = async (url, name) => {
 const isImageType = (t) => t?.startsWith("image/");
 
 const MessageContent = ({ message, onImageClick }) => {
+  const { t } = useTranslate();
+
   const { t } = useTranslation();
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
@@ -467,12 +470,8 @@ const ChatAdminPage = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="font-title text-2xl font-bold text-slate-950">
-              Internal Team Chat
-            </div>
-            <div className="mt-1 text-sm text-slate-500">
-              Collaborate directly with other staff members and admins.
-            </div>
+            <div className="font-title text-2xl font-bold text-slate-950">{t('internalTeamChat')}</div>
+            <div className="mt-1 text-sm text-slate-500">{t('collaborateDirectlyWithOtherStaffMembersAndAdmins')}</div>
           </div>
           <div className="flex items-center gap-4">
             <Button
@@ -483,9 +482,7 @@ const ChatAdminPage = () => {
               }}
               className="gap-2"
             >
-              <MessageSquarePlus className="h-4 w-4" />
-              New Chat
-            </Button>
+              <MessageSquarePlus className="h-4 w-4" />{t('newChat')}</Button>
             <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
               {connectionStatus}
             </div>
@@ -540,11 +537,9 @@ const ChatAdminPage = () => {
               {showUserList ? (
                 // Users list
                 <div className="p-2">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">
-                    Start a New Chat
-                  </div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">{t('startANewChat')}</div>
                   {internalUsers.length === 0 ? (
-                    <div className="text-sm text-slate-400 px-2 py-4">No other team members found.</div>
+                    <div className="text-sm text-slate-400 px-2 py-4">{t('noOtherTeamMembersFound')}</div>
                   ) : (
                     internalUsers.map(u => (
                       <button
@@ -571,9 +566,7 @@ const ChatAdminPage = () => {
               ) : (
                 // Rooms list
                 <>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">
-                    Active Chats
-                  </div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">{t('activeChats')}</div>
                   {loadingRooms ? (
                     <div className="flex items-center justify-center h-20 text-sm text-slate-400">
                       {t("common.loading", "Loading...")}

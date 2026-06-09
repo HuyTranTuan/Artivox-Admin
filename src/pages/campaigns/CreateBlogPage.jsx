@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
@@ -19,6 +20,8 @@ const tabs = [
 ];
 
 const CreateBlogPage = () => {
+  const { t } = useTranslate();
+
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
   const [activeTab, setActiveTab] = useState("vi");
@@ -100,32 +103,28 @@ const CreateBlogPage = () => {
 
         {/* Category */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Category
-          </label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('catalog.category')}</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
-            <option value="general">General</option>
-            <option value="technology">Technology</option>
-            <option value="design">Design</option>
-            <option value="materials">Materials</option>
-            <option value="news">News</option>
+            <option value="general">{t('general')}</option>
+            <option value="technology">{t('technology')}</option>
+            <option value="design">{t('design')}</option>
+            <option value="materials">{t('catalog.materials')}</option>
+            <option value="news">{t('news')}</option>
           </select>
         </div>
 
         {/* Tags */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            Tags
-          </label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('tags')}</label>
           <input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder="Enter tags separated by commas"
+            placeholder={t('enterTagsSeparatedByCommas')}
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>

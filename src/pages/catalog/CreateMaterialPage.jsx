@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,6 +19,8 @@ import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
 
 const CreateMaterialPage = () => {
+  const { t } = useTranslate();
+
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -178,7 +181,7 @@ const CreateMaterialPage = () => {
         <div className="text-xs text-slate-400">
           <p className="font-medium text-slate-600">{label}</p>
           <p>{recommended}</p>
-          <p className="text-[10px] mt-0.5">PNG, JPG, WEBP</p>
+          <p className="text-[10px] mt-0.5">{t('pngJpgWebp')}</p>
         </div>
         {value && (
           <button
@@ -287,15 +290,13 @@ const CreateMaterialPage = () => {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Collection
-            </label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('collection')}</label>
             <select
               value={form.collectionId || ""}
               onChange={(e) => handleChange("collectionId", e.target.value)}
               className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700"
             >
-              <option value="">Select Collection</option>
+              <option value="">{t('selectCollection')}</option>
               {collections.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -333,8 +334,8 @@ const CreateMaterialPage = () => {
               onChange={(e) => handleChange("type", e.target.value)}
               className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700 placeholder-gray-500 bg-white"
             >
-              <option value="FDM">FDM</option>
-              <option value="RESIN">RESIN</option>
+              <option value="FDM">{t('fdm')}</option>
+              <option value="RESIN">{t('resin')}</option>
             </select>
           </div>
           <div>
@@ -344,7 +345,7 @@ const CreateMaterialPage = () => {
             <Input
               value={form.color}
               onChange={(e) => handleChange("color", e.target.value)}
-              placeholder="#FF0000"
+              placeholder={t('ff0000')}
               className="text-gray-700 placeholder-gray-500"
             />
           </div>

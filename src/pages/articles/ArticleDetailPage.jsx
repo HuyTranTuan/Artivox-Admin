@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -17,6 +18,8 @@ import { formatDate } from "@/utils/formatUtils";
 import Loading from "@/components/Loading";
 
 const ArticleDetailPage = () => {
+  const { t } = useTranslate();
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const [article, setArticle] = useState(null);
@@ -54,13 +57,9 @@ const ArticleDetailPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="font-title text-xl font-bold text-slate-900">
-            Article not found
-          </h1>
+          <h1 className="font-title text-xl font-bold text-slate-900">{t('articleNotFound')}</h1>
         </div>
-        <p className="text-sm text-slate-500">
-          The article you're looking for doesn't exist or has been removed.
-        </p>
+        <p className="text-sm text-slate-500">{t('theArticleYoureLookingForDoesntExistOrHasBeenRemoved')}</p>
       </section>
     );
   }
@@ -118,13 +117,9 @@ const ArticleDetailPage = () => {
         {article.requiresApproval && (
           <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
             <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
-              <CheckCircle className="h-4 w-4" />
-              Approve
-            </Button>
+              <CheckCircle className="h-4 w-4" />{t('approval.approve')}</Button>
             <Button variant="destructive" className="gap-2">
-              <XCircle className="h-4 w-4" />
-              Reject
-            </Button>
+              <XCircle className="h-4 w-4" />{t('approval.reject')}</Button>
           </div>
         )}
       </Card>

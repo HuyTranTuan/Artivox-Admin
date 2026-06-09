@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, User, Calendar, CreditCard, Truck, Phone, Mail, MapPin, ShoppingBag, Hash, Clock, CheckCircle, AlertCircle, FileText, Download } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -108,6 +109,8 @@ const ordersData = {
 };
 
 const formatPrice = (value) => {
+  const { t } = useTranslate();
+
   if (value == null) return "—";
   return `₫${Number(value).toLocaleString()}`;
 };
@@ -128,10 +131,9 @@ const OrderDetailPage = () => {
     return (
       <section className="space-y-6">
         <Button variant="ghost" className="gap-2" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Button>
+          <ArrowLeft className="h-4 w-4" />{t('catalog.back')}</Button>
         <Card className="p-8 text-center">
-          <div className="font-title text-xl font-bold text-slate-900 mb-2">Order not found</div>
+          <div className="font-title text-xl font-bold text-slate-900 mb-2">{t('orderNotFound')}</div>
           <div className="text-sm text-slate-500">No order found for ID: {orderId}</div>
         </Card>
       </section>
@@ -166,8 +168,7 @@ const OrderDetailPage = () => {
       {/* Header */}
       <div className="flex flex-wrap items-center gap-4">
         <Button variant="ghost" className="gap-2" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" /> Back
-        </Button>
+          <ArrowLeft className="h-4 w-4" />{t('catalog.back')}</Button>
         <div>
           <h1 className="font-title text-2xl font-bold text-slate-900">{order.id}</h1>
           <div className="flex items-center gap-2 mt-1">
@@ -185,7 +186,7 @@ const OrderDetailPage = () => {
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-blue-500" />
-          <h2 className="font-title text-base font-bold text-slate-900">Order Timeline</h2>
+          <h2 className="font-title text-base font-bold text-slate-900">{t('orderTimeline')}</h2>
         </div>
         <div className="flex items-start gap-0 overflow-x-auto pb-2">
           {timeline.map((step, i) => {
@@ -220,8 +221,8 @@ const OrderDetailPage = () => {
               <User className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-title text-base font-bold text-slate-900">Customer Information</div>
-              <div className="text-xs text-slate-500">Contact and shipping details</div>
+              <div className="font-title text-base font-bold text-slate-900">{t('customerInformation')}</div>
+              <div className="text-xs text-slate-500">{t('contactAndShippingDetails')}</div>
             </div>
           </div>
           <div className="space-y-5">
@@ -230,7 +231,7 @@ const OrderDetailPage = () => {
                 <User className="h-4 w-4" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Full Name</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('settings.fullName')}</div>
                 <div className="text-sm text-slate-900 font-medium mt-0.5">{order.customer}</div>
               </div>
             </div>
@@ -239,7 +240,7 @@ const OrderDetailPage = () => {
                 <Mail className="h-4 w-4" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Email</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('common.email')}</div>
                 <div className="text-sm text-slate-700 mt-0.5">{order.email}</div>
               </div>
             </div>
@@ -248,7 +249,7 @@ const OrderDetailPage = () => {
                 <Phone className="h-4 w-4" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Phone</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('common.phone')}</div>
                 <div className="text-sm text-slate-700 mt-0.5">{order.phone}</div>
               </div>
             </div>
@@ -257,7 +258,7 @@ const OrderDetailPage = () => {
                 <MapPin className="h-4 w-4" />
               </div>
               <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Shipping Address</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('shippingAddress')}</div>
                 <div className="text-sm text-slate-700 mt-0.5">{order.address}</div>
               </div>
             </div>
@@ -267,7 +268,7 @@ const OrderDetailPage = () => {
                   <Truck className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Shipping Method</div>
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('shippingMethod')}</div>
                   <div className="text-sm text-slate-900 font-medium mt-0.5">{order.shippingMethod}</div>
                   {order.trackingNumber && (
                     <div className="flex items-center gap-1 mt-1">
@@ -288,38 +289,38 @@ const OrderDetailPage = () => {
               <ShoppingBag className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-title text-base font-bold text-slate-900">Order Details</div>
-              <div className="text-xs text-slate-500">Product and payment information</div>
+              <div className="font-title text-base font-bold text-slate-900">{t('orderDetails')}</div>
+              <div className="text-xs text-slate-500">{t('productAndPaymentInformation')}</div>
             </div>
           </div>
           <div className="space-y-4">
             {/* Order summary */}
             <div className="rounded-xl bg-slate-50 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Order ID</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('orderId')}</div>
                 <div className="text-xs font-mono font-bold text-slate-900">{order.id}</div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Payment Method</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('paymentMethod')}</div>
                 <Badge variant="secondary" className="text-xs">
                   {order.paymentMethod}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Total Weight</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t('totalWeight')}</div>
                 <div className="text-xs text-slate-700 font-medium">{order.totalWeight}</div>
               </div>
             </div>
 
             {/* Items table */}
             <div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">Order Items</div>
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">{t('orderItems')}</div>
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 bg-slate-50 px-4 py-2 text-[10px] uppercase tracking-wider font-bold text-slate-600 border-b border-slate-200">
-                  <div>Product</div>
-                  <div>SKU</div>
-                  <div>Qty</div>
-                  <div className="text-right">Price</div>
+                  <div>{t('catalog.product')}</div>
+                  <div>{t('sku')}</div>
+                  <div>{t('qty')}</div>
+                  <div className="text-right">{t('catalog.price')}</div>
                 </div>
                 {order.items.map((item, idx) => (
                   <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0 items-center">
@@ -334,15 +335,15 @@ const OrderDetailPage = () => {
 
             {/* Total */}
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Subtotal</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">{t('subtotal')}</div>
               <div className="text-sm text-slate-700">{formatPrice(order.amount)}</div>
             </div>
             <div className="flex items-center justify-between">
-              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Shipping</div>
-              <div className="text-sm text-slate-700">Free</div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">{t('shipping')}</div>
+              <div className="text-sm text-slate-700">{t('free')}</div>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-              <div className="font-title text-base font-bold text-slate-900">Total</div>
+              <div className="font-title text-base font-bold text-slate-900">{t('total')}</div>
               <div className="font-title text-xl font-bold text-amber-600">{formatPrice(order.amount)}</div>
             </div>
 
@@ -351,7 +352,7 @@ const OrderDetailPage = () => {
               <div className="flex items-start gap-2 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 mt-2">
                 <FileText className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-[10px] text-blue-600 uppercase tracking-wider font-semibold">Note</div>
+                  <div className="text-[10px] text-blue-600 uppercase tracking-wider font-semibold">{t('note')}</div>
                   <div className="text-xs text-slate-700 italic mt-0.5">{order.note}</div>
                 </div>
               </div>

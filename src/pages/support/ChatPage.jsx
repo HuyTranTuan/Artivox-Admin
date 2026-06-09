@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Download,
@@ -52,6 +53,8 @@ const downloadFile = async (url, name) => {
 const isImageType = (t) => t?.startsWith("image/");
 
 const MessageContent = ({ message, onImageClick }) => {
+  const { t } = useTranslate();
+
   const { t } = useTranslation();
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
@@ -139,6 +142,7 @@ const ChatPage = () => {
   const [rooms, setRooms] = useState([]);
   const [conversations, setConversations] = useState({});
   const [activeRoomId, setActiveRoomId] = useState(null);
+  const [fetchedRooms, setFetchedRooms] = useState(new Set());
   const [message, setMessage] = useState("");
   const [connectionStatus, setConnectionStatus] = useState("connecting");
   const [uploadError, setUploadError] = useState(null);
@@ -167,15 +171,26 @@ const ChatPage = () => {
   // ── Load messages when active room changes ──
   useEffect(() => {
     if (!activeRoomId) return;
-    if (conversations[activeRoomId]) return;
+    if (fetchedRooms.has(activeRoomId)) return;
     chatService
       .getMessages(activeRoomId)
       .then((data) => {
         const msgs = Array.isArray(data) ? data : data?.data || [];
-        setConversations((prev) => ({ ...prev, [activeRoomId]: msgs }));
+        setConversations((prev) => {
+          // Merge with any real-time messages that might have arrived before fetching
+          const existing = prev[activeRoomId] || [];
+          const merged = [...msgs];
+          existing.forEach((em) => {
+            if (!merged.some((m) => String(m.id) === String(em.id))) {
+              merged.push(em);
+            }
+          });
+          return { ...prev, [activeRoomId]: merged };
+        });
+        setFetchedRooms((prev) => new Set(prev).add(activeRoomId));
       })
       .catch(() => {});
-  }, [activeRoomId]);
+  }, [activeRoomId, fetchedRooms]);
 
   // ── Mark as read when admin opens a room ──
   useEffect(() => {
@@ -275,6 +290,15 @@ const ChatPage = () => {
             setRooms(Array.isArray(res) ? res : res?.data || []);
           })
           .catch(() => {});
+          
+        // Remove from fetchedRooms so it refetches when clicked
+        if (data.chatRoomId) {
+          setFetchedRooms((prev) => {
+            const next = new Set(prev);
+            next.delete(String(data.chatRoomId));
+            return next;
+          });
+        }
       }
     });
 
@@ -575,9 +599,7 @@ const ChatPage = () => {
                           })}
                       </div>
                       {!room.adminId && (
-                        <div className="inline-block mt-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
-                          UNASSIGNED
-                        </div>
+                        <div className="inline-block mt-1 bg-amber-100 text-amber-700 text-[10px] font-bold px-1.5 py-0.5 rounded">{t('unassigned')}</div>
                       )}
                       <div className="text-xs text-slate-500 truncate mt-0.5">
                         {last?.content ||
@@ -652,16 +674,11 @@ const ChatPage = () => {
             {/* Input */}
             {!activeRoom?.adminId ? (
               <div className="border-t border-slate-200 bg-amber-50 px-6 py-4 flex flex-col items-center justify-center">
-                <p className="text-amber-800 text-sm mb-3">
-                  This chat is currently unassigned. Claim it to start
-                  responding.
-                </p>
+                <p className="text-amber-800 text-sm mb-3">{t('thisChatIsCurrentlyUnassignedClaimItToStartResponding')}</p>
                 <Button
                   onClick={handleClaimRoom}
                   className="bg-amber-500 hover:bg-amber-600"
-                >
-                  Claim Chat
-                </Button>
+                >{t('claimChat')}</Button>
               </div>
             ) : (
               <form

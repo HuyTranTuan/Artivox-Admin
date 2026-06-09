@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useMemo, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -40,6 +41,8 @@ import {
   useDataTable,
 } from "@components/DataTable";
 const ThumbnailPreview = ({ images, onClick }) => {
+  const { t } = useTranslate();
+
   if (!images || images.length === 0) {
     return (
       <div
@@ -539,15 +542,13 @@ const MaterialsPage = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">
-                Collection
-              </label>
+              <label className="text-xs font-semibold text-slate-700">{t('collection')}</label>
               <select
                 value={form.collectionId || ""}
                 onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
                 className="w-full border bg-slate-0 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
               >
-                <option value="">Select Collection</option>
+                <option value="">{t('selectCollection')}</option>
                 {collections.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
@@ -566,7 +567,7 @@ const MaterialsPage = () => {
                   onChange={(e) =>
                     setForm({ ...form, materialType: e.target.value })
                   }
-                  placeholder="PLA, ABS..."
+                  placeholder={t('plaAbs')}
                   className="placeholder:text-gray-500 text-gray-700"
                 />
               </div>
@@ -600,7 +601,7 @@ const MaterialsPage = () => {
                 <Input
                   value={form.unit}
                   onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                  placeholder="ROLL, BOTTLE..."
+                  placeholder={t('rollBottle')}
                   className="text-gray-700 placeholder:text-gray-500"
                 />
               </div>

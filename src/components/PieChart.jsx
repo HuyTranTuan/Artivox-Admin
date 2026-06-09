@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import React, { useMemo } from "react";
 
 export const PieChart = ({
@@ -6,6 +7,8 @@ export const PieChart = ({
   height = 200,
   innerRadius = 60,
 }) => {
+  const { t } = useTranslate();
+
   const slices = useMemo(() => {
     if (!data || data.length === 0) return [];
     const total = data.reduce((sum, item) => sum + (item.value || 0), 0);
@@ -87,18 +90,14 @@ export const PieChart = ({
             fontSize="14"
             fontWeight="600"
             fill="#94a3bd"
-          >
-            Revenue
-          </text>
+          >{t('dashboard.revenue')}</text>
           <text
             x={width / 2}
             y={height / 2 + 10}
             textAnchor="middle"
             fontSize="12"
             fill="#f59e0b"
-          >
-            by type
-          </text>
+          >{t('byType')}</text>
         </>
       )}
     </svg>

@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Shield } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -10,6 +11,8 @@ import { staffService } from "@services/staffService";
 import useToast from "@hooks/useToast";
 
 const StaffPermissionsPage = () => {
+  const { t } = useTranslate();
+
   const { t } = useTranslation();
   const { toastTopRight } = useToast();
 
@@ -184,9 +187,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-emerald-600 transition-colors">
-                Create
-              </span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-emerald-600 transition-colors">{t('catalog.create')}</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer group">
@@ -212,9 +213,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-amber-600 transition-colors">
-                Update
-              </span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-amber-600 transition-colors">{t('update')}</span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer group">
@@ -240,9 +239,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-rose-600 transition-colors">
-                Delete
-              </span>
+              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-rose-600 transition-colors">{t('catalog.delete')}</span>
             </label>
           </div>
         );

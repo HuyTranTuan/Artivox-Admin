@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, Eye, Box, CalendarDays, User } from "lucide-react";
@@ -11,6 +12,8 @@ import { formatDate } from "@utils/formatUtils";
 import Loading from "@/components/Loading";
 
 const ModelDetailPage = () => {
+  const { t } = useTranslate();
+
   const { slug } = useParams();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -51,8 +54,7 @@ const ModelDetailPage = () => {
             className="mt-4"
             onClick={() => navigate("/catalog/models")}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> Back
-          </Button>
+            <ArrowLeft className="h-4 w-4 mr-1" />{t('catalog.back')}</Button>
         </Card>
       </section>
     );

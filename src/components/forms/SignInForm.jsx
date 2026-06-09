@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState } from "react";
 import { useTranslation } from "@hooks/useTranslation";
 
@@ -9,6 +10,8 @@ import { useAuth } from "@hooks/useAuth";
 import { signInSchema } from "@validators/auth.schema";
 
 const SignInForm = () => {
+  const { t } = useTranslate();
+
   const { handleSignIn } = useAuth();
   const { t } = useTranslation();
   let storedUser = null;
@@ -40,17 +43,13 @@ const SignInForm = () => {
   return (
     <Card className="w-full max-w-md p-8">
       <div className="mb-8">
-        <div className="font-title text-3xl font-bold text-slate-950 text-center">
-          Sign in
-        </div>
+        <div className="font-title text-3xl font-bold text-slate-950 text-center">{t('common.signIn')}</div>
         <div className="mt-2 text-sm text-slate-500 text-center">{t("")}</div>
       </div>
 
       <form className="space-y-4" onSubmit={onSubmit}>
         <div className="space-y-2">
-          <label className="font-title text-sm font-semibold text-slate-800">
-            Email
-          </label>
+          <label className="font-title text-sm font-semibold text-slate-800">{t('common.email')}</label>
           <Input
             value={form.email}
             onChange={(event) =>
@@ -59,9 +58,7 @@ const SignInForm = () => {
           />
         </div>
         <div className="space-y-2">
-          <label className="font-title text-sm font-semibold text-slate-800">
-            Password
-          </label>
+          <label className="font-title text-sm font-semibold text-slate-800">{t('common.password')}</label>
           <PasswordInput
             value={form.password}
             onChange={(event) =>
@@ -73,9 +70,7 @@ const SignInForm = () => {
           />
         </div>
         {error ? <div className="text-sm text-rose-600">{error}</div> : null}
-        <Button className="w-full" type="submit">
-          Access Dashboard
-        </Button>
+        <Button className="w-full" type="submit">{t('accessDashboard')}</Button>
       </form>
     </Card>
   );

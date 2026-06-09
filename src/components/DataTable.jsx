@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useState, useMemo, useCallback, useRef } from "react";
 import {
   Search,
@@ -48,6 +49,8 @@ export const TableToolbar = ({
   search = null,
   searchPlaceholder = "Search...",
 }) => {
+  const { t } = useTranslate();
+
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));
   const hasActiveFilter = Object.values(activeFilters).some(Boolean);
@@ -63,9 +66,7 @@ export const TableToolbar = ({
             className="gap-1.5 rounded-lg px-3 h-9 text-sm font-semibold cursor-pointer"
             onClick={onAddNew}
           >
-            <Plus className="h-4 w-4" />
-            Add New
-          </Button>
+            <Plus className="h-4 w-4" />{t('catalog.addNew')}</Button>
         )}
       </div>
 
@@ -79,7 +80,7 @@ export const TableToolbar = ({
           title="Export CSV"
         >
           <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">CSV</span>
+          <span className="hidden sm:inline">{t('csv')}</span>
         </Button>
 
         {/* Refresh */}
@@ -213,9 +214,7 @@ export const TableToolbar = ({
                           onFilterChange(opt.key, null),
                         )
                       }
-                    >
-                      Clear Filters
-                    </Button>
+                    >{t('catalog.clearFilters')}</Button>
                   )}
                 </div>
               </div>
@@ -274,9 +273,7 @@ export const TablePagination = ({
           onClick={() => onPage(Math.max(1, currentPage - 1))}
           disabled={currentPage <= 1}
         >
-          <ChevronLeft className="h-3.5 w-3.5" />
-          Prev
-        </Button>
+          <ChevronLeft className="h-3.5 w-3.5" />{t('discounts.prev')}</Button>
 
         {pages[0] > 1 && (
           <>
@@ -328,9 +325,7 @@ export const TablePagination = ({
           className="h-8 gap-1 px-2 text-xs"
           onClick={() => onPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage >= totalPages}
-        >
-          Next
-          <ChevronRight className="h-3.5 w-3.5" />
+        >{t('catalog.next')}<ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>

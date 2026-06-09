@@ -1,3 +1,4 @@
+import { useTranslate } from "@/i18n/useTranslate";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -44,6 +45,8 @@ const orderStatusColor = {
 };
 
 const CustomerDetailPage = () => {
+  const { t } = useTranslate();
+
   const { id } = useParams();
   const navigate = useNavigate();
   const [customer] = useState(mockCustomer(Number(id)));
@@ -107,7 +110,7 @@ const CustomerDetailPage = () => {
               <div className="font-title text-xl font-bold text-slate-900">
                 {customer.totalOrders}
               </div>
-              <div className="text-xs text-slate-500">Orders</div>
+              <div className="text-xs text-slate-500">{t('customers.columns.orders')}</div>
             </div>
             <div>
               <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">
@@ -116,23 +119,21 @@ const CustomerDetailPage = () => {
               <div className="font-title text-xl font-bold text-slate-900">
                 {fmt(customer.totalSpent)}
               </div>
-              <div className="text-xs text-slate-500">Spent</div>
+              <div className="text-xs text-slate-500">{t('spent')}</div>
             </div>
           </div>
         </Card>
 
         {/* Orders */}
         <Card className="p-6 lg:col-span-2">
-          <h2 className="font-title text-lg font-bold text-slate-900 mb-4">
-            Recent Orders
-          </h2>
+          <h2 className="font-title text-lg font-bold text-slate-900 mb-4">{t('dashboard.recentOrders')}</h2>
           <div className="overflow-hidden rounded-2xl border border-slate-200">
             <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 border-b border-slate-300">
-              <div>Order ID</div>
-              <div>Date</div>
-              <div>Items</div>
-              <div>Total</div>
-              <div>Status</div>
+              <div>{t('orderId')}</div>
+              <div>{t('orders.date')}</div>
+              <div>{t('items')}</div>
+              <div>{t('total')}</div>
+              <div>{t('articles.status')}</div>
             </div>
             {customer.orders.map((o) => (
               <div

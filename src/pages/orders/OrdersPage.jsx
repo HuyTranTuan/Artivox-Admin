@@ -51,7 +51,7 @@ const OrdersPage = () => {
 
   const columns = [
     { key: "id", label: t("orders.code"), width: "1.2fr", render: (r) => <div className="font-semibold text-slate-900 text-xs truncate">{r.code || r.id}</div> },
-    { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => <div className="text-sm">{typeof r.customer === "object" ? r.customer?.name || r.customer?.fullName || "—" : r.customer || "—"}</div> },
+    { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => <div className="text-sm">{typeof r.customer === "object" && r.customer !== null ? r.customer.name || r.customer.fullName || r.customer.email || "—" : r.customer || "—"}</div> },
     { key: "totalAmount", label: t("orders.amount"), render: (r) => <div className="font-semibold">{fmtPrice(r.totalAmount || r.amount)}</div> },
     { key: "status", label: t("orders.status"), render: (r) => <span className={`text-xs font-medium ${statusColor[r.status] || "text-slate-500"}`}>{r.status}</span> },
     { key: "createdAt", label: t("orders.date"), render: (r) => <span className="text-xs">{fmtDate(r.createdAt)}</span> },
