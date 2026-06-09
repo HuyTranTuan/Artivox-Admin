@@ -1,4 +1,3 @@
-import { useTranslate } from "@/i18n/useTranslate";
 /**
  * ChatPanel — reusable chat interface component.
  *
@@ -39,6 +38,7 @@ import {
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import ImageViewer from "@/components/ImageViewer";
+import useTranslation from "@/hooks/useTranslation";
 
 const MAX_FILE_SIZE_DEFAULT = 15 * 1024 * 1024;
 
@@ -73,7 +73,7 @@ const isImageType = (t) => t?.startsWith("image/");
 
 /* ── Message bubble ── */
 const MessageContent = ({ message, onImageClick }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const [imgErr, setImgErr] = useState(false);
   const mimeType = message.fileType || message.mimeType;
@@ -112,7 +112,9 @@ const MessageContent = ({ message, onImageClick }) => {
             }}
             className="inline-flex items-center gap-1 text-xs font-medium text-blue-500 hover:text-blue-700 shrink-0"
           >
-            <Download className="h-3 w-3" />{t('common.download')}</button>
+            <Download className="h-3 w-3" />
+            {t("common.download")}
+          </button>
         </div>
       </div>
     );
@@ -274,7 +276,9 @@ export const ChatPanel = ({
       {sidebarOpen && (
         <div className="w-72 shrink-0 border-r border-slate-200 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <span className="font-semibold text-sm text-slate-800">{t('conversations')}</span>
+            <span className="font-semibold text-sm text-slate-800">
+              {t("conversations")}
+            </span>
             <div className="flex items-center gap-1.5">
               <StatusDot status={connectionStatus} />
               <span className="text-[10px] text-slate-500 capitalize">
@@ -367,7 +371,9 @@ export const ChatPanel = ({
               )}
             </div>
           ) : (
-            <div className="flex-1 text-sm text-slate-400">{t('selectAConversation')}</div>
+            <div className="flex-1 text-sm text-slate-400">
+              {t("selectAConversation")}
+            </div>
           )}
           {headerActions}
         </div>
@@ -375,9 +381,13 @@ export const ChatPanel = ({
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {!activeRoomId ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">{t('selectAConversationToStartChatting')}</div>
+            <div className="flex h-full items-center justify-center text-sm text-slate-400">
+              {t("selectAConversationToStartChatting")}
+            </div>
           ) : messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">{t('noMessagesYet')}</div>
+            <div className="flex h-full items-center justify-center text-sm text-slate-400">
+              {t("noMessagesYet")}
+            </div>
           ) : (
             messages.map((msg, i) => {
               const own = isOwnMsg(msg);
@@ -438,7 +448,9 @@ export const ChatPanel = ({
               >
                 <X className="h-4 w-4" />
               </button>
-              <Button size="sm" onClick={sendImagePreview} disabled={sending}>{t('common.send')}</Button>
+              <Button size="sm" onClick={sendImagePreview} disabled={sending}>
+                {t("common.send")}
+              </Button>
             </div>
           </div>
         )}
