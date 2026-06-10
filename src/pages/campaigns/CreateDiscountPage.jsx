@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -13,7 +13,7 @@ const discountTypes = [
 ];
 
 const CreateDiscountPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { slug } = useParams();
   const isEditMode = !!slug;

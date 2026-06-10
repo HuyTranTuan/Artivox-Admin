@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import React, { useMemo } from "react";
 
 export const PieChart = ({
@@ -7,7 +7,7 @@ export const PieChart = ({
   height = 200,
   innerRadius = 60,
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const slices = useMemo(() => {
     if (!data || data.length === 0) return [];

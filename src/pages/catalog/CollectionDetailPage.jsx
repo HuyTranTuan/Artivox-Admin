@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, Eye } from "lucide-react";
@@ -9,7 +9,7 @@ import { collectionService } from "@services/collectionService";
 import Loading from "@/components/Loading";
 
 const CollectionDetailPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { slug } = useParams();
   const navigate = useNavigate();

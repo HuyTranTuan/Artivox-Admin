@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, Eye, Box, CalendarDays, User } from "lucide-react";
@@ -11,7 +11,7 @@ import { formatDate } from "@utils/formatUtils";
 import Loading from "@/components/Loading";
 
 const ModelDetailPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { slug } = useParams();
   const navigate = useNavigate();

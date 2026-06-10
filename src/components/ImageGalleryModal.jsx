@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useState, useEffect, useCallback } from "react";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -13,7 +13,7 @@ import { X, ChevronLeft, ChevronRight } from "lucide-react";
  * - Dark overlay backdrop
  */
 const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [imgError, setImgError] = useState(false);

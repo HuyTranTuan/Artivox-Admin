@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -45,7 +45,7 @@ const orderStatusColor = {
 };
 
 const CustomerDetailPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const { id } = useParams();
   const navigate = useNavigate();

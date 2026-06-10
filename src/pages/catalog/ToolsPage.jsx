@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import {
@@ -42,7 +42,7 @@ import {
 } from "@components/DataTable";
 
 const ThumbnailPreview = ({ images, onClick }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   if (!images || images.length === 0) {
     return (

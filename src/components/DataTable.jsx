@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useState, useMemo, useCallback, useRef } from "react";
 import {
   Search,
@@ -49,7 +49,7 @@ export const TableToolbar = ({
   search = null,
   searchPlaceholder = "Search...",
 }) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useClickOutsideClose(() => setFilterOpen(false));

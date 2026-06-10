@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import Loading from "@/components/Loading";
 
 const getNotificationIcon = (type) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   switch (type) {
     case "ORDER":

@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Package, User, Calendar, CreditCard, Truck, Phone, Mail, MapPin, ShoppingBag, Hash, Clock, CheckCircle, AlertCircle, FileText, Download } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -109,7 +109,7 @@ const ordersData = {
 };
 
 const formatPrice = (value) => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   if (value == null) return "—";
   return `₫${Number(value).toLocaleString()}`;

@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useEffect, useState } from "react";
 import { Eye, FilePenLine, Languages, Plus } from "lucide-react";
 import { articleService } from "@services/articleService";
@@ -15,7 +15,7 @@ const stats = [
 ];
 
 const BlogsPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);

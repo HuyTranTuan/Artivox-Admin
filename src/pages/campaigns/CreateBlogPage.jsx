@@ -1,4 +1,4 @@
-import { useTranslate } from "@/i18n/useTranslate";
+import useTranslation from "@/hooks/useTranslation";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
@@ -20,7 +20,7 @@ const tabs = [
 ];
 
 const CreateBlogPage = () => {
-  const { t } = useTranslate();
+  const { t } = useTranslation();
 
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
