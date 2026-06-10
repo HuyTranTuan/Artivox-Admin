@@ -1,21 +1,14 @@
-import useTranslation from "@/hooks/useTranslation";
-import { useMemo, useState, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Eye,
   Edit,
   Trash2,
-  Grid3x3,
-  List,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   X,
   Plus,
   ImageIcon,
   Loader2,
-  Upload,
   GripVertical,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -32,8 +25,6 @@ import { useAuthStore } from "@store/authStore";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
-import { useTranslation } from "@hooks/useTranslation";
-import { exportToCsv } from "@utils/exportCsv";
 import {
   DataTable,
   TableToolbar,
@@ -118,8 +109,11 @@ const ToolsPage = () => {
   const [collections, setCollections] = useState([]);
 
   useEffect(() => {
-    collectionService.getCollections({ limit: 100, isActive: true })
-      .then(res => setCollections(res.data?.items || res.items || res.data || []))
+    collectionService
+      .getCollections({ limit: 100, isActive: true })
+      .then((res) =>
+        setCollections(res.data?.items || res.items || res.data || []),
+      )
       .catch(console.error);
   }, []);
   const search = useExpandableSearch();
@@ -168,7 +162,6 @@ const ToolsPage = () => {
   };
 
   const statuses = ["Active", "Inactive"];
-
 
   const dt = useDataTable({
     rows: items,
@@ -525,15 +518,21 @@ const ToolsPage = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">{t('collection')}</label>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("collection")}
+              </label>
               <select
                 value={form.collectionId || ""}
-                onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, collectionId: e.target.value })
+                }
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
               >
-                <option value="">{t('selectCollection')}</option>
-                {collections.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">{t("selectCollection")}</option>
+                {collections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -551,7 +550,7 @@ const ToolsPage = () => {
                 }
                 rows={3}
                 className="w-full text-gray-700 placeholder-gray-500 bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none"
-                placeholder={t('dimensionsWeightMaterial')}
+                placeholder={t("dimensionsWeightMaterial")}
               />
             </div>
           </div>

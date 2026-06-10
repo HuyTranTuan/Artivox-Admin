@@ -1,21 +1,14 @@
-import useTranslation from "@/hooks/useTranslation";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Eye,
   Edit,
   Trash2,
-  Grid3x3,
-  List,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   X,
   Plus,
   ImageIcon,
   Loader2,
-  Upload,
   GripVertical,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
@@ -32,8 +25,6 @@ import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
-import { useTranslation } from "@hooks/useTranslation";
-import { exportToCsv } from "@utils/exportCsv";
 import {
   DataTable,
   TableToolbar,
@@ -156,8 +147,11 @@ const MaterialsPage = () => {
   const [collections, setCollections] = useState([]);
 
   useEffect(() => {
-    collectionService.getCollections({ limit: 100, isActive: true })
-      .then(res => setCollections(res.data?.items || res.items || res.data || []))
+    collectionService
+      .getCollections({ limit: 100, isActive: true })
+      .then((res) =>
+        setCollections(res.data?.items || res.items || res.data || []),
+      )
       .catch(console.error);
   }, []);
 
@@ -542,15 +536,21 @@ const MaterialsPage = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">{t('collection')}</label>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("collection")}
+              </label>
               <select
                 value={form.collectionId || ""}
-                onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, collectionId: e.target.value })
+                }
                 className="w-full border bg-slate-0 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
               >
-                <option value="">{t('selectCollection')}</option>
-                {collections.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                <option value="">{t("selectCollection")}</option>
+                {collections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -567,7 +567,7 @@ const MaterialsPage = () => {
                   onChange={(e) =>
                     setForm({ ...form, materialType: e.target.value })
                   }
-                  placeholder={t('plaAbs')}
+                  placeholder={t("plaAbs")}
                   className="placeholder:text-gray-500 text-gray-700"
                 />
               </div>
@@ -601,7 +601,7 @@ const MaterialsPage = () => {
                 <Input
                   value={form.unit}
                   onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                  placeholder={t('rollBottle')}
+                  placeholder={t("rollBottle")}
                   className="text-gray-700 placeholder:text-gray-500"
                 />
               </div>
@@ -731,7 +731,9 @@ const MaterialsPage = () => {
       <Card className="p-6">
         <TableToolbar
           title={t("catalog.materials")}
-          onAddNew={canCreate ? () => navigate("/catalog/materials/create") : null}
+          onAddNew={
+            canCreate ? () => navigate("/catalog/materials/create") : null
+          }
           onRefresh={refetch}
           onExportCsv={dt.handleExport}
           search={search}
@@ -842,8 +844,8 @@ const MaterialsPage = () => {
                       {item.name}
                     </div>
                     <div className="text-xs text-slate-500 mb-3">
-                      {item.material?.type || "N/A"} •{" "}
-                      {t("catalog.createdAt")} {formatDate(item.createdAt)}
+                      {item.material?.type || "N/A"} • {t("catalog.createdAt")}{" "}
+                      {formatDate(item.createdAt)}
                     </div>
                     <div className="flex items-center justify-between">
                       <Badge className="mb-0">

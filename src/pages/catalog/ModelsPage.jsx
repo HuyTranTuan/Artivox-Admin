@@ -1,4 +1,3 @@
-import useTranslation from "@/hooks/useTranslation";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -523,7 +522,9 @@ const ModelsPage = () => {
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-slate-700">{t('collection')}</label>
+              <label className="text-xs font-semibold text-slate-700">
+                {t("collection")}
+              </label>
               <select
                 value={form.collectionId || ""}
                 onChange={(e) =>
@@ -531,7 +532,7 @@ const ModelsPage = () => {
                 }
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
               >
-                <option value="">{t('selectCollection')}</option>
+                <option value="">{t("selectCollection")}</option>
                 {collections.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}

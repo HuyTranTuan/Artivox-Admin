@@ -1,4 +1,3 @@
-import useTranslation from "@/hooks/useTranslation";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -109,12 +108,18 @@ export const NotificationDetailPage = () => {
       <section className="space-y-6">
         <Card className="p-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-          <div className="font-title text-lg font-semibold text-slate-900 mb-2">{t('notificationNotFound')}</div>
-          <div className="text-sm text-slate-500 mb-6">{t('theNotificationYoureLookingForDoesntExist')}</div>
+          <div className="font-title text-lg font-semibold text-slate-900 mb-2">
+            {t("notificationNotFound")}
+          </div>
+          <div className="text-sm text-slate-500 mb-6">
+            {t("theNotificationYoureLookingForDoesntExist")}
+          </div>
           <Button
             onClick={() => navigate(-1)}
             className="bg-amber-600 hover:bg-amber-700 text-white"
-          >{t('goBack')}</Button>
+          >
+            {t("goBack")}
+          </Button>
         </Card>
       </section>
     );
@@ -141,11 +146,13 @@ export const NotificationDetailPage = () => {
           className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition"
         >
           <ArrowLeft className="h-5 w-5" />
-          <span className="text-sm font-medium">{t('catalog.back')}</span>
+          <span className="text-sm font-medium">{t("catalog.back")}</span>
         </button>
         <div className="flex items-center gap-3">
           {!notification.isRead && (
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">{t('unread')}</span>
+            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+              {t("unread")}
+            </span>
           )}
         </div>
       </div>
@@ -166,21 +173,27 @@ export const NotificationDetailPage = () => {
         {/* Metadata */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-slate-200">
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('created')}</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
+              {t("created")}
+            </div>
             <div className="flex items-center gap-2 text-sm text-slate-900">
               <Calendar className="h-4 w-4 text-slate-400" />
               {formatDate(notification.createdAt)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('readAt')}</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
+              {t("readAt")}
+            </div>
             <div className="flex items-center gap-2 text-sm text-slate-900">
               <Clock className="h-4 w-4 text-slate-400" />
               {formatDate(notification.readAt)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{t('catalog.type')}</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">
+              {t("catalog.type")}
+            </div>
             <div className="text-sm font-medium text-slate-900 capitalize">
               {notification.type}
             </div>
@@ -195,7 +208,9 @@ export const NotificationDetailPage = () => {
                 navigate(`/orders/${notification.metadata.orderId}`)
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"
-            >{t('viewOrder')}</Button>
+            >
+              {t("viewOrder")}
+            </Button>
           </div>
         )}
         {notification.metadata?.articleSlug && (
@@ -205,7 +220,9 @@ export const NotificationDetailPage = () => {
                 navigate(`/articles/${notification.metadata.articleSlug}`)
               }
               className="bg-blue-600 hover:bg-blue-700 text-white"
-            >{t('viewArticle')}</Button>
+            >
+              {t("viewArticle")}
+            </Button>
           </div>
         )}
         {notification.metadata?.action === "claim_chat" &&
@@ -229,7 +246,9 @@ export const NotificationDetailPage = () => {
             className="gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
             onClick={handleDelete}
           >
-            <Trash2 className="h-4 w-4" />{t('catalog.delete')}</Button>
+            <Trash2 className="h-4 w-4" />
+            {t("catalog.delete")}
+          </Button>
         </div>
       </Card>
     </section>
