@@ -14,12 +14,10 @@ import { useState, useEffect } from "react";
 import { notificationService } from "@services/notificationService";
 import { chatService } from "@services/chatService";
 import { toast } from "react-toastify";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import Loading from "@/components/Loading";
 
 const getNotificationIcon = (type) => {
-  const { t } = useTranslation();
-
   switch (type) {
     case "ORDER":
     case "REFUND":
