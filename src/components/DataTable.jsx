@@ -1,5 +1,5 @@
-import useTranslation from "@/hooks/useTranslation";
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useState, useMemo, useCallback } from "react";
 import {
   Search,
   Filter,
@@ -47,7 +47,7 @@ export const TableToolbar = ({
   viewMode = "list",
   onViewChange = null,
   search = null,
-  searchPlaceholder = "Search...",
+  searchPlaceholder,
 }) => {
   const { t } = useTranslation();
 
@@ -66,7 +66,9 @@ export const TableToolbar = ({
             className="gap-1.5 rounded-lg px-3 h-9 text-sm font-semibold cursor-pointer"
             onClick={onAddNew}
           >
-            <Plus className="h-4 w-4" />{t('catalog.addNew')}</Button>
+            <Plus className="h-4 w-4" />
+            {t("catalog.addNew")}
+          </Button>
         )}
       </div>
 
@@ -80,7 +82,7 @@ export const TableToolbar = ({
           title="Export CSV"
         >
           <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">{t('csv')}</span>
+          <span className="hidden sm:inline">{t("csv")}</span>
         </Button>
 
         {/* Refresh */}
@@ -131,7 +133,7 @@ export const TableToolbar = ({
                 <Input
                   ref={search.inputRef}
                   className="pr-8 h-9"
-                  placeholder={searchPlaceholder}
+                  placeholder={searchPlaceholder || t("searchPlaceholder")}
                   value={search.value}
                   onChange={(e) => search.setValue(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && search.submit()}
@@ -198,7 +200,9 @@ export const TableToolbar = ({
                               }
                               className="rounded accent-orange-600"
                             />
-                            <span className="text-sm text-slate-700">{val}</span>
+                            <span className="text-sm text-slate-700">
+                              {val}
+                            </span>
                           </label>
                         ))}
                       </div>
@@ -214,7 +218,9 @@ export const TableToolbar = ({
                           onFilterChange(opt.key, null),
                         )
                       }
-                    >{t('catalog.clearFilters')}</Button>
+                    >
+                      {t("catalog.clearFilters")}
+                    </Button>
                   )}
                 </div>
               </div>
@@ -236,6 +242,7 @@ export const TablePagination = ({
   pageSize,
   onPage,
 }) => {
+  const { t } = useTranslation();
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
 
@@ -273,7 +280,9 @@ export const TablePagination = ({
           onClick={() => onPage(Math.max(1, currentPage - 1))}
           disabled={currentPage <= 1}
         >
-          <ChevronLeft className="h-3.5 w-3.5" />{t('discounts.prev')}</Button>
+          <ChevronLeft className="h-3.5 w-3.5" />
+          {t("discounts.prev")}
+        </Button>
 
         {pages[0] > 1 && (
           <>
@@ -325,7 +334,9 @@ export const TablePagination = ({
           className="h-8 gap-1 px-2 text-xs"
           onClick={() => onPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage >= totalPages}
-        >{t('catalog.next')}<ChevronRight className="h-3.5 w-3.5" />
+        >
+          {t("catalog.next")}
+          <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
     </div>
@@ -435,7 +446,8 @@ export const DataTable = ({
       {/* selection hint */}
       {checkedIds.size > 0 && (
         <div className="mb-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-medium">
-          {checkedIds.size} row{checkedIds.size > 1 ? "s" : ""} selected — CSV will export selected only.
+          {checkedIds.size} row{checkedIds.size > 1 ? "s" : ""} selected — CSV
+          will export selected only.
         </div>
       )}
 
@@ -448,7 +460,9 @@ export const DataTable = ({
           style={{ minWidth: `${minTableWidth}px` }}
         >
           <colgroup>
-            <col style={{ width: checkboxColWidth, minWidth: checkboxColWidth }} />
+            <col
+              style={{ width: checkboxColWidth, minWidth: checkboxColWidth }}
+            />
             {columns.map((col) => (
               <col key={col.key} style={getColStyle(col.width || "1fr")} />
             ))}
@@ -472,7 +486,8 @@ export const DataTable = ({
                 </div>
               </th>
               {columns.map((col) => {
-                const isSortable = col.sortable !== false && col.key !== "actions";
+                const isSortable =
+                  col.sortable !== false && col.key !== "actions";
                 return (
                   <th
                     key={col.key}
@@ -483,7 +498,11 @@ export const DataTable = ({
                     <div className="flex items-center gap-1">
                       {col.label}
                       {isSortable && onSort && (
-                        <SortIcon field={col.key} sortField={sortField} sortDir={sortDir} />
+                        <SortIcon
+                          field={col.key}
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
                       )}
                     </div>
                   </th>
@@ -494,7 +513,10 @@ export const DataTable = ({
           <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
             {loading ? (
               <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-10 text-center text-slate-400">
+                <td
+                  colSpan={columns.length + 1}
+                  className="px-4 py-10 text-center text-slate-400"
+                >
                   Loading…
                 </td>
               </tr>
@@ -516,7 +538,10 @@ export const DataTable = ({
                     }`}
                   >
                     <td
-                      style={{ width: checkboxColWidth, minWidth: checkboxColWidth }}
+                      style={{
+                        width: checkboxColWidth,
+                        minWidth: checkboxColWidth,
+                      }}
                       className="px-4 py-3 align-middle"
                     >
                       <div className="flex items-center">
@@ -571,20 +596,17 @@ export function useDataTable({
   const [viewMode, setViewMode] = useState("list");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const toggleSort = useCallback(
-    (field) => {
-      setSortField((prev) => {
-        if (prev === field) {
-          setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-          return field;
-        }
-        setSortDir("asc");
+  const toggleSort = useCallback((field) => {
+    setSortField((prev) => {
+      if (prev === field) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
         return field;
-      });
-      setCurrentPage(1);
-    },
-    [],
-  );
+      }
+      setSortDir("asc");
+      return field;
+    });
+    setCurrentPage(1);
+  }, []);
 
   const sorted = useMemo(() => {
     if (!sortField) return rows;
@@ -604,11 +626,15 @@ export function useDataTable({
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const paginated = sorted.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
+  );
 
   const toggleAll = useCallback(() => {
     setCheckedIds((prev) => {
-      if (prev.size === paginated.length && paginated.length > 0) return new Set();
+      if (prev.size === paginated.length && paginated.length > 0)
+        return new Set();
       return new Set(paginated.map((r) => r[keyField]));
     });
   }, [paginated, keyField]);
@@ -632,8 +658,7 @@ export function useDataTable({
 
   const allChecked =
     paginated.length > 0 && checkedIds.size === paginated.length;
-  const someChecked =
-    checkedIds.size > 0 && checkedIds.size < paginated.length;
+  const someChecked = checkedIds.size > 0 && checkedIds.size < paginated.length;
 
   const setPage = useCallback((p) => setCurrentPage(p), []);
 
