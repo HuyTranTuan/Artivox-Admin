@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, CircleCheckBig, XCircle, Loader2 } from "lucide-react";
+import { Eye, Loader2 } from "lucide-react";
 import { Card } from "@components/ui/card";
 import { Button } from "@components/ui/button";
 import {
@@ -13,19 +13,29 @@ import { orderService } from "@services/orderService";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
-import { useAuth } from "@hooks/useAuth";
 import useTranslation from "@hooks/useTranslation";
 
-const statusColor = {
-  PENDING: "text-amber-600",
-  PAID: "text-emerald-600",
-  REFUND_PENDING: "text-rose-600",
+const ACTIVE_STATUSES = ["PAYMENT_CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+
+const STATUS_LABELS = {
+  PENDING: "Order Placed",
+  PAYMENT_CONFIRMED: "Payment Confirmed",
+  PROCESSING: "Processing",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
 };
+
+const statusColor = {
+  PAYMENT_CONFIRMED: "text-emerald-600",
+  PROCESSING: "text-amber-600",
+  SHIPPED: "text-blue-600",
+  DELIVERED: "text-purple-600",
+};
+
 const fmtPrice = (v) => (v == null ? "—" : `₫${Number(v).toLocaleString()}`);
 
 const OrderApprovalPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { t } = useTranslation();
   const {
     data: orders,
@@ -35,12 +45,10 @@ const OrderApprovalPage = () => {
     totalPages,
     totalItems,
     setPage,
-    prevPage,
-    nextPage,
     refetch,
   } = usePaginatedApi(
-    (params) => orderService.listOrders({ ...params, status: "PENDING" }),
-    { defaultLimit: 20, pageParam: "page" },
+    (params) => orderService.listOrders({ ...params }),
+    { defaultLimit: 100, pageParam: "page" },
   );
 
   const [activeFilters, setActiveFilters] = useState({ status: null });
@@ -48,7 +56,13 @@ const OrderApprovalPage = () => {
   const debouncedSearch = useDebounce(search.value, 300);
 
   const filtered = useMemo(() => {
-    let r = [...orders];
+    // Only show orders that are in the active workflow (not Delivered-final or COMPLETED)
+    let r = orders.filter(
+      (o) => ACTIVE_STATUSES.includes(o.status) || o.status === "PENDING",
+    );
+    // Exclude DELIVERED, COMPLETED and CANCELED from this list
+    r = r.filter((o) => o.status !== "DELIVERED" && o.status !== "COMPLETED" && o.status !== "CANCELED");
+
     const kw = debouncedSearch.toLowerCase();
     if (kw)
       r = r.filter((o) => {
@@ -57,7 +71,7 @@ const OrderApprovalPage = () => {
             ? o.customer?.fullName || o.customer?.name || ""
             : o.customer || "";
         return (
-          (o.id || "").toLowerCase().includes(kw) ||
+          (o.orderNumber || o.id || "").toString().toLowerCase().includes(kw) ||
           cust.toLowerCase().includes(kw)
         );
       });
@@ -70,42 +84,25 @@ const OrderApprovalPage = () => {
     rows: filtered,
     keyField: "id",
     pageSize: 20,
-    exportFilename: "pending-orders",
+    exportFilename: "approval-orders",
     onExportRow: (r) => ({
-      id: r.id,
+      orderNumber: r.orderNumber,
       customer:
         typeof r.customer === "object"
           ? r.customer?.fullName || ""
           : r.customer || "",
-      amount: r.amount,
+      amount: r.totalAmount,
       status: r.status,
     }),
   });
 
-  const handleApprove = async (id) => {
-    try {
-      await orderService.approveOrder(id);
-      refetch();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-  const handleReject = async (id) => {
-    try {
-      await orderService.rejectOrder(id);
-      refetch();
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const columns = [
     {
-      key: "id",
+      key: "orderNumber",
       label: t("orders.code"),
       width: "1.2fr",
       render: (r) => (
-        <div className="font-semibold text-xs text-slate-900">{r.id}</div>
+        <div className="font-semibold text-xs text-slate-900">{r.orderNumber}</div>
       ),
     },
     {
@@ -121,12 +118,10 @@ const OrderApprovalPage = () => {
       ),
     },
     {
-      key: "amount",
+      key: "totalAmount",
       label: t("orders.amount"),
       render: (r) => (
-        <div className="font-semibold">
-          {fmtPrice(r.amount || r.totalAmount)}
-        </div>
+        <div className="font-semibold">{fmtPrice(r.totalAmount || r.amount)}</div>
       ),
     },
     {
@@ -136,7 +131,7 @@ const OrderApprovalPage = () => {
         <span
           className={`text-xs font-medium ${statusColor[r.status] || "text-slate-500"}`}
         >
-          {r.status}
+          {STATUS_LABELS[r.status] || r.status}
         </span>
       ),
     },
@@ -144,37 +139,16 @@ const OrderApprovalPage = () => {
       key: "actions",
       label: t("orders.actions"),
       sortable: false,
-      width: "150px",
+      width: "80px",
       render: (row) => (
-        <div className="flex gap-1.5">
-          <button
-            onClick={() => navigate(`/orders/${row.id}`)}
-            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-            style={{ padding: 5 }}
-          >
-            <Eye style={{ width: 16, height: 16 }} />
-          </button>
-          {row.status === "PENDING" && (
-            <>
-              <button
-                onClick={() => handleApprove(row.id)}
-                title={t("approval.approve")}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                style={{ padding: 5 }}
-              >
-                <CircleCheckBig style={{ width: 16, height: 16 }} />
-              </button>
-              <button
-                onClick={() => handleReject(row.id)}
-                title={t("approval.reject")}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                style={{ padding: 5 }}
-              >
-                <XCircle style={{ width: 16, height: 16 }} />
-              </button>
-            </>
-          )}
-        </div>
+        <button
+          onClick={() => navigate(`/orders/${row.orderNumber}/approval`)}
+          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+          style={{ padding: 5 }}
+          title="View & Process"
+        >
+          <Eye style={{ width: 16, height: 16 }} />
+        </button>
       ),
     },
   ];
@@ -202,15 +176,12 @@ const OrderApprovalPage = () => {
           onRefresh={refetch}
           onExportCsv={dt.handleExport}
           search={search}
-          searchPlaceholder={t(
-            "approval.searchPlaceholder",
-            "Search orders...",
-          )}
+          searchPlaceholder={t("approval.searchPlaceholder", "Search orders...")}
           filterOptions={[
             {
               key: "status",
               label: t("orders.filterStatus"),
-              values: ["PENDING", "PAID", "REFUND_PENDING"],
+              values: ["PENDING", ...ACTIVE_STATUSES],
             },
           ]}
           activeFilters={activeFilters}

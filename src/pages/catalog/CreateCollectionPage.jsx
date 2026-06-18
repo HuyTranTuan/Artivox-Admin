@@ -1,4 +1,5 @@
 import { useTranslation } from "@hooks/useTranslation";
+import useToast from "@hooks/useToast";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save, Upload, Loader2 } from "lucide-react";
@@ -12,6 +13,7 @@ const CreateCollectionPage = () => {
   const isEditMode = !!slug;
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(isEditMode);
 
@@ -89,8 +91,10 @@ const CreateCollectionPage = () => {
 
       if (isEditMode) {
         await collectionService.updateCollection(slug, formData);
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
       } else {
         await collectionService.createCollection(formData);
+        toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
       }
       navigate("/catalog/collections");
     } catch (err) {
@@ -98,6 +102,7 @@ const CreateCollectionPage = () => {
         isEditMode ? "Update collection failed:" : "Create collection failed:",
         err,
       );
+      toastTopRight("error", isEditMode ? t("catalog.updateError", "Failed to update") : t("catalog.createError", "Failed to create"));
     } finally {
       setLoading(false);
     }

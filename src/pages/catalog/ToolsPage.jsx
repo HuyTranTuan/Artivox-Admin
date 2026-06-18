@@ -19,6 +19,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
+import useToast from "@hooks/useToast";
 import { toolsService } from "@services/toolsService";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
@@ -71,6 +72,7 @@ const ThumbnailPreview = ({ images, onClick }) => {
 const ToolsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
@@ -298,10 +300,13 @@ const ToolsPage = () => {
       setDeleting(true);
       try {
         await toolsService.deleteTool(selectedItem.slug);
+        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Delete tool failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.deleteError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setDeleting(false);
       }
@@ -349,10 +354,13 @@ const ToolsPage = () => {
         });
 
         await toolsService.updateTool(selectedItem.slug, formData);
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Update tool failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.updateError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setSaving(false);
       }

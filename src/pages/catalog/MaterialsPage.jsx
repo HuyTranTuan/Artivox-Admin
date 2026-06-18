@@ -23,6 +23,7 @@ import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
+import { useToast } from "@hooks/useToast";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import {
@@ -70,6 +71,7 @@ const MaterialsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { toastTopRight } = useToast();
 
   const isAdmin = user?.role === "ADMIN";
   const validJsonString = user?.permission?.replace(
@@ -310,10 +312,13 @@ const MaterialsPage = () => {
       setDeleting(true);
       try {
         await materialsService.deleteMaterial(selectedItem.slug);
+        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Delete material failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.deleteError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setDeleting(false);
       }
@@ -363,10 +368,13 @@ const MaterialsPage = () => {
         });
 
         await materialsService.updateMaterial(selectedItem.slug, formData);
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Update material failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.updateError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setSaving(false);
       }

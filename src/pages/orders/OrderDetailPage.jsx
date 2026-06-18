@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useTranslation from "@/hooks/useTranslation";
-import { useParams, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/useToast";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowLeft,
   Package,
@@ -12,12 +13,11 @@ import {
   Mail,
   MapPin,
   ShoppingBag,
-  Hash,
   Clock,
   CheckCircle,
   AlertCircle,
   FileText,
-  Download,
+  XCircle,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -25,78 +25,156 @@ import { Badge } from "@components/ui/badge";
 import { orderService } from "@services/orderService";
 import { Loader2 } from "lucide-react";
 
-// removed static ordersData
-
 const formatPrice = (value) => {
   if (value == null) return "—";
   return `₫${Number(value).toLocaleString()}`;
 };
 
+// Status flow for the approval workflow
+const STATUS_FLOW = [
+  "PENDING",
+  "PAYMENT_CONFIRMED",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+];
+
+const STATUS_LABELS = {
+  PENDING: "Order Placed",
+  PAYMENT_CONFIRMED: "Payment Confirmed",
+  PROCESSING: "Processing",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
+  COMPLETED: "Completed",
+  CANCELED: "Canceled",
+};
+
+// Next status in workflow
+const NEXT_STATUS = {
+  PENDING: "PAYMENT_CONFIRMED",
+  PAYMENT_CONFIRMED: "PROCESSING",
+  PROCESSING: "SHIPPED",
+  SHIPPED: "DELIVERED",
+  DELIVERED: "COMPLETED",
+};
+
+const CONFIRM_BTN_LABEL = {
+  PENDING: "Mark Payment Confirmed",
+  PAYMENT_CONFIRMED: "Mark Processing",
+  PROCESSING: "Mark Shipped",
+  SHIPPED: "Mark Delivered",
+  DELIVERED: "Mark Completed",
+};
+
 const statusConfig = {
-  Delivered: {
-    color: "text-emerald-600 bg-emerald-50 border-emerald-200",
-    icon: CheckCircle,
-  },
-  Processing: {
-    color: "text-amber-600 bg-amber-50 border-amber-200",
-    icon: AlertCircle,
-  },
-  Shipped: { color: "text-blue-600 bg-blue-50 border-blue-200", icon: Truck },
-  Pending: {
-    color: "text-slate-600 bg-slate-100 border-slate-200",
-    icon: Clock,
-  },
+  PENDING: { color: "text-slate-600 bg-slate-100 border-slate-200", icon: Clock },
+  PAYMENT_CONFIRMED: { color: "text-emerald-600 bg-emerald-50 border-emerald-200", icon: CheckCircle },
+  PROCESSING: { color: "text-amber-600 bg-amber-50 border-amber-200", icon: AlertCircle },
+  SHIPPED: { color: "text-blue-600 bg-blue-50 border-blue-200", icon: Truck },
+  DELIVERED: { color: "text-emerald-600 bg-emerald-50 border-emerald-200", icon: CheckCircle },
+  COMPLETED: { color: "text-emerald-700 bg-emerald-100 border-emerald-300", icon: CheckCircle },
+  CANCELED: { color: "text-rose-600 bg-rose-50 border-rose-200", icon: XCircle },
 };
 
 const OrderDetailPage = () => {
   const { t } = useTranslation();
-  const { orderId } = useParams();
+  const { toastTopRight } = useToast();
+  const { orderNumber } = useParams();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
+  // Detect if we're in approval mode
+  const isApprovalMode = location.pathname.endsWith("/approval");
+
   const [order, setOrder] = useState(null);
+  const [rawStatus, setRawStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        setLoading(true);
-        const data = await orderService.getOrderById(orderId);
-        if (data) {
-          setOrder({
-            id: data.orderNumber || `#${data.id}`,
-            customer: data.customer?.fullName || data.customer?.name || "—",
-            email: data.customer?.email || "—",
-            phone: data.customer?.phone || "—",
-            amount: data.totalAmount,
-            status: data.status,
-            createdAt: new Date(data.createdAt).toLocaleDateString(),
-            shippedAt: data.status === "SHIPPED" || data.status === "COMPLETED" ? new Date(data.updatedAt || data.createdAt).toLocaleDateString() : null,
-            deliveredAt: data.status === "COMPLETED" ? new Date(data.updatedAt || data.createdAt).toLocaleDateString() : null,
-            address: data.shippingAddress || "—",
-            paymentMethod: data.paymentMethod || "—",
-            note: data.note || "",
-            items: data.items?.map(item => ({
+  const fetchOrder = async () => {
+    try {
+      setLoading(true);
+      const data = await orderService.getOrderByNumber(orderNumber);
+      if (data) {
+        setRawStatus(data.status);
+        setOrder({
+          id: data.orderNumber || `#${data.id}`,
+          customer: data.customer?.fullName || data.customer?.name || "—",
+          email: data.customer?.email || "—",
+          phone: data.customer?.phone || "—",
+          amount: data.totalAmount,
+          status: data.status,
+          createdAt: new Date(data.createdAt).toLocaleDateString(),
+          shippedAt:
+            ["SHIPPED", "DELIVERED", "COMPLETED"].includes(data.status)
+              ? new Date(data.updatedAt || data.createdAt).toLocaleDateString()
+              : null,
+          deliveredAt:
+            ["DELIVERED", "COMPLETED"].includes(data.status)
+              ? new Date(data.updatedAt || data.createdAt).toLocaleDateString()
+              : null,
+          address: data.shippingAddress || "—",
+          paymentMethod: data.paymentMethod || "—",
+          note: data.note || "",
+          items:
+            data.items?.map((item) => ({
               name: item.product?.name || "—",
               sku: item.product?.sku || "—",
               qty: item.quantity,
-              price: item.product?.discountedPrice > 0 ? item.product.discountedPrice : item.product?.basePrice
+              price:
+                item.product?.discountedPrice > 0
+                  ? item.product.discountedPrice
+                  : item.product?.basePrice,
             })) || [],
-            shippingMethod: "Standard",
-            trackingNumber: null,
-            totalWeight: "—",
-          });
-        }
-      } catch (err) {
-        setError(err.response?.data?.message || err.message);
-      } finally {
-        setLoading(false);
+          shippingMethod: "Standard",
+          trackingNumber: null,
+          totalWeight: "—",
+        });
       }
-    };
-    if (orderId) {
-      fetchOrder();
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
-  }, [orderId]);
+  };
+
+  useEffect(() => {
+    if (orderNumber) fetchOrder();
+  }, [orderNumber]);
+
+  const handleConfirm = async () => {
+    const next = NEXT_STATUS[rawStatus];
+    if (!next) return;
+    try {
+      setUpdating(true);
+      const updated = await orderService.updateOrderStatus(orderNumber, next);
+      setRawStatus(updated.status);
+      setOrder((prev) => ({ ...prev, status: updated.status }));
+      toastTopRight("success", t("catalog.updateSuccess", "Order status updated successfully"));
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("catalog.updateError", "Failed to update order status"));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    try {
+      setUpdating(true);
+      // Cancel via the existing cancel endpoint (uses order numeric id)
+      // We need the raw order id — re-fetch to get it, or we store it
+      await fetchOrder(); // refresh instead
+      toastTopRight("success", t("catalog.updateSuccess", "Order update processed"));
+      navigate(-1);
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("catalog.updateError", "Failed to process order update"));
+    } finally {
+      setUpdating(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -120,63 +198,27 @@ const OrderDetailPage = () => {
             {t("orderNotFound")}
           </div>
           <div className="text-sm text-slate-500">
-            No order found for ID: {orderId}
+            No order found: {orderNumber}
           </div>
         </Card>
       </section>
     );
   }
 
-  const StatusIcon = statusConfig[order.status]?.icon || Clock;
-  const statusStyle =
-    statusConfig[order.status]?.color || "text-slate-600 bg-slate-100";
+  const StatusIcon = statusConfig[rawStatus]?.icon || Clock;
+  const statusStyle = statusConfig[rawStatus]?.color || "text-slate-600 bg-slate-100";
 
-  const timeline = [
-    {
-      label: "Order Placed",
-      date: order.createdAt,
-      done: true,
-      icon: CreditCard,
-      description: "Order has been placed successfully",
-    },
-    {
-      label: "Payment Confirmed",
-      date: order.createdAt,
-      done: order.status !== "Pending",
-      icon: CheckCircle,
-      description: "Payment verified via " + order.paymentMethod,
-    },
-    {
-      label: "Processing",
-      date:
-        order.status === "Processing"
-          ? order.createdAt
-          : order.shippedAt
-            ? order.createdAt
-            : null,
-      done: order.status !== "Pending",
-      icon: Package,
-      description: "Order is being prepared",
-    },
-    {
-      label: "Shipped",
-      date: order.shippedAt,
-      done: !!order.shippedAt,
-      icon: Truck,
-      description: order.trackingNumber
-        ? `Tracking: ${order.trackingNumber}`
-        : "Awaiting shipment",
-    },
-    {
-      label: "Delivered",
-      date: order.deliveredAt,
-      done: !!order.deliveredAt,
-      icon: Package,
-      description: order.deliveredAt
-        ? "Package delivered successfully"
-        : "In transit",
-    },
+  const timelineSteps = [
+    { key: "PENDING", label: "Order Placed", icon: CreditCard },
+    { key: "PAYMENT_CONFIRMED", label: "Payment Confirmed", icon: CheckCircle },
+    { key: "PROCESSING", label: "Processing", icon: Package },
+    { key: "SHIPPED", label: "Shipped", icon: Truck },
+    { key: "DELIVERED", label: "Delivered", icon: Package },
   ];
+
+  const currentIdx = STATUS_FLOW.indexOf(rawStatus);
+  const isDone = rawStatus === "COMPLETED" || rawStatus === "CANCELED";
+  const canAdvance = isApprovalMode && !isDone && NEXT_STATUS[rawStatus];
 
   return (
     <section className="space-y-6">
@@ -192,20 +234,47 @@ const OrderDetailPage = () => {
           </h1>
           <div className="flex items-center gap-2 mt-1">
             <Clock className="h-3.5 w-3.5 text-slate-400" />
-            <span className="text-sm text-slate-500">
-              Created {order.createdAt}
-            </span>
+            <span className="text-sm text-slate-500">Created {order.createdAt}</span>
           </div>
         </div>
         <span
           className={`ml-auto text-sm font-semibold px-4 py-1.5 rounded-full border flex items-center gap-1.5 ${statusStyle}`}
         >
           <StatusIcon className="h-4 w-4" />
-          {order.status}
+          {STATUS_LABELS[rawStatus] || rawStatus}
         </span>
+
+        {/* Approval action buttons */}
+        {isApprovalMode && (
+          <div className="flex gap-2 ml-2">
+            <Button
+              variant="outline"
+              className="gap-2 border-rose-200 text-rose-600 hover:bg-rose-50"
+              onClick={() => navigate(-1)}
+              disabled={updating}
+            >
+              <XCircle className="h-4 w-4" />
+              Cancel
+            </Button>
+            {canAdvance && (
+              <Button
+                className="gap-2 bg-amber-500 hover:bg-amber-600 text-white"
+                onClick={handleConfirm}
+                disabled={updating}
+              >
+                {updating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                {CONFIRM_BTN_LABEL[rawStatus]}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Timeline - Full width at top */}
+      {/* Timeline */}
       <Card className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <Calendar className="h-5 w-5 text-blue-500" />
@@ -214,33 +283,36 @@ const OrderDetailPage = () => {
           </h2>
         </div>
         <div className="flex items-start gap-0 overflow-x-auto pb-2">
-          {timeline.map((step, i) => {
+          {timelineSteps.map((step, i) => {
             const StepIcon = step.icon;
+            const stepIdx = STATUS_FLOW.indexOf(step.key);
+            const done = rawStatus === "COMPLETED" || stepIdx <= currentIdx;
+            const isCurrent = stepIdx === currentIdx && !isDone;
             return (
-              <div key={step.label} className="flex items-start flex-1 min-w-0">
+              <div key={step.key} className="flex items-start flex-1 min-w-0">
                 <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 ${step.done ? "bg-emerald-500 text-white shadow-md" : "bg-slate-100 text-slate-400 border-2 border-dashed border-slate-300"}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-full shrink-0 transition-all ${
+                      done
+                        ? "bg-emerald-500 text-white shadow-md"
+                        : isCurrent
+                        ? "bg-amber-400 text-white shadow ring-2 ring-amber-200"
+                        : "bg-slate-100 text-slate-400 border-2 border-dashed border-slate-300"
+                    }`}
                   >
                     <StepIcon className="h-5 w-5" />
                   </div>
                   <div
-                    className={`mt-2 text-center px-2 ${step.done ? "text-slate-900" : "text-slate-400"}`}
+                    className={`mt-2 text-center px-2 ${done || isCurrent ? "text-slate-900" : "text-slate-400"}`}
                   >
                     <div className="text-xs font-bold uppercase tracking-wider">
                       {step.label}
                     </div>
-                    <div className="text-[10px] mt-0.5 text-slate-500">
-                      {step.date || "—"}
-                    </div>
-                    <div className="text-[9px] mt-0.5 text-slate-400 max-w-[120px] leading-tight">
-                      {step.description}
-                    </div>
                   </div>
                 </div>
-                {i < timeline.length - 1 && (
+                {i < timelineSteps.length - 1 && (
                   <div
-                    className={`h-0.5 flex-1 mt-5 mx-1 ${step.done ? "bg-emerald-400" : "bg-slate-200"}`}
+                    className={`h-0.5 flex-1 mt-5 mx-1 ${done && stepIdx < currentIdx ? "bg-emerald-400" : "bg-slate-200"}`}
                   />
                 )}
               </div>
@@ -249,7 +321,7 @@ const OrderDetailPage = () => {
         </div>
       </Card>
 
-      {/* Customer Info (left) + Order Details (right) */}
+      {/* Customer Info + Order Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Customer Info */}
         <Card className="p-6">
@@ -261,64 +333,26 @@ const OrderDetailPage = () => {
               <div className="font-title text-base font-bold text-slate-900">
                 {t("customerInformation")}
               </div>
-              <div className="text-xs text-slate-500">
-                {t("contactAndShippingDetails")}
-              </div>
+              <div className="text-xs text-slate-500">{t("contactAndShippingDetails")}</div>
             </div>
           </div>
           <div className="space-y-5">
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
-                <User className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("settings.fullName")}
+            {[
+              { icon: User, label: t("settings.fullName"), value: order.customer },
+              { icon: Mail, label: t("common.email"), value: order.email },
+              { icon: Phone, label: t("common.phone"), value: order.phone },
+              { icon: MapPin, label: t("shippingAddress"), value: order.address },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-start gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
+                  <Icon className="h-4 w-4" />
                 </div>
-                <div className="text-sm text-slate-900 font-medium mt-0.5">
-                  {order.customer}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
-                <Mail className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("common.email")}
-                </div>
-                <div className="text-sm text-slate-700 mt-0.5">
-                  {order.email}
+                <div className="flex-1">
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{label}</div>
+                  <div className="text-sm text-slate-900 font-medium mt-0.5">{value}</div>
                 </div>
               </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
-                <Phone className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("common.phone")}
-                </div>
-                <div className="text-sm text-slate-700 mt-0.5">
-                  {order.phone}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
-                <MapPin className="h-4 w-4" />
-              </div>
-              <div className="flex-1">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("shippingAddress")}
-                </div>
-                <div className="text-sm text-slate-700 mt-0.5">
-                  {order.address}
-                </div>
-              </div>
-            </div>
+            ))}
             <div className="border-t border-slate-100 pt-4">
               <div className="flex items-start gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500 shrink-0 mt-0.5">
@@ -328,17 +362,7 @@ const OrderDetailPage = () => {
                   <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                     {t("shippingMethod")}
                   </div>
-                  <div className="text-sm text-slate-900 font-medium mt-0.5">
-                    {order.shippingMethod}
-                  </div>
-                  {order.trackingNumber && (
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="text-xs text-slate-500">Tracking: </span>
-                      <code className="text-xs bg-slate-100 px-2 py-0.5 rounded font-mono text-blue-600">
-                        {order.trackingNumber}
-                      </code>
-                    </div>
-                  )}
+                  <div className="text-sm text-slate-900 font-medium mt-0.5">{order.shippingMethod}</div>
                 </div>
               </div>
             </div>
@@ -352,48 +376,25 @@ const OrderDetailPage = () => {
               <ShoppingBag className="h-5 w-5" />
             </div>
             <div>
-              <div className="font-title text-base font-bold text-slate-900">
-                {t("orderDetails")}
-              </div>
-              <div className="text-xs text-slate-500">
-                {t("productAndPaymentInformation")}
-              </div>
+              <div className="font-title text-base font-bold text-slate-900">{t("orderDetails")}</div>
+              <div className="text-xs text-slate-500">{t("productAndPaymentInformation")}</div>
             </div>
           </div>
           <div className="space-y-4">
-            {/* Order summary */}
             <div className="rounded-xl bg-slate-50 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("orderId")}
-                </div>
-                <div className="text-xs font-mono font-bold text-slate-900">
-                  {order.id}
-                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t("orderId")}</div>
+                <div className="text-xs font-mono font-bold text-slate-900">{order.id}</div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("paymentMethod")}
-                </div>
-                <Badge variant="secondary" className="text-xs">
-                  {order.paymentMethod}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
-                  {t("totalWeight")}
-                </div>
-                <div className="text-xs text-slate-700 font-medium">
-                  {order.totalWeight}
-                </div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{t("paymentMethod")}</div>
+                <Badge variant="secondary" className="text-xs">{order.paymentMethod}</Badge>
               </div>
             </div>
 
             {/* Items table */}
             <div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">
-                {t("orderItems")}
-              </div>
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-2">{t("orderItems")}</div>
               <div className="border border-slate-200 rounded-xl overflow-hidden">
                 <div className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 bg-slate-50 px-4 py-2 text-[10px] uppercase tracking-wider font-bold text-slate-600 border-b border-slate-200">
                   <div>{t("catalog.product")}</div>
@@ -406,16 +407,10 @@ const OrderDetailPage = () => {
                     key={idx}
                     className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0 items-center"
                   >
-                    <div className="font-medium text-slate-900 truncate">
-                      {item.name}
-                    </div>
-                    <div className="text-xs text-slate-500 font-mono">
-                      {item.sku}
-                    </div>
+                    <div className="font-medium text-slate-900 truncate">{item.name}</div>
+                    <div className="text-xs text-slate-500 font-mono">{item.sku}</div>
                     <div className="text-slate-700">x{item.qty}</div>
-                    <div className="text-right font-medium text-slate-900">
-                      {formatPrice(item.price)}
-                    </div>
+                    <div className="text-right font-medium text-slate-900">{formatPrice(item.price)}</div>
                   </div>
                 ))}
               </div>
@@ -423,26 +418,16 @@ const OrderDetailPage = () => {
 
             {/* Total */}
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                {t("subtotal")}
-              </div>
-              <div className="text-sm text-slate-700">
-                {formatPrice(order.amount)}
-              </div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">{t("subtotal")}</div>
+              <div className="text-sm text-slate-700">{formatPrice(order.amount)}</div>
             </div>
             <div className="flex items-center justify-between">
-              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                {t("shipping")}
-              </div>
+              <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">{t("shipping")}</div>
               <div className="text-sm text-slate-700">{t("free")}</div>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-              <div className="font-title text-base font-bold text-slate-900">
-                {t("total")}
-              </div>
-              <div className="font-title text-xl font-bold text-amber-600">
-                {formatPrice(order.amount)}
-              </div>
+              <div className="font-title text-base font-bold text-slate-900">{t("total")}</div>
+              <div className="font-title text-xl font-bold text-amber-600">{formatPrice(order.amount)}</div>
             </div>
 
             {/* Note */}
@@ -450,12 +435,8 @@ const OrderDetailPage = () => {
               <div className="flex items-start gap-2 rounded-xl bg-blue-50 border border-blue-200 px-4 py-3 mt-2">
                 <FileText className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-[10px] text-blue-600 uppercase tracking-wider font-semibold">
-                    {t("note")}
-                  </div>
-                  <div className="text-xs text-slate-700 italic mt-0.5">
-                    {order.note}
-                  </div>
+                  <div className="text-[10px] text-blue-600 uppercase tracking-wider font-semibold">{t("note")}</div>
+                  <div className="text-xs text-slate-700 italic mt-0.5">{order.note}</div>
                 </div>
               </div>
             )}

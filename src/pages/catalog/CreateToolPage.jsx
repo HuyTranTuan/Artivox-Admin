@@ -14,12 +14,14 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { useTranslation } from "@hooks/useTranslation";
+import useToast from "@hooks/useToast";
 import { toolsService } from "@services/toolsService";
 import { collectionService } from "@services/collectionService";
 
 const CreateToolPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const [loading, setLoading] = useState(false);
   const [collections, setCollections] = useState([]);
 
@@ -132,9 +134,12 @@ const CreateToolPage = () => {
       });
 
       await toolsService.createTool(formData);
+      toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
       navigate("/catalog/tools");
     } catch (err) {
-      console.error("Create tool failed:", err);
+      console.error(err);
+      const msg = err.response?.data?.message || "catalog.createError";
+      toastTopRight("error", t(msg, msg));
     } finally {
       setLoading(false);
     }

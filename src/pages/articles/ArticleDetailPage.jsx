@@ -57,9 +57,13 @@ const ArticleDetailPage = () => {
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="font-title text-xl font-bold text-slate-900">{t('articleNotFound')}</h1>
+          <h1 className="font-title text-xl font-bold text-slate-900">
+            {t("articleNotFound")}
+          </h1>
         </div>
-        <p className="text-sm text-slate-500">{t('theArticleYoureLookingForDoesntExistOrHasBeenRemoved')}</p>
+        <p className="text-sm text-slate-500">
+          {t("theArticleYoureLookingForDoesntExistOrHasBeenRemoved")}
+        </p>
       </section>
     );
   }
@@ -108,18 +112,28 @@ const ArticleDetailPage = () => {
 
         {/* Content */}
         <div className="prose prose-slate max-w-none">
-          <p className="text-base text-slate-700 leading-relaxed whitespace-pre-wrap">
-            {translation.content || article.content || "No content available."}
-          </p>
+          <div
+            className="text-base text-slate-700 leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html:
+                translation.content ||
+                article.content ||
+                "No content available.",
+            }}
+          />
         </div>
 
         {/* Actions */}
         {article.requiresApproval && (
           <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
             <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700">
-              <CheckCircle className="h-4 w-4" />{t('approval.approve')}</Button>
+              <CheckCircle className="h-4 w-4" />
+              {t("approval.approve")}
+            </Button>
             <Button variant="destructive" className="gap-2">
-              <XCircle className="h-4 w-4" />{t('approval.reject')}</Button>
+              <XCircle className="h-4 w-4" />
+              {t("approval.reject")}
+            </Button>
           </div>
         )}
       </Card>

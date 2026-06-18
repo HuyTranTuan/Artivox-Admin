@@ -70,17 +70,21 @@ const ImageViewer = ({ src, filename, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={onClose}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       {/* Toolbar */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-black/50 to-transparent">
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-linear-to-b from-black/50 to-transparent">
         <div className="flex items-center gap-2">
-          <span className="text-sm text-white/80 truncate max-w-[300px]">{filename || "Image"}</span>
-          <span className="text-xs text-white/50">{Math.round(scale * 100)}%</span>
+          <span className="text-sm text-white/80 truncate max-w-[300px]">
+            {filename || "Image"}
+          </span>
+          <span className="text-xs text-white/50">
+            {Math.round(scale * 100)}%
+          </span>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -104,7 +108,9 @@ const ImageViewer = ({ src, filename, onClose }) => {
               resetView();
             }}
           >
-            <span className="text-xs font-bold">{Math.round(scale * 100)}%</span>
+            <span className="text-xs font-bold">
+              {Math.round(scale * 100)}%
+            </span>
           </Button>
           <Button
             type="button"
@@ -146,7 +152,12 @@ const ImageViewer = ({ src, filename, onClose }) => {
       </div>
 
       {/* Image */}
-      <div ref={containerRef} className="flex items-center justify-center w-full h-full select-none" onWheel={handleWheel} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={containerRef}
+        className="flex items-center justify-center w-full h-full select-none"
+        onWheel={handleWheel}
+        onClick={(e) => e.stopPropagation()}
+      >
         <img
           src={src}
           alt={filename || "Preview"}
@@ -161,8 +172,10 @@ const ImageViewer = ({ src, filename, onClose }) => {
       </div>
 
       {/* Bottom info */}
-      <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center px-4 py-3 bg-gradient-to-t from-black/50 to-transparent">
-        <span className="text-xs text-white/60">Scroll to zoom • Drag to pan • ESC to close</span>
+      <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center px-4 py-3 bg-linear-to-t from-black/50 to-transparent">
+        <span className="text-xs text-white/60">
+          Scroll to zoom • Drag to pan • ESC to close
+        </span>
       </div>
     </div>
   );

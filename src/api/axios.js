@@ -1,7 +1,8 @@
 import axios from "axios";
 import { applyAxiosInterceptors } from "@api/interceptors";
-import useToast from "@/hooks/useToast";
 import HTTP_CODE from "@/constants/httpStatus";
+import { toast } from "react-toastify";
+import i18n from "@/i18n/i18n";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3600/api/v1";
 
@@ -13,7 +14,6 @@ export const axiosClient = axios.create({
 applyAxiosInterceptors(axiosClient);
 
 const _send = async (method, path, data, config) => {
-  const { toastTopRight } = useToast();
   try {
     const response = await axiosClient({
       method,
@@ -21,33 +21,39 @@ const _send = async (method, path, data, config) => {
       data,
       ...config,
     });
+
+    const m = method.toLowerCase();
+    if (["post", "put", "patch", "delete"].includes(m) && !config?.hideToast && !path.includes("/auth")) {
+      let defaultMsg = i18n.t("common.success", "Operation successful");
+      if (m === "post") defaultMsg = i18n.t("common.createSuccess", "Created successfully");
+      if (m === "put" || m === "patch") defaultMsg = i18n.t("common.updateSuccess", "Updated successfully");
+      if (m === "delete") defaultMsg = i18n.t("common.deleteSuccess", "Deleted successfully");
+      
+      toast.success(defaultMsg, { position: "top-right", autoClose: 3000 });
+    }
+
     return response?.data;
   } catch (error) {
-    switch (error.response?.status) {
-      case 500:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[500]);
-        break;
-      case 409:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[409]);
-        break;
-      case 405:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[405]);
-        break;
-      case 404:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[404]);
-        break;
-      case 403:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[403]);
-        break;
-      case 401:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[401]);
-        break;
-      case 400:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[400]);
-        break;
-      default:
-        toastTopRight("error", HTTP_CODE.HTTP_STATUS[500]);
-        break;
+    const m = method.toLowerCase();
+    let defaultMsg = i18n.t("common.error", "Operation failed");
+    if (m === "post") defaultMsg = i18n.t("common.createError", "Failed to create");
+    if (m === "put" || m === "patch") defaultMsg = i18n.t("common.updateError", "Failed to update");
+    if (m === "delete") defaultMsg = i18n.t("common.deleteError", "Failed to delete");
+
+    let errorMsg = defaultMsg;
+    const statusCode = error.response?.status;
+    const backendMessage = error.response?.data?.message;
+
+    if (statusCode && statusCode < 500 && backendMessage) {
+      errorMsg = backendMessage;
+    } else if (statusCode >= 500) {
+      errorMsg = defaultMsg;
+    } else if (!statusCode) {
+      errorMsg = HTTP_CODE.HTTP_STATUS[500];
+    }
+
+    if (!config?.hideToast && !path.includes("/auth")) {
+      toast.error(errorMsg, { position: "top-right", autoClose: 4000 });
     }
     return Promise.reject(error);
   }

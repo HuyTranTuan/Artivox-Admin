@@ -31,6 +31,7 @@ import ImageUploadBox from "@components/ImageUploadBox";
 import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
+import { useToast } from "@hooks/useToast";
 
 const ThumbnailPreview = ({ images, onClick }) => {
   const { t } = useTranslation();
@@ -70,6 +71,7 @@ const ThumbnailPreview = ({ images, onClick }) => {
 const ModelsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
 
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === "ADMIN";
@@ -300,10 +302,13 @@ const ModelsPage = () => {
       setDeleting(true);
       try {
         await modelsService.deleteModel(selectedItem.slug);
+        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Delete model failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.deleteError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setDeleting(false);
       }
@@ -351,10 +356,13 @@ const ModelsPage = () => {
         });
 
         await modelsService.updateModel(selectedItem.slug, formData);
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
-        console.error("Update model failed:", err);
+        console.error(err);
+        const msg = err.response?.data?.message || "catalog.updateError";
+        toastTopRight("error", t(msg, msg));
       } finally {
         setSaving(false);
       }

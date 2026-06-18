@@ -17,4 +17,16 @@ export const customerService = {
     const response = await axiosClient.get(`/customers/${slug}`);
     return response;
   },
+
+  // Update customer
+  updateCustomer: async (id, data) => {
+    const response = await axiosClient.patch(`/customers/${id}/update`, data);
+    return response;
+  },
+
+  // Delete customer (soft)
+  deleteCustomer: async (id) => {
+    const response = await axiosClient.delete(`/customers/${id}`);
+    return response;
+  },
 };

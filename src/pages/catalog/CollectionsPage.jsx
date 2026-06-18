@@ -13,6 +13,7 @@ import {
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import { useTranslation } from "@hooks/useTranslation";
+import useToast from "@hooks/useToast";
 import { formatDate } from "@utils/formatUtils";
 import { ImageIcon } from "lucide-react";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
@@ -23,6 +24,7 @@ import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 const CollectionsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
@@ -83,10 +85,13 @@ const CollectionsPage = () => {
     setDeleting(true);
     try {
       await collectionService.deleteCollection(selectedItem.slug);
+      toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
       setOpenDialog(null);
       refetch();
     } catch (e) {
       console.error(e);
+      const msg = e.response?.data?.message || "catalog.deleteError";
+      toastTopRight("error", t(msg, msg));
     } finally {
       setDeleting(false);
     }

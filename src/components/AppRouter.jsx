@@ -120,7 +120,11 @@ const AppRouter = createBrowserRouter([
             element: withLazyLoad(OrderApprovalPage),
           },
           {
-            path: "orders/:orderId",
+            path: "orders/:orderNumber/approval",
+            element: withLazyLoad(OrderDetailPage),
+          },
+          {
+            path: "orders/:orderNumber",
             element: withLazyLoad(OrderDetailPage),
           },
           // Catalog

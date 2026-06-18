@@ -14,11 +14,13 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { useTranslation } from "@hooks/useTranslation";
+import useToast from "@hooks/useToast";
 import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
 
 const CreateModelPage = () => {
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
 
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -124,9 +126,12 @@ const CreateModelPage = () => {
       });
 
       await modelsService.createModel(formData);
+      toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
       navigate("/catalog/models");
     } catch (err) {
-      console.error("Create model failed:", err);
+      console.error(err);
+      const msg = err.response?.data?.message || "catalog.createError";
+      toastTopRight("error", t(msg, msg));
     } finally {
       setLoading(false);
     }

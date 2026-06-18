@@ -35,10 +35,10 @@ const OrdersPage = () => {
   const fmtPrice = (v) => v ? new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(v) : "—";
 
   const filtered = useMemo(() => {
-    let r = orders.filter((o) => o.status !== "PENDING");
+    let r = orders.filter((o) => o.status === "COMPLETED" || o.status === "CANCELED" || o.status === "DELIVERED");
     const kw = debouncedSearch.toLowerCase();
     if (kw) r = r.filter((o) => {
-      const codeStr = (o.code || o.id || "").toString().toLowerCase();
+      const codeStr = (o.orderNumber || o.code || o.id || "").toString().toLowerCase();
       let custStr = "";
       if (o.customer) {
         if (typeof o.customer === "string") custStr = o.customer.toLowerCase();
@@ -50,7 +50,7 @@ const OrdersPage = () => {
     return r;
   }, [orders, debouncedSearch, activeFilters]);
 
-  const statusOptions = useMemo(() => [...new Set(orders.filter((o) => o.status !== "PENDING").map((o) => o.status).filter(Boolean))], [orders]);
+  const statusOptions = useMemo(() => ["COMPLETED", "CANCELED", "DELIVERED"], []);
 
   const dt = useDataTable({
     rows: filtered, keyField: "id", pageSize: 20, exportFilename: "orders",
@@ -65,7 +65,7 @@ const OrdersPage = () => {
   });
 
   const columns = [
-    { key: "id", label: t("orders.code"), width: "1.2fr", render: (r) => <div className="font-semibold text-slate-900 text-xs truncate">{r.code || r.id}</div> },
+    { key: "id", label: t("orders.code"), width: "1.2fr", render: (r) => <div className="font-semibold text-slate-900 text-xs truncate">{r.orderNumber || r.code || r.id}</div> },
     { key: "customer", label: t("orders.customer"), width: "1.5fr", render: (r) => {
       let custStr = "—";
       if (r.customer) {
@@ -83,7 +83,7 @@ const OrdersPage = () => {
     {
       key: "actions", label: t("orders.actions"), sortable: false, width: "80px",
       render: (row) => (
-        <button onClick={() => navigate(`/orders/${row.id || row.code}`)} className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition" style={{ padding: 5 }}>
+        <button onClick={() => navigate(`/orders/${row.orderNumber || row.id || row.code}`)} className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition" style={{ padding: 5 }}>
           <Eye style={{ width: 16, height: 16 }} />
         </button>
       ),

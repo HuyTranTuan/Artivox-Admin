@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import { Eye, Pencil, Save, Trash2, X } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -35,6 +36,7 @@ const createDraft = (c) => ({
 
 const CustomersPage = () => {
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const navigate = useNavigate();
   const search = useExpandableSearch();
   const [customers, setCustomers] = useState([]);
@@ -104,22 +106,38 @@ const CustomersPage = () => {
   };
   const updateDraft = (id, field, val) =>
     setDraftValues((p) => ({ ...p, [id]: { ...(p[id] || {}), [field]: val } }));
-  const saveCustomer = (id) => {
+  const saveCustomer = async (id) => {
     const draft = draftValues[id];
     if (!draft) return;
-    setCustomers((p) => p.map((c) => (c.id === id ? { ...c, ...draft } : c)));
-    setEditingRowId(null);
-    setEditingField(null);
+    try {
+      await customerService.updateCustomer(id, draft);
+      setCustomers((p) => p.map((c) => (c.id === id ? { ...c, ...draft } : c)));
+      toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("catalog.updateError", "Failed to update"));
+    } finally {
+      setEditingRowId(null);
+      setEditingField(null);
+    }
   };
   const cancelEditing = () => {
     setEditingRowId(null);
     setEditingField(null);
   };
-  const deleteCustomer = () => {
+  const deleteCustomer = async () => {
     if (!selectedCustomer) return;
-    setCustomers((p) => p.filter((c) => c.id !== selectedCustomer.id));
-    setOpenDialog(null);
-    setSelectedCustomer(null);
+    try {
+      await customerService.deleteCustomer(selectedCustomer.id);
+      setCustomers((p) => p.filter((c) => c.id !== selectedCustomer.id));
+      toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("catalog.deleteError", "Failed to delete"));
+    } finally {
+      setOpenDialog(null);
+      setSelectedCustomer(null);
+    }
   };
 
   const renderCell = (customer, field) => {
