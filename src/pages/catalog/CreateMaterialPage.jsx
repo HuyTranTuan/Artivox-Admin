@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { materialsService } from "@services/materialsService";
@@ -227,147 +227,100 @@ const CreateMaterialPage = () => {
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.name")}
-            </label>
-            <Input
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder={t(
-                "catalog.materialNamePlaceholder",
-                "Material name",
-              )}
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.slug")}
-            </label>
-            <Input
-              value={form.slug}
-              onChange={(e) => handleChange("slug", e.target.value)}
-              placeholder={t("catalog.slugPlaceholder", "material-slug")}
-            />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("catalog.description")}
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none bg-white text-gray-700 placeholder-gray-500"
-            placeholder={t(
-              "catalog.descriptionPlaceholder",
-              "Product description...",
-            )}
+          <FormField
+            label={t("catalog.name")}
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder={t("catalog.materialNamePlaceholder", "Material name")}
+          />
+          <FormField
+            label={t("catalog.slug")}
+            value={form.slug}
+            onChange={(e) => handleChange("slug", e.target.value)}
+            placeholder={t("catalog.slugPlaceholder", "material-slug")}
           />
         </div>
+        <FormField
+          type="textarea"
+          label={t("catalog.description")}
+          value={form.description}
+          onChange={(e) => handleChange("description", e.target.value)}
+          rows={3}
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500 bg-white"
+          placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+        />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.basePrice")} (VND)
-            </label>
-            <Input
-              type="number"
-              value={form.basePrice}
-              onChange={(e) => handleChange("basePrice", e.target.value)}
-              placeholder="0"
-              className="text-gray-700 placeholder-gray-500"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.stock")}
-            </label>
-            <Input
-              type="number"
-              value={form.stock}
-              onChange={(e) => handleChange("stock", e.target.value)}
-              placeholder="0"
-              className="text-gray-700 placeholder-gray-500"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("collection")}
-            </label>
-            <select
-              value={form.collectionId || ""}
-              onChange={(e) => handleChange("collectionId", e.target.value)}
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700"
-            >
-              <option value="">{t("selectCollection")}</option>
-              {collections.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.status")}
-            </label>
-            <select
-              value={form.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                handleChange("isActive", e.target.value === "active")
-              }
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
-            >
-              <option value="active">{t("catalog.active")}</option>
-              <option value="inactive">{t("catalog.inactive")}</option>
-            </select>
-          </div>
+          <FormField
+            type="number"
+            label={`${t("catalog.basePrice")} (VND)`}
+            value={form.basePrice}
+            onChange={(e) => handleChange("basePrice", e.target.value)}
+            placeholder="0"
+            className="placeholder-gray-500"
+          />
+          <FormField
+            type="number"
+            label={t("catalog.stock")}
+            value={form.stock}
+            onChange={(e) => handleChange("stock", e.target.value)}
+            placeholder="0"
+            className="placeholder-gray-500"
+          />
+          <FormField
+            type="select"
+            label={t("collection")}
+            value={form.collectionId || ""}
+            onChange={(e) => handleChange("collectionId", e.target.value)}
+            options={[
+              { value: "", label: t("selectCollection") },
+              ...collections.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <FormField
+            type="select"
+            label={t("catalog.status")}
+            value={form.isActive ? "active" : "inactive"}
+            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            options={[
+              { value: "active", label: t("catalog.active") },
+              { value: "inactive", label: t("catalog.inactive") },
+            ]}
+          />
         </div>
 
         <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
           {t("catalog.materialProperties")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.type")}
-            </label>
-            <select
-              value={form.type}
-              onChange={(e) => handleChange("type", e.target.value)}
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700 placeholder-gray-500 bg-white"
-            >
-              <option value="FDM">{t("fdm")}</option>
-              <option value="RESIN">{t("resin")}</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.color")} (Hex/Name)
-            </label>
-            <Input
-              value={form.color}
-              onChange={(e) => handleChange("color", e.target.value)}
-              placeholder={t("ff0000")}
-              className="text-gray-700 placeholder-gray-500"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.unit")}
-            </label>
-            <select
-              value={form.unit}
-              onChange={(e) => handleChange("unit", e.target.value)}
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
-            >
-              <option value="GRAM">{t("catalog.unitGram", "Gram")}</option>
-              <option value="PIECE">{t("catalog.unitPiece", "Piece")}</option>
-              <option value="ROLL">{t("catalog.unitRoll", "Roll")}</option>
-              <option value="BOX">{t("catalog.unitBox", "Box")}</option>
-            </select>
-          </div>
+          <FormField
+            type="select"
+            label={t("catalog.type")}
+            value={form.type}
+            onChange={(e) => handleChange("type", e.target.value)}
+            options={[
+              { value: "FDM", label: t("fdm") },
+              { value: "RESIN", label: t("resin") },
+            ]}
+          />
+          <FormField
+            label={`${t("catalog.color")} (Hex/Name)`}
+            value={form.color}
+            onChange={(e) => handleChange("color", e.target.value)}
+            placeholder={t("ff0000")}
+            className="placeholder-gray-500"
+          />
+          <FormField
+            type="select"
+            label={t("catalog.unit")}
+            value={form.unit}
+            onChange={(e) => handleChange("unit", e.target.value)}
+            options={[
+              { value: "GRAM", label: t("catalog.unitGram", "Gram") },
+              { value: "PIECE", label: t("catalog.unitPiece", "Piece") },
+              { value: "ROLL", label: t("catalog.unitRoll", "Roll") },
+              { value: "BOX", label: t("catalog.unitBox", "Box") },
+            ]}
+          />
         </div>
       </Card>
 

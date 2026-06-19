@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { toolsService } from "@services/toolsService";
@@ -238,118 +238,79 @@ const CreateToolPage = () => {
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.name")}
-            </label>
-            <Input
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder={t("catalog.toolNamePlaceholder", "Tool name")}
-              className="text-gray-700 placeholder-gray-500 bg-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.slug")}
-            </label>
-            <Input
-              value={form.slug}
-              onChange={(e) => handleChange("slug", e.target.value)}
-              placeholder={t("catalog.slugPlaceholder", "tool-slug")}
-              className="text-gray-700 placeholder-gray-500 bg-white"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("catalog.description")}
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none bg-white text-gray-700 placeholder-gray-500"
-            placeholder={t(
-              "catalog.descriptionPlaceholder",
-              "Product description...",
-            )}
+          <FormField
+            label={t("catalog.name")}
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder={t("catalog.toolNamePlaceholder", "Tool name")}
+          />
+          <FormField
+            label={t("catalog.slug")}
+            value={form.slug}
+            onChange={(e) => handleChange("slug", e.target.value)}
+            placeholder={t("catalog.slugPlaceholder", "tool-slug")}
           />
         </div>
+        <FormField
+          type="textarea"
+          label={t("catalog.description")}
+          value={form.description}
+          onChange={(e) => handleChange("description", e.target.value)}
+          rows={3}
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500 bg-white"
+          placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+        />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.price")} (VND)
-            </label>
-            <Input
-              type="number"
-              value={form.basePrice}
-              onChange={(e) => handleChange("basePrice", e.target.value)}
-              placeholder="0"
-              className="text-gray-700 placeholder-gray-500 bg-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.stock")}
-            </label>
-            <Input
-              type="number"
-              value={form.stock}
-              onChange={(e) => handleChange("stock", e.target.value)}
-              placeholder="0"
-              className="text-gray-700 placeholder-gray-500 bg-white"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("collection")}
-            </label>
-            <select
-              value={form.collectionId || ""}
-              onChange={(e) => handleChange("collectionId", e.target.value)}
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
-            >
-              <option value="">{t("selectCollection")}</option>
-              {collections.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.status")}
-            </label>
-            <select
-              value={form.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                handleChange("isActive", e.target.value === "active")
-              }
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-gray-700 placeholder-gray-500"
-            >
-              <option value="active">{t("catalog.active")}</option>
-              <option value="inactive">{t("catalog.inactive")}</option>
-            </select>
-          </div>
+          <FormField
+            type="number"
+            label={`${t("catalog.price")} (VND)`}
+            value={form.basePrice}
+            onChange={(e) => handleChange("basePrice", e.target.value)}
+            placeholder="0"
+            className="placeholder-gray-500"
+          />
+          <FormField
+            type="number"
+            label={t("catalog.stock")}
+            value={form.stock}
+            onChange={(e) => handleChange("stock", e.target.value)}
+            placeholder="0"
+            className="placeholder-gray-500"
+          />
+          <FormField
+            type="select"
+            label={t("collection")}
+            value={form.collectionId || ""}
+            onChange={(e) => handleChange("collectionId", e.target.value)}
+            options={[
+              { value: "", label: t("selectCollection") },
+              ...collections.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <FormField
+            type="select"
+            label={t("catalog.status")}
+            value={form.isActive ? "active" : "inactive"}
+            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            options={[
+              { value: "active", label: t("catalog.active") },
+              { value: "inactive", label: t("catalog.inactive") },
+            ]}
+          />
         </div>
 
         <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
           {t("catalog.toolProperties")}
         </h3>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("catalog.specifications")} (JSON or text)
-          </label>
-          <textarea
-            value={form.specifications}
-            onChange={(e) => handleChange("specifications", e.target.value)}
-            rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono text-gray-700 placeholder-gray-500 bg-white"
-            placeholder='{"power": "1000W", "weight": "2kg"}'
-          />
-        </div>
+        <FormField
+          type="textarea"
+          label={`${t("catalog.specifications")} (JSON or text)`}
+          value={form.specifications}
+          onChange={(e) => handleChange("specifications", e.target.value)}
+          rows={3}
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono placeholder-gray-500 bg-white"
+          placeholder='{"power": "1000W", "weight": "2kg"}'
+        />
       </Card>
 
       <Card className="p-6 space-y-5">

@@ -13,7 +13,7 @@ import {
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import {
   DataTable,
   TableToolbar,
@@ -31,7 +31,7 @@ import ImageUploadBox from "@components/ImageUploadBox";
 import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
-import { useToast } from "@hooks/useToast";
+import useToast from "@hooks/useToast";
 
 const ThumbnailPreview = ({ images, onClick }) => {
   const { t } = useTranslation();
@@ -302,7 +302,10 @@ const ModelsPage = () => {
       setDeleting(true);
       try {
         await modelsService.deleteModel(selectedItem.slug);
-        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.deleteSuccess", "Deleted successfully"),
+        );
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -356,7 +359,10 @@ const ModelsPage = () => {
         });
 
         await modelsService.updateModel(selectedItem.slug, formData);
-        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.updateSuccess", "Updated successfully"),
+        );
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -450,134 +456,79 @@ const ModelsPage = () => {
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
               {t("catalog.info")}
             </h3>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.name")}
-              </label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder={t("catalog.name")}
-                className="placeholder:text-gray-400"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500">
-                {t("catalog.slugReadOnly")}
-              </label>
-              <Input
-                value={form.slug}
-                readOnly
-                className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200 placeholder:text-gray-400"
-                placeholder={t("catalog.slug")}
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.description")}
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                rows={3}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-500 text-gray-700"
-                placeholder={t("catalog.description")}
-              />
-            </div>
+            <FormField
+              label={t("catalog.name")}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder={t("catalog.name")}
+            />
+            <FormField
+              label={t("catalog.slugReadOnly")}
+              value={form.slug}
+              readOnly
+              placeholder={t("catalog.slug")}
+              className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+            />
+            <FormField
+              label={t("catalog.description")}
+              type="textarea"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder={t("catalog.description")}
+              rows={3}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.price")} (VND)
-                </label>
-                <Input
-                  type="number"
-                  value={form.basePrice}
-                  onChange={(e) =>
-                    setForm({ ...form, basePrice: e.target.value })
-                  }
-                  placeholder={t("catalog.price")}
-                  className="placeholder:text-gray-400"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.stock")}
-                </label>
-                <Input
-                  type="number"
-                  value={form.stock}
-                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                  className="placeholder:text-gray-400"
-                  placeholder={t("catalog.stock")}
-                />
-              </div>
+              <FormField
+                label={`${t("catalog.price")} (VND)`}
+                type="number"
+                value={form.basePrice}
+                onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
+                placeholder={t("catalog.price")}
+              />
+              <FormField
+                label={t("catalog.stock")}
+                type="number"
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                placeholder={t("catalog.stock")}
+              />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.status")}
-              </label>
-              <select
-                value={form.isActive ? "active" : "inactive"}
-                onChange={(e) =>
-                  setForm({ ...form, isActive: e.target.value === "active" })
-                }
-                className={`w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700`}
-              >
-                <option value="active">{t("catalog.active")}</option>
-                <option value="inactive">{t("catalog.inactive")}</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("collection")}
-              </label>
-              <select
-                value={form.collectionId || ""}
-                onChange={(e) =>
-                  setForm({ ...form, collectionId: e.target.value })
-                }
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
-              >
-                <option value="">{t("selectCollection")}</option>
-                {collections.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FormField
+              label={t("catalog.status")}
+              type="select"
+              value={form.isActive ? "active" : "inactive"}
+              onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
+              options={[
+                { value: "active", label: t("catalog.active") },
+                { value: "inactive", label: t("catalog.inactive") }
+              ]}
+            />
+            <FormField
+              label={t("collection")}
+              type="select"
+              value={form.collectionId || ""}
+              onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+              options={[
+                { value: "", label: t("selectCollection") },
+                ...collections.map((c) => ({ value: c.id, label: c.name }))
+              ]}
+            />
 
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">
               {t("catalog.3dModelFiles")}
             </h3>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.previewFileUrl")}
-              </label>
-              <Input
-                value={form.previewFileUrl}
-                onChange={(e) =>
-                  setForm({ ...form, previewFileUrl: e.target.value })
-                }
-                placeholder={t("catalog.previewFileUrl")}
-                className="placeholder:text-gray-500 text-gray-700"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.sourceFileUrl")}
-              </label>
-              <Input
-                value={form.sourceFileUrl}
-                onChange={(e) =>
-                  setForm({ ...form, sourceFileUrl: e.target.value })
-                }
-                placeholder={t("catalog.sourceFileUrl")}
-                className="placeholder:text-gray-500 text-gray-700"
-              />
-            </div>
+            <FormField
+              label={t("catalog.previewFileUrl")}
+              value={form.previewFileUrl}
+              onChange={(e) => setForm({ ...form, previewFileUrl: e.target.value })}
+              placeholder={t("catalog.previewFileUrl")}
+            />
+            <FormField
+              label={t("catalog.sourceFileUrl")}
+              value={form.sourceFileUrl}
+              onChange={(e) => setForm({ ...form, sourceFileUrl: e.target.value })}
+              placeholder={t("catalog.sourceFileUrl")}
+            />
           </div>
 
           <div className="space-y-4">

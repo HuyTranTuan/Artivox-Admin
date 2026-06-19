@@ -14,7 +14,7 @@ import {
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import ImageUploadBox from "@components/ImageUploadBox";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
@@ -23,7 +23,7 @@ import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
-import { useToast } from "@hooks/useToast";
+import useToast from "@hooks/useToast";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import {
@@ -312,7 +312,10 @@ const MaterialsPage = () => {
       setDeleting(true);
       try {
         await materialsService.deleteMaterial(selectedItem.slug);
-        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.deleteSuccess", "Deleted successfully"),
+        );
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -368,7 +371,10 @@ const MaterialsPage = () => {
         });
 
         await materialsService.updateMaterial(selectedItem.slug, formData);
-        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.updateSuccess", "Updated successfully"),
+        );
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -464,155 +470,99 @@ const MaterialsPage = () => {
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
               {t("catalog.info")}
             </h3>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.name")}
-              </label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder={t("catalog.name")}
-                className="placeholder:text-gray-500 text-gray-700"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-500">
-                {t("catalog.slugReadOnly")}
-              </label>
-              <Input
-                value={form.slug}
-                readOnly
-                placeholder={t("catalog.slug")}
-                className="bg-slate-50 cursor-not-allowed border-slate-200 placeholder:text-gray-500 text-gray-700"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.description")}
-              </label>
-              <textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                rows={3}
-                placeholder={t("catalog.description")}
-                className="bg-white w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none text-gray-700 placeholder:text-gray-500"
-              />
-            </div>
+            <FormField
+              label={t("catalog.name")}
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              placeholder={t("catalog.name")}
+            />
+            <FormField
+              label={t("catalog.slugReadOnly")}
+              value={form.slug}
+              readOnly
+              placeholder={t("catalog.slug")}
+              className="bg-slate-50 cursor-not-allowed border-slate-200"
+            />
+            <FormField
+              label={t("catalog.description")}
+              type="textarea"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder={t("catalog.description")}
+              rows={3}
+            />
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.price")} (VND)
-                </label>
-                <Input
-                  type="number"
-                  value={form.basePrice}
-                  onChange={(e) =>
-                    setForm({ ...form, basePrice: e.target.value })
-                  }
-                  placeholder={t("catalog.price")}
-                  className="placeholder:text-gray-500 text-gray-700"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.stock")}
-                </label>
-                <Input
-                  type="number"
-                  value={form.stock}
-                  onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                  placeholder={t("catalog.stock")}
-                  className="placeholder:text-gray-500 text-gray-700"
-                />
-              </div>
+              <FormField
+                label={`${t("catalog.price")} (VND)`}
+                type="number"
+                value={form.basePrice}
+                onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
+                placeholder={t("catalog.price")}
+              />
+              <FormField
+                label={t("catalog.stock")}
+                type="number"
+                value={form.stock}
+                onChange={(e) => setForm({ ...form, stock: e.target.value })}
+                placeholder={t("catalog.stock")}
+              />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("catalog.status")}
-              </label>
-              <select
-                value={form.isActive ? "active" : "inactive"}
-                onChange={(e) =>
-                  setForm({ ...form, isActive: e.target.value === "active" })
-                }
-                className="w-full border bg-slate-0 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700 placeholder:text-gray-500"
-              >
-                <option value="active">{t("catalog.active")}</option>
-                <option value="inactive">{t("catalog.inactive")}</option>
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-slate-700">
-                {t("collection")}
-              </label>
-              <select
-                value={form.collectionId || ""}
-                onChange={(e) =>
-                  setForm({ ...form, collectionId: e.target.value })
-                }
-                className="w-full border bg-slate-0 border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none text-gray-700"
-              >
-                <option value="">{t("selectCollection")}</option>
-                {collections.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <FormField
+              label={t("catalog.status")}
+              type="select"
+              value={form.isActive ? "active" : "inactive"}
+              onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
+              options={[
+                { value: "active", label: t("catalog.active") },
+                { value: "inactive", label: t("catalog.inactive") }
+              ]}
+            />
+            <FormField
+              label={t("collection")}
+              type="select"
+              value={form.collectionId || ""}
+              onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+              options={[
+                { value: "", label: t("selectCollection") },
+                ...collections.map((c) => ({ value: c.id, label: c.name }))
+              ]}
+            />
             <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">
               {t("catalog.materialSpecifics")}
             </h3>
             <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.type")}
-                </label>
-                <Input
-                  value={form.materialType}
-                  onChange={(e) =>
-                    setForm({ ...form, materialType: e.target.value })
-                  }
-                  placeholder={t("plaAbs")}
-                  className="placeholder:text-gray-500 text-gray-700"
-                />
-              </div>
+              <FormField
+                label={t("catalog.type")}
+                value={form.materialType}
+                onChange={(e) => setForm({ ...form, materialType: e.target.value })}
+                placeholder={t("plaAbs")}
+              />
               <div>
                 <label className="text-xs font-semibold text-slate-700">
                   {t("catalog.color")}
                 </label>
-                <div className="flex gap-2">
-                  <Input
+                <div className="flex gap-2 h-10 mt-[2px]">
+                  <input
                     type="color"
                     value={form.color}
-                    onChange={(e) =>
-                      setForm({ ...form, color: e.target.value })
-                    }
-                    className="p-1 h-9 w-12 placeholder:text-gray-500 text-gray-700"
+                    onChange={(e) => setForm({ ...form, color: e.target.value })}
+                    className="h-10 w-12 cursor-pointer bg-white border border-slate-200 rounded flex-shrink-0"
                   />
-                  <Input
+                  <input
+                    type="text"
                     value={form.color}
-                    onChange={(e) =>
-                      setForm({ ...form, color: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, color: e.target.value })}
                     placeholder={t("catalog.color")}
-                    className="placeholder:text-gray-500 text-gray-700"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("catalog.unit")}
-                </label>
-                <Input
-                  value={form.unit}
-                  onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                  placeholder={t("rollBottle")}
-                  className="text-gray-700 placeholder:text-gray-500"
-                />
-              </div>
+              <FormField
+                label={t("catalog.unit")}
+                value={form.unit}
+                onChange={(e) => setForm({ ...form, unit: e.target.value })}
+                placeholder={t("rollBottle")}
+              />
             </div>
           </div>
           <div className="space-y-4">

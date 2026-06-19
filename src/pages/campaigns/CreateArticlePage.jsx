@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
+import { FormField } from "@components/forms/FormField";
 import RichTextEditor from "@/components/RichTextEditor";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
@@ -124,31 +125,20 @@ const CreateArticlePage = () => {
 
       <Card className="p-6 space-y-5">
         {/* Slug / URL */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("articles.slug")}
-          </label>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            placeholder={t("articles.slugPlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-          />
-        </div>
+        <FormField
+          label={t("articles.slug")}
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder={t("articles.slugPlaceholder")}
+        />
 
         {/* Cover Image */}
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("articles.coverImage")}
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverImage(e.target.files[0])}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-          />
-        </div>
+        <FormField
+          type="file"
+          label={t("articles.coverImage")}
+          onChange={(e) => setCoverImage(e.target.files[0])}
+          accept="image/*"
+        />
 
         {/* Language Tabs */}
         <div>
@@ -169,45 +159,39 @@ const CreateArticlePage = () => {
           </div>
 
           {/* Title */}
-          <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("articles.titleWithLocale", {
-                locale: activeTab.toUpperCase(),
-              })}
-            </label>
-            <input
-              type="text"
-              value={translations[activeTab]?.title || ""}
-              onChange={(e) =>
-                handleTranslationChange(activeTab, "title", e.target.value)
-              }
-              placeholder={t("articles.enterTitleWithLocale", {
-                locale: activeTab.toUpperCase(),
-              })}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-            />
-          </div>
+          <FormField
+            label={t("articles.titleWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+            value={translations[activeTab]?.title || ""}
+            onChange={(e) =>
+              handleTranslationChange(activeTab, "title", e.target.value)
+            }
+            placeholder={t("articles.enterTitleWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+            className="mb-4"
+          />
 
           {/* Summary */}
-          <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("articles.summaryWithLocale", {
+          <FormField
+            type="textarea"
+            label={
+              t("articles.summaryWithLocale", {
                 locale: activeTab.toUpperCase(),
-              }) || `Summary (${activeTab.toUpperCase()})`}
-            </label>
-            <textarea
-              value={translations[activeTab]?.summary || ""}
-              onChange={(e) =>
-                handleTranslationChange(activeTab, "summary", e.target.value)
-              }
-              placeholder={
-                t("articles.enterSummaryWithLocale", {
-                  locale: activeTab.toUpperCase(),
-                }) || "Enter summary"
-              }
-              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
-            />
-          </div>
+              }) || `Summary (${activeTab.toUpperCase()})`
+            }
+            value={translations[activeTab]?.summary || ""}
+            onChange={(e) =>
+              handleTranslationChange(activeTab, "summary", e.target.value)
+            }
+            placeholder={
+              t("articles.enterSummaryWithLocale", {
+                locale: activeTab.toUpperCase(),
+              }) || "Enter summary"
+            }
+            className="mb-4 min-h-[80px]"
+          />
 
           {/* Content - Rich Text Editor */}
           <div>

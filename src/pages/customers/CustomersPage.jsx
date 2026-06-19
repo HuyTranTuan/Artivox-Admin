@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@hooks/useTranslation";
-import { useToast } from "@/hooks/useToast";
+import useToast from "@hooks/useToast";
 import { Eye, Pencil, Save, Trash2, X } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
-import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import {
   DataTable,
   TableToolbar,
@@ -112,7 +112,10 @@ const CustomersPage = () => {
     try {
       await customerService.updateCustomer(id, draft);
       setCustomers((p) => p.map((c) => (c.id === id ? { ...c, ...draft } : c)));
-      toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.updateSuccess", "Updated successfully"),
+      );
     } catch (e) {
       console.error(e);
       toastTopRight("error", t("catalog.updateError", "Failed to update"));
@@ -130,7 +133,10 @@ const CustomersPage = () => {
     try {
       await customerService.deleteCustomer(selectedCustomer.id);
       setCustomers((p) => p.filter((c) => c.id !== selectedCustomer.id));
-      toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.deleteSuccess", "Deleted successfully"),
+      );
     } catch (e) {
       console.error(e);
       toastTopRight("error", t("catalog.deleteError", "Failed to delete"));
@@ -147,22 +153,18 @@ const CustomersPage = () => {
     if (isEditing) {
       if (field === "tier")
         return (
-          <select
-            className="h-8 w-full rounded-lg border border-amber-300 bg-white px-2 text-sm outline-none"
+          <FormField
+            type="select"
+            className="!space-y-0"
             value={value}
             onChange={(e) => updateDraft(customer.id, field, e.target.value)}
             autoFocus
-          >
-            {tierOptions.map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </select>
+            options={tierOptions.map((o) => ({ value: o, label: o }))}
+          />
         );
       return (
-        <Input
-          className="h-8 border-amber-300 px-2"
+        <FormField
+          className="!space-y-0"
           value={value}
           onChange={(e) => updateDraft(customer.id, field, e.target.value)}
           onKeyDown={(e) => {

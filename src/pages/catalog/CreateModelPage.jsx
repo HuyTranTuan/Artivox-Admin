@@ -13,6 +13,7 @@ import {
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
+import { FormField } from "@components/forms/FormField";
 import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { modelsService } from "@services/modelsService";
@@ -43,17 +44,24 @@ const CreateModelPage = () => {
     stock: "0",
     collectionId: "",
     previewFileUrl: "",
-    sourceFileUrl: "",
     isActive: true,
   });
 
   const [thumbnailBefore, setThumbnailBefore] = useState(null);
   const [thumbnailAfter, setThumbnailAfter] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
+  const [sourceFile, setSourceFile] = useState(null);
+  const [imgMobile, setImgMobile] = useState(null);
+  const [imgTablet, setImgTablet] = useState(null);
+  const [imgPc, setImgPc] = useState(null);
 
   const thumbnailBeforeRef = useRef(null);
   const thumbnailAfterRef = useRef(null);
   const galleryInputRef = useRef(null);
+  const sourceFileRef = useRef(null);
+  const imgMobileRef = useRef(null);
+  const imgTabletRef = useRef(null);
+  const imgPcRef = useRef(null);
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -91,6 +99,25 @@ const CreateModelPage = () => {
     setGalleryImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const handle3DFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      toastTopRight("error", t("catalog.fileTooLarge", "File exceeds 50MB limit"));
+      e.target.value = "";
+      return;
+    }
+    setSourceFile(file);
+    e.target.value = "";
+  };
+
+  const handleSrcsetImageChange = (setter) => (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setter({ file, preview: URL.createObjectURL(file) });
+    e.target.value = "";
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
     try {
@@ -102,8 +129,12 @@ const CreateModelPage = () => {
       formData.append("stock", form.stock);
       formData.append("isActive", form.isActive);
       formData.append("previewFileUrl", form.previewFileUrl);
-      formData.append("sourceFileUrl", form.sourceFileUrl);
       if (form.collectionId) formData.append("collectionId", form.collectionId);
+
+      if (sourceFile) formData.append("source_file", sourceFile, sourceFile.name);
+      if (imgMobile?.file) formData.append("img_mobile", imgMobile.file, imgMobile.file.name);
+      if (imgTablet?.file) formData.append("img_tablet", imgTablet.file, imgTablet.file.name);
+      if (imgPc?.file) formData.append("img_pc", imgPc.file, imgPc.file.name);
 
       if (thumbnailBefore?.file) {
         const ext = thumbnailBefore.file.name.split(".").pop();
@@ -230,124 +261,109 @@ const CreateModelPage = () => {
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.name")}
-            </label>
-            <Input
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder={t("catalog.modelNamePlaceholder")}
-              className="placeholder:text-gray-600"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.slug")}
-            </label>
-            <Input
-              value={form.slug}
-              onChange={(e) => handleChange("slug", e.target.value)}
-              placeholder={t("catalog.modelSlugPlaceholder")}
-              className="placeholder:text-gray-600"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("catalog.description")}
-          </label>
-          <textarea
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
-            rows={3}
-            className="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-600 bg-slate-50 "
-            placeholder={t("catalog.productDescriptionPlaceholder")}
+          <FormField
+            label={t("catalog.name")}
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder={t("catalog.modelNamePlaceholder")}
+            className="placeholder:text-gray-600"
+          />
+          <FormField
+            label={t("catalog.slug")}
+            value={form.slug}
+            onChange={(e) => handleChange("slug", e.target.value)}
+            placeholder={t("catalog.modelSlugPlaceholder")}
+            className="placeholder:text-gray-600"
           />
         </div>
+        <FormField
+          type="textarea"
+          label={t("catalog.description")}
+          value={form.description}
+          onChange={(e) => handleChange("description", e.target.value)}
+          rows={3}
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-600 bg-slate-50 "
+          placeholder={t("catalog.productDescriptionPlaceholder")}
+        />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.price")} (VND)
-            </label>
-            <Input
-              type="number"
-              value={form.basePrice}
-              onChange={(e) => handleChange("basePrice", e.target.value)}
-              placeholder="0"
-              className="placeholder:text-gray-600"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.stock")}
-            </label>
-            <Input
-              type="number"
-              value={form.stock}
-              onChange={(e) => handleChange("stock", e.target.value)}
-              placeholder="0"
-              className="placeholder:text-gray-600"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("collection")}
-            </label>
-            <select
-              value={form.collectionId || ""}
-              onChange={(e) => handleChange("collectionId", e.target.value)}
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-slate-50 text-gray-600"
-            >
-              <option value="">{t("selectCollection")}</option>
-              {collections.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.status")}
-            </label>
-            <select
-              value={form.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                handleChange("isActive", e.target.value === "active")
-              }
-              className="w-full h-13 border border-slate-200 rounded-xl px-3 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-slate-50 text-gray-600"
-            >
-              <option value="active">{t("catalog.active")}</option>
-              <option value="inactive">{t("catalog.inactive")}</option>
-            </select>
-          </div>
+          <FormField
+            type="number"
+            label={`${t("catalog.price")} (VND)`}
+            value={form.basePrice}
+            onChange={(e) => handleChange("basePrice", e.target.value)}
+            placeholder="0"
+            className="placeholder:text-gray-600"
+          />
+          <FormField
+            type="number"
+            label={t("catalog.stock")}
+            value={form.stock}
+            onChange={(e) => handleChange("stock", e.target.value)}
+            placeholder="0"
+            className="placeholder:text-gray-600"
+          />
+          <FormField
+            type="select"
+            label={t("collection")}
+            value={form.collectionId || ""}
+            onChange={(e) => handleChange("collectionId", e.target.value)}
+            options={[
+              { value: "", label: t("selectCollection") },
+              ...collections.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+          <FormField
+            type="select"
+            label={t("catalog.status")}
+            value={form.isActive ? "active" : "inactive"}
+            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            options={[
+              { value: "active", label: t("catalog.active") },
+              { value: "inactive", label: t("catalog.inactive") },
+            ]}
+          />
         </div>
 
         <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
           {t("catalog.3dModelFiles")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            label={t("catalog.previewFileUrl")}
+            value={form.previewFileUrl}
+            onChange={(e) => handleChange("previewFileUrl", e.target.value)}
+            placeholder={t("catalog.urlPlaceholder")}
+            className="placeholder:text-gray-600"
+          />
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.previewFileUrl")}
+              {t("catalog.sourceFile")} <span className="text-rose-500">*</span>
+              <span className="ml-1 text-xs font-normal text-slate-400">(max 50MB)</span>
             </label>
-            <Input
-              value={form.previewFileUrl}
-              onChange={(e) => handleChange("previewFileUrl", e.target.value)}
-              placeholder={t("catalog.urlPlaceholder")}
-              className="placeholder:text-gray-600"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.sourceFileUrl")}
-            </label>
-            <Input
-              value={form.sourceFileUrl}
-              onChange={(e) => handleChange("sourceFileUrl", e.target.value)}
-              placeholder={t("catalog.urlPlaceholder")}
-              className="placeholder:text-gray-600"
+            <div
+              onClick={() => sourceFileRef.current?.click()}
+              className="flex h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-4 hover:border-orange-400 hover:bg-orange-50/50 transition"
+            >
+              <Upload className="h-4 w-4 shrink-0 text-slate-400" />
+              <span className="flex-1 truncate text-sm text-slate-500">
+                {sourceFile ? sourceFile.name : t("catalog.chooseFile", "Choose 3D file (glb, gltf, fbx, obj…)")}
+              </span>
+              {sourceFile && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setSourceFile(null); }}
+                  className="text-rose-500 hover:text-rose-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <input
+              ref={sourceFileRef}
+              type="file"
+              accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.3ds,.dae"
+              className="hidden"
+              onChange={handle3DFileChange}
             />
           </div>
         </div>
@@ -433,6 +449,54 @@ const CreateModelPage = () => {
             <Plus className="h-3.5 w-3.5" />
             {t("catalog.addImages")}
           </Button>
+        </div>
+      </Card>
+
+      <Card className="p-6 space-y-5">
+        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+          {t("catalog.srcsetImages", "Responsive Images (srcset)")}
+        </h3>
+        <p className="text-xs text-slate-400">{t("catalog.srcsetHint", "Upload separate images for mobile (≤640px), tablet (641–1024px), and desktop (>1024px) for optimized loading.")}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { label: t("catalog.imgMobile", "Mobile (≤640px)"), state: imgMobile, setter: setImgMobile, ref: imgMobileRef, hint: "360x480" },
+            { label: t("catalog.imgTablet", "Tablet (641–1024px)"), state: imgTablet, setter: setImgTablet, ref: imgTabletRef, hint: "768x1024" },
+            { label: t("catalog.imgPc", "Desktop (>1024px)"), state: imgPc, setter: setImgPc, ref: imgPcRef, hint: "1200x900" },
+          ].map((v) => (
+            <div key={v.label}>
+              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{v.label}</label>
+              <div
+                onClick={() => v.ref.current?.click()}
+                className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition overflow-hidden"
+              >
+                {v.state?.preview ? (
+                  <img src={v.state.preview} alt={v.label} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="text-center">
+                    <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
+                    <span className="text-[10px] text-slate-400">{v.hint}</span>
+                  </div>
+                )}
+                {v.state && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); v.setter(null); }}
+                    className="absolute top-1.5 right-1.5 bg-white/80 rounded-full p-0.5 text-rose-500 hover:text-rose-700"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <input
+                ref={v.ref}
+                type="file"
+                accept="image/png,image/jpg,image/jpeg,image/webp"
+                className="hidden"
+                onChange={handleSrcsetImageChange(v.setter)}
+              />
+              {v.state && <p className="mt-1 text-[10px] text-slate-400 truncate">{v.state.file?.name}</p>}
+            </div>
+          ))}
         </div>
       </Card>
     </section>
