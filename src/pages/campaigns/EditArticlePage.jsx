@@ -8,7 +8,7 @@ import { useUiStore } from "@store/uiStore";
 import { useAuthStore } from "@store/authStore";
 import { useRBAC } from "@hooks/useRBAC";
 import { useTranslation } from "@hooks/useTranslation";
-import { useToast } from "@hooks/useToast";
+import useToast from "@hooks/useToast";
 import { articleService } from "@services/articleService";
 import Loading from "@components/Loading";
 
