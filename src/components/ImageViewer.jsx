@@ -174,7 +174,7 @@ const ImageViewer = ({ src, filename, onClose }) => {
       {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 z-10 flex items-center justify-center px-4 py-3 bg-linear-to-t from-black/50 to-transparent">
         <span className="text-xs text-white/60">
-          Scroll to zoom • Drag to pan • ESC to close
+          Scroll to zoom ¢ Drag to pan ¢ ESC to close
         </span>
       </div>
     </div>

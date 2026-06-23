@@ -16,26 +16,12 @@ import {
   ArrowUpDown,
   PackageSearch,
 } from "lucide-react";
+
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import { exportToCsv } from "@utils/exportCsv";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 
-/* ─────────────────────────────────────────────────────────────
-   TableToolbar
-   Props:
-     title            string
-     onAddNew         fn | null
-     onRefresh        fn
-     onExportCsv      fn
-     filterOptions    [{ label, key, values: string[] }]
-     activeFilters    { [key]: value | null }
-     onFilterChange   fn(key, value)
-     viewMode         "list" | "grid"
-     onViewChange     fn | null   (hide toggle if null)
-     search           useExpandableSearch() return value | null
-     searchPlaceholder string
-   ───────────────────────────────────────────────────────────── */
 export const TableToolbar = ({
   title,
   onAddNew,
@@ -59,11 +45,11 @@ export const TableToolbar = ({
     <div className="flex flex-col gap-3 mb-5 sm:flex-row sm:items-center sm:justify-between">
       {/* Left: title + add */}
       <div className="flex items-center gap-3">
-        <h2 className="font-title text-xl font-bold text-slate-950">{title}</h2>
+        <h2 className="font-title text-xl font-bold">{title}</h2>
         {onAddNew && (
           <Button
             variant="outline-orange"
-            className="gap-1.5 rounded-lg px-3 h-9 text-sm font-semibold cursor-pointer"
+            className="gap-1.5 rounded-lg px-3 h-9 text-sm font-semibold "
             onClick={onAddNew}
           >
             <Plus className="h-4 w-4" />
@@ -77,7 +63,7 @@ export const TableToolbar = ({
         {/* Export CSV */}
         <Button
           variant="outline"
-          className="gap-1.5 h-9 px-3 text-sm border-green-600 text-green-600 hover:bg-white"
+          className="gap-1.5 h-9 px-3 text-sm border-green-600 text-green-600 hover:bg-white "
           onClick={onExportCsv}
           title="Export CSV"
         >
@@ -88,7 +74,7 @@ export const TableToolbar = ({
         {/* Refresh */}
         <Button
           variant="ghost"
-          className="h-9 w-9 p-0!"
+          className="h-9 w-9 p-0! "
           onClick={onRefresh}
           title="Refresh"
         >
@@ -98,9 +84,9 @@ export const TableToolbar = ({
         {/* View toggle */}
         {onViewChange && (
           <div className="flex rounded-lg border border-slate-200 overflow-hidden">
-            <button
-              type="button"
-              className={`h-9 w-9 flex items-center justify-center transition ${
+            <Button
+              variant="orange"
+              className={`h-9 w-9 p-0! flex items-center justify-center transition  ${
                 viewMode === "list"
                   ? "bg-slate-950 text-white"
                   : "text-slate-500 hover:bg-slate-100"
@@ -109,10 +95,10 @@ export const TableToolbar = ({
               title="List view"
             >
               <LayoutList className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className={`h-9 w-9 flex items-center justify-center transition ${
+            </Button>
+            <Button
+              variant="orange"
+              className={`h-9 w-9 p-0! flex items-center justify-center transition  ${
                 viewMode === "grid"
                   ? "bg-slate-950 text-white"
                   : "text-slate-500 hover:bg-slate-100"
@@ -121,7 +107,7 @@ export const TableToolbar = ({
               title="Grid view"
             >
               <LayoutGrid className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         )}
 
@@ -139,19 +125,19 @@ export const TableToolbar = ({
                   onKeyDown={(e) => e.key === "Enter" && search.submit()}
                 />
                 {search.value && (
-                  <button
-                    type="button"
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  <Button
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 "
                     onClick={search.clear}
+                    variant="ghost"
                   >
                     <X className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
             <Button
               variant="ghost"
-              className="h-9 w-9 p-0!"
+              className="h-9 w-9 p-0! "
               onClick={search.submit}
               title="Search"
             >
@@ -165,7 +151,7 @@ export const TableToolbar = ({
           <div className="relative">
             <Button
               variant={filterOpen || hasActiveFilter ? "default" : "ghost"}
-              className="h-9 w-9 p-0!"
+              className="h-9 w-9 p-0! "
               onClick={() => setFilterOpen((v) => !v)}
               title="Filter"
             >
@@ -187,7 +173,7 @@ export const TableToolbar = ({
                         {opt.values.map((val) => (
                           <label
                             key={val}
-                            className="flex items-center gap-2 cursor-pointer py-0.5"
+                            className="flex items-center gap-2  py-0.5"
                           >
                             <input
                               type="checkbox"
@@ -212,7 +198,7 @@ export const TableToolbar = ({
                     <Button
                       variant="secondary"
                       size="sm"
-                      className="w-full mt-1"
+                      className="w-full mt-1 "
                       onClick={() =>
                         filterOptions.forEach((opt) =>
                           onFilterChange(opt.key, null),
@@ -232,9 +218,6 @@ export const TableToolbar = ({
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   TablePagination
-   ───────────────────────────────────────────────────────────── */
 export const TablePagination = ({
   currentPage,
   totalPages,
@@ -265,18 +248,18 @@ export const TablePagination = ({
 
   return (
     <div className="flex items-center justify-between mt-5 pt-5 border-t border-slate-200">
-      <div className="text-xs text-slate-500">
-        Showing{" "}
-        <span className="font-semibold text-slate-800">
-          {startItem}–{endItem}
-        </span>{" "}
-        of <span className="font-semibold text-slate-800">{totalItems}</span>
+      <div className="text-xs font-semibold">
+        {t("common.showing", {
+          totalRows: totalItems,
+          startPage: currentPage,
+          endPage: totalPages,
+        })}
       </div>
       <div className="flex gap-1 items-center">
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1 px-2 text-xs"
+          className="h-8 gap-1 px-2 text-xs "
           onClick={() => onPage(Math.max(1, currentPage - 1))}
           disabled={currentPage <= 1}
         >
@@ -289,13 +272,13 @@ export const TablePagination = ({
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0! text-xs"
+              className="h-8 w-8 p-0! text-xs "
               onClick={() => onPage(1)}
             >
               1
             </Button>
             {pages[0] > 2 && (
-              <span className="text-slate-400 text-xs px-1">…</span>
+              <span className="text-slate-400 text-xs px-1">...</span>
             )}
           </>
         )}
@@ -305,7 +288,7 @@ export const TablePagination = ({
             key={p}
             variant={currentPage === p ? "default" : "ghost"}
             size="sm"
-            className="h-8 w-8 p-0! text-xs"
+            className="h-8 w-8 p-0! text-xs "
             onClick={() => onPage(p)}
           >
             {p}
@@ -315,12 +298,12 @@ export const TablePagination = ({
         {pages[pages.length - 1] < totalPages && (
           <>
             {pages[pages.length - 1] < totalPages - 1 && (
-              <span className="text-slate-400 text-xs px-1">…</span>
+              <span className="text-slate-400 text-xs px-1">...</span>
             )}
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0! text-xs"
+              className="h-8 w-8 p-0! text-xs "
               onClick={() => onPage(totalPages)}
             >
               {totalPages}
@@ -331,7 +314,7 @@ export const TablePagination = ({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 gap-1 px-2 text-xs"
+          className="h-8 gap-1 px-2 text-xs "
           onClick={() => onPage(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage >= totalPages}
         >
@@ -342,10 +325,6 @@ export const TablePagination = ({
     </div>
   );
 };
-
-/* ─────────────────────────────────────────────────────────────
-   EmptyState
-   ───────────────────────────────────────────────────────────── */
 export const EmptyState = ({ message = "No items found." }) => (
   <div className="flex flex-col items-center justify-center py-16 gap-3 text-slate-400">
     <PackageSearch className="h-10 w-10 opacity-40" />
@@ -353,9 +332,6 @@ export const EmptyState = ({ message = "No items found." }) => (
   </div>
 );
 
-/* ─────────────────────────────────────────────────────────────
-   SortIcon
-   ───────────────────────────────────────────────────────────── */
 const SortIcon = ({ field, sortField, sortDir }) => {
   if (sortField !== field)
     return <ArrowUpDown className="h-3 w-3 opacity-30 shrink-0" />;
@@ -366,24 +342,6 @@ const SortIcon = ({ field, sortField, sortDir }) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   DataTable Component
-   Props:
-     columns      [{ key, label, sortable?, render?, className?, headerClass?, width? }]
-                  key="actions" → no sort, no checkbox column influence
-     rows         object[]   (already paginated if using server-side)
-     keyField     string (default "id")
-     loading      bool
-     emptyMessage string
-     sortField    string | null
-     sortDir      "asc" | "desc"
-     onSort       fn(field) | null  (if null → client-side sort via useDataTable)
-     checkedIds   Set
-     onToggleRow  fn(id)
-     onToggleAll  fn()
-     allChecked   bool
-     someChecked  bool
-   ───────────────────────────────────────────────────────────── */
 export const DataTable = ({
   columns = [],
   rows = [],
@@ -400,6 +358,7 @@ export const DataTable = ({
   someChecked = false,
 }) => {
   const checkboxColWidth = "36px";
+  const { t } = useTranslation();
 
   const totalFr = useMemo(() => {
     let total = 0;
@@ -446,8 +405,9 @@ export const DataTable = ({
       {/* selection hint */}
       {checkedIds.size > 0 && (
         <div className="mb-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-medium">
-          {checkedIds.size} row{checkedIds.size > 1 ? "s" : ""} selected — CSV
-          will export selected only.
+          {checkedIds.size}{" "}
+          {checkedIds.size > 1 ? t("common.rows") : t("common.row")}{" "}
+          {t("common.selected")}
         </div>
       )}
 
@@ -468,10 +428,10 @@ export const DataTable = ({
             ))}
           </colgroup>
           <thead>
-            <tr className="text-[10px] uppercase tracking-widest font-bold text-slate-600 bg-slate-50 border-b border-slate-200">
+            <tr className="text-[10px] uppercase tracking-widest font-bold border-b border-slate-200">
               <th
                 style={{ width: checkboxColWidth, minWidth: checkboxColWidth }}
-                className="px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-50 z-10"
+                className="px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-200 z-10"
               >
                 <div className="flex items-center">
                   <input
@@ -481,7 +441,7 @@ export const DataTable = ({
                       if (el) el.indeterminate = someChecked;
                     }}
                     onChange={onToggleAll}
-                    className="rounded accent-orange-600 cursor-pointer"
+                    className="rounded accent-orange-600 "
                   />
                 </div>
               </th>
@@ -492,7 +452,7 @@ export const DataTable = ({
                   <th
                     key={col.key}
                     style={getColStyle(col.width || "1fr")}
-                    className={`px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-50 z-10 ${isSortable ? "cursor-pointer select-none hover:text-slate-900" : ""} ${col.headerClass || ""}`}
+                    className={`px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-200 z-10 ${isSortable ? " select-none text-slate-800 hover:text-slate-900" : ""} ${col.headerClass || ""}`}
                     onClick={() => isSortable && onSort?.(col.key)}
                   >
                     <div className="flex items-center gap-1">
@@ -510,14 +470,14 @@ export const DataTable = ({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-sm text-slate-600">
+          <tbody className="divide-y divide-slate-100 text-sm">
             {loading ? (
               <tr>
                 <td
                   colSpan={columns.length + 1}
-                  className="px-4 py-10 text-center text-slate-400"
+                  className="px-4 py-10 text-center font-semibold"
                 >
-                  Loading…
+                  {t("common.loading")}
                 </td>
               </tr>
             ) : rows.length === 0 ? (
@@ -533,7 +493,7 @@ export const DataTable = ({
                 return (
                   <tr
                     key={id ?? idx}
-                    className={`transition-colors hover:bg-orange-50/60 align-middle ${
+                    className={`transition-colors bg-slate-50/50 align-middle font-semibold text-slate-800 ${
                       idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"
                     }`}
                   >
@@ -549,7 +509,7 @@ export const DataTable = ({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => onToggleRow?.(id)}
-                          className="rounded accent-orange-600 cursor-pointer"
+                          className="rounded accent-orange-600 "
                         />
                       </div>
                     </td>
@@ -557,11 +517,13 @@ export const DataTable = ({
                       <td
                         key={col.key}
                         style={getColStyle(col.width || "1fr")}
-                        className={`px-4 py-3 align-middle ${col.className || ""}`}
+                        className={`px-4 py-3 align-middle font-semibold ${
+                          col.className || ""
+                        }`}
                       >
                         {col.render
                           ? col.render(row, idx)
-                          : (row[col.key] ?? "—")}
+                          : (row[col.key] ?? "-")}
                       </td>
                     ))}
                   </tr>
@@ -575,14 +537,6 @@ export const DataTable = ({
   );
 };
 
-/* ─────────────────────────────────────────────────────────────
-   useDataTable — client-side sort + pagination + checkbox + export
-   Usage:
-     const dt = useDataTable({ rows, keyField, pageSize, exportFilename, onExportRow });
-     <TableToolbar onExportCsv={dt.handleExport} ... />
-     <DataTable rows={dt.paginated} sortField={dt.sortField} onSort={dt.toggleSort} checkedIds={dt.checkedIds} ... />
-     <TablePagination currentPage={dt.currentPage} totalPages={dt.totalPages} ... onPage={dt.setPage} />
-   ───────────────────────────────────────────────────────────── */
 export function useDataTable({
   rows = [],
   keyField = "id",

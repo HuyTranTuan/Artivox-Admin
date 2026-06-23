@@ -40,13 +40,13 @@ const DashboardPage = () => {
 
   return (
     <section className="space-y-6">
-      {/* ── Section 1: Widgets (always first) ── */}
+      {/* â”€â”€ Section 1: Widgets (always first) â”€â”€ */}
       <WidgetsSection widgets={widgets} />
 
-      {/* ── Section 2: Charts (always second) ── */}
+      {/* â”€â”€ Section 2: Charts (always second) â”€â”€ */}
       <ChartsSection charts={charts} />
 
-      {/* ── Section 3: Tables (always last) ── */}
+      {/* â”€â”€ Section 3: Tables (always last) â”€â”€ */}
       <TablesSection tables={tables} />
     </section>
   );

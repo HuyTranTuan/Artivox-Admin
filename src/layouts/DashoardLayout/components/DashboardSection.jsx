@@ -17,6 +17,7 @@ import { PieChart as PieChartComponent } from "@/components/PieChart";
 import { formatPrice } from "@/utils/formatUtils";
 import SummaryCard from "@/components/SummaryCard";
 import { useTranslation } from "@hooks/useTranslation";
+import { Button } from "@/components/ui/button";
 
 const buildLinePath = (data, width, height, padding = 20, key = "value") => {
   if (!data || data.length === 0) return "";
@@ -44,7 +45,7 @@ const buildAreaPath = (data, width, height, padding = 20, key = "value") => {
   return `${linePath} L ${lastX} ${height - padding} L ${firstX} ${height - padding} Z`;
 };
 
-// ─── Widgets Section ─────────────────────────────────────────────
+// Widgets Section
 const WidgetsSection = ({ widgets }) => {
   const {
     abandonedCartRate,
@@ -114,7 +115,7 @@ const WidgetsSection = ({ widgets }) => {
   );
 };
 
-// ─── Charts Section ──────────────────────────────────────────────
+// Charts Section
 const ChartsSection = ({ charts }) => {
   const { t } = useTranslation();
   const [chartView, setChartView] = useState("revenue");
@@ -155,28 +156,30 @@ const ChartsSection = ({ charts }) => {
       <Card className="xl:col-span-7 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="font-title text-lg font-bold text-slate-900">
+            <div className="font-title text-lg font-bold ">
               {t("dashboard.thirtyDayTrend")}
             </div>
-            <div className="text-sm text-slate-500 mt-1">
+            <div className="text-sm text-slate-500 dark:text-white mt-1">
               {chartView === "revenue"
                 ? t("dashboard.revenue")
                 : t("dashboard.customers")}
             </div>
           </div>
-          <div className="flex bg-slate-100 p-0.5 rounded-lg">
-            <button
+          <div className="flex  p-0.5 rounded-lg">
+            <Button
+              variant={chartView === "revenue" ? "primary" : "ghost"}
               onClick={() => setChartView("revenue")}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition ${chartView === "revenue" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition ${chartView === "revenue" ? "shadow-sm " : ""}`}
             >
               {t("dashboard.revenue")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={chartView === "customers" ? "primary" : "ghost"}
               onClick={() => setChartView("customers")}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition ${chartView === "customers" ? "bg-white shadow-sm text-slate-900" : "text-slate-500 hover:text-slate-700"}`}
+              className={`px-3 py-1 text-xs rounded-md font-medium transition ${chartView === "customers" ? " shadow-sm " : ""}`}
             >
               {t("dashboard.customers")}
-            </button>
+            </Button>
           </div>
         </div>
         <div className="w-full overflow-x-auto pb-2">
@@ -265,10 +268,10 @@ const ChartsSection = ({ charts }) => {
 
       {/* Category Revenue Pie Chart */}
       <Card className="p-6 xl:col-span-5">
-        <div className="font-title text-lg font-bold text-slate-900 mb-1">
+        <div className="font-title text-lg font-bold  mb-1">
           {t("dashboard.revenueByProductType")}
         </div>
-        <div className="text-sm text-slate-500 mb-6">
+        <div className="text-sm text-slate-500 dark:text-white mb-6">
           {t("dashboard.breakdownByCategory")}
         </div>
         <div className="overflow-x-auto pb-2">
@@ -283,10 +286,8 @@ const ChartsSection = ({ charts }) => {
                     className="w-3 h-3 rounded-full"
                     style={{ backgroundColor: c.color }}
                   />
-                  <span className="text-sm font-medium text-slate-900">
-                    {c.name}
-                  </span>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-sm font-medium ">{c.name}</span>
+                  <span className="text-xs text-slate-500 dark:text-white">
                     {formatPrice(c.value)}
                   </span>
                 </div>
@@ -299,7 +300,7 @@ const ChartsSection = ({ charts }) => {
   );
 };
 
-// ─── Tables Section ──────────────────────────────────────────────
+// Tables Section
 const TablesSection = ({ tables }) => {
   const { t } = useTranslation();
 
@@ -310,10 +311,10 @@ const TablesSection = ({ tables }) => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
+              <div className="font-title text-lg font-bold ">
                 {t("dashboard.topStaffByArticles")}
               </div>
-              <div className="text-sm text-slate-500 mt-1">
+              <div className="text-sm text-slate-500 dark:text-white mt-1">
                 {t("dashboard.mostPublishedArticles")}
               </div>
             </div>
@@ -324,29 +325,33 @@ const TablesSection = ({ tables }) => {
               {(tables?.topStaffByArticles || []).map((staff, i) => (
                 <div
                   key={staff.id || i}
-                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
                     {staff?.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                    <div className="font-title text-sm font-semibold  truncate">
                       {staff?.fullName || t("common.unknown")}
                     </div>
-                    <div className="text-xs text-slate-600">
+                    <div className="text-xs text-slate-600 dark:text-white">
                       {staff?._count?.articles || staff?.articleCount || 0}{" "}
                       {t("dashboard.articles")}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-600 truncate">{staff?.phone}</div>
+                    <div className="text-sm text-slate-600 dark:text-white truncate">
+                      {staff?.phone}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-600 truncate">{staff?.email}</div>
+                    <div className="text-sm text-slate-600 dark:text-white truncate">
+                      {staff?.email}
+                    </div>
                   </div>
                   {staff?.id ? (
                     <div className="text-right shrink-0">
-                      <div className="font-title text-sm font-bold text-slate-900">
+                      <div className="font-title text-sm font-bold ">
                         #{i + 1}
                       </div>
                     </div>
@@ -360,10 +365,10 @@ const TablesSection = ({ tables }) => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold text-slate-900">
+              <div className="font-title text-lg font-bold ">
                 {t("dashboard.topStaffByChat")}
               </div>
-              <div className="text-sm text-slate-500 mt-1">
+              <div className="text-sm text-slate-500 dark:text-white mt-1">
                 {t("dashboard.mostActiveInSupport")}
               </div>
             </div>
@@ -374,28 +379,32 @@ const TablesSection = ({ tables }) => {
               {(tables.topStaffByChatRooms || []).map((staff, i) => (
                 <div
                   key={staff.id || i}
-                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                  className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">
                     {staff.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                    <div className="font-title text-sm font-semibold  truncate">
                       {staff.fullName || t("common.unknown")}
                     </div>
-                    <div className="text-xs text-slate-500">
+                    <div className="text-xs text-slate-500 dark:text-white">
                       {staff._count?.chatRooms || staff.chatCount || 0}{" "}
                       {t("dashboard.chats")}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-600 truncate">{staff?.phone}</div>
+                    <div className="text-sm text-slate-600 dark:text-white truncate">
+                      {staff?.phone}
+                    </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-slate-600 truncate">{staff?.email}</div>
+                    <div className="text-sm text-slate-600 dark:text-white truncate">
+                      {staff?.email}
+                    </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-title text-sm font-bold text-slate-900">
+                    <div className="font-title text-sm font-bold ">
                       #{i + 1}
                     </div>
                   </div>
@@ -410,10 +419,10 @@ const TablesSection = ({ tables }) => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <div className="font-title text-lg font-bold text-slate-900">
+            <div className="font-title text-lg font-bold ">
               {t("dashboard.topProducts")}
             </div>
-            <div className="text-sm text-slate-500 mt-1">
+            <div className="text-sm text-slate-500 dark:text-white mt-1">
               {t("dashboard.bestSelling")}
             </div>
           </div>
@@ -424,25 +433,25 @@ const TablesSection = ({ tables }) => {
             {(tables.topProductsWithDetails || []).map((p, i) => (
               <div
                 key={p.productId || i}
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition"
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700 font-bold text-sm shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg  text-slate-700 font-bold text-sm shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-title text-sm font-semibold text-slate-900 truncate">
+                  <div className="font-title text-sm font-semibold  truncate">
                     {p.name || t("common.unknownProduct")}
                   </div>
-                  <div className="text-xs text-slate-500">
-                    {p.totalSold || 0} {t("dashboard.sold")} ·{" "}
+                  <div className="text-xs text-slate-500 dark:text-white">
+                    {p.totalSold || 0} {t("dashboard.sold")} Â·{" "}
                     {p.type || t("common.na")}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-title text-sm font-bold text-slate-900">
+                  <div className="font-title text-sm font-bold ">
                     {formatPrice(p.estimatedRevenue)}
                   </div>
-                  <div className="text-xs text-slate-500">
+                  <div className="text-xs text-slate-500 dark:text-white">
                     {t("dashboard.revenueLabel")}
                   </div>
                 </div>

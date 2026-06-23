@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, FilePenLine, Languages, Pencil, Trash2, CheckCircle } from "lucide-react";
+import {
+  Eye,
+  FilePenLine,
+  Languages,
+  Pencil,
+  Trash2,
+  CheckCircle,
+} from "lucide-react";
+
 import { articleService } from "@services/articleService";
 import { Badge } from "@components/ui/badge";
 import { Card } from "@components/ui/card";
@@ -10,6 +18,7 @@ import {
   TablePagination,
   useDataTable,
 } from "@components/DataTable";
+import useToast from "@hooks/useToast";
 import { formatDate } from "@/utils/formatUtils";
 import { toSafeNumber } from "@utils/bigint";
 import { useUiStore } from "@store/uiStore";
@@ -18,6 +27,7 @@ import { useTranslation } from "@hooks/useTranslation";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import SummaryCard from "@/components/SummaryCard";
+import { Button } from "@/components/ui/button";
 
 const normalizeArticle = (currentLang, rawItem, index = 0) => {
   const translation =
@@ -44,6 +54,7 @@ const normalizeArticle = (currentLang, rawItem, index = 0) => {
 
 const ArticlesPage = () => {
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const navigate = useNavigate();
   const { currentLanguage: lang } = useUiStore();
   const { user } = useAuthStore();
@@ -52,13 +63,17 @@ const ArticlesPage = () => {
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
 
-  const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
+  const isAdmin = user?.role === "ADMIN";
   const permission = useMemo(() => {
     if (!user?.permission) return {};
     if (typeof user.permission === "object") return user.permission;
     try {
-      return JSON.parse(user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'));
-    } catch { return {}; }
+      return JSON.parse(
+        user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'),
+      );
+    } catch {
+      return {};
+    }
   }, [user]);
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
@@ -69,11 +84,16 @@ const ArticlesPage = () => {
     try {
       const data = await articleService.getArticles();
       setArticles(data.map((a, i) => normalizeArticle(lang, a, i)));
-    } catch { setArticles([]); }
-    finally { setLoading(false); }
+    } catch {
+      setArticles([]);
+    } finally {
+      setLoading(false);
+    }
   }, [lang]);
 
-  useEffect(() => { loadArticles(); }, [loadArticles]);
+  useEffect(() => {
+    loadArticles();
+  }, [loadArticles]);
 
   const filtered = useMemo(() => {
     const kw = debouncedSearch.toLowerCase();
@@ -103,24 +123,51 @@ const ArticlesPage = () => {
 
   const handleDelete = async (slug) => {
     if (!window.confirm("Delete this article?")) return;
-    try { await articleService.deleteArticle(slug); loadArticles(); }
-    catch (e) { console.error(e); }
+    try {
+      await articleService.deleteArticle(slug);
+      toastTopRight("success", t("articles.deleteSuccess"));
+      loadArticles();
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("articles.deleteError"));
+    }
   };
 
   const handleApprove = async (id) => {
     if (!window.confirm("Publish this article?")) return;
-    try { await articleService.approveArticle(id); loadArticles(); }
-    catch (e) { console.error(e); }
+    try {
+      await articleService.approveArticle(id);
+      toastTopRight("success", t("articles.approveSuccess"));
+      loadArticles();
+    } catch (e) {
+      console.error(e);
+      toastTopRight("error", t("articles.approveError"));
+    }
   };
 
   const dynamicStats = useMemo(() => {
     const active = filtered.filter((a) => a.status === "Published").length;
-    const locales = [...new Set(articles.map((a) => a.locale).filter(Boolean))].join(" / ") || "EN";
-    const totalViews = articles.filter((a) => a.status === "Published").reduce((acc, a) => acc + a.views, 0);
+    const locales =
+      [...new Set(articles.map((a) => a.locale).filter(Boolean))].join(" / ") ||
+      "EN";
+    const totalViews = articles
+      .filter((a) => a.status === "Published")
+      .reduce((acc, a) => acc + a.views, 0);
     return [
-      { label: t("articles.activeCampaigns"), value: String(active), icon: FilePenLine },
+      {
+        label: t("articles.activeCampaigns"),
+        value: String(active),
+        icon: FilePenLine,
+      },
       { label: t("articles.localeCoverage"), value: locales, icon: Languages },
-      { label: t("articles.totalViews"), value: totalViews >= 1000 ? (totalViews / 1000).toFixed(1) + "K" : String(totalViews), icon: Eye },
+      {
+        label: t("articles.totalViews"),
+        value:
+          totalViews >= 1000
+            ? (totalViews / 1000).toFixed(1) + "K"
+            : String(totalViews),
+        icon: Eye,
+      },
     ];
   }, [articles, filtered, t]);
 
@@ -132,13 +179,14 @@ const ArticlesPage = () => {
       render: (row) => (
         <div>
           <div
-            className="font-semibold text-slate-900 cursor-pointer hover:text-amber-600 transition-colors"
+            className="font-semibold cursor-pointer text-(--color-secondary) hover:text-(--color-primary)/90 transition-colors"
             onClick={() => navigate(`/articles/${row.slug}`)}
           >
             {row.title}
           </div>
           <div className="text-xs text-slate-400 mt-0.5">
-            {toSafeNumber(row.views).toLocaleString("en-US")} views
+            {toSafeNumber(row.views).toLocaleString("en-US")}{" "}
+            {t("articles.views")}
           </div>
         </div>
       ),
@@ -162,35 +210,39 @@ const ArticlesPage = () => {
       width: "120px",
       render: (row) => (
         <div className="flex gap-1.5">
-          <button
+          <Button
+            variant="outline"
+            className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
             onClick={() => navigate(`/articles/${row.slug}`)}
-            className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
           >
-            <Eye style={{ width: 16, height: 16 }} />
-          </button>
+            <Eye className="h-5 w-5" />
+          </Button>
           {canUpdate && (
-            <button
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
               onClick={() => navigate(`/articles/${row.slug}/edit`)}
-              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
             >
-              <Pencil style={{ width: 16, height: 16 }} />
-            </button>
+              <Pencil className="h-5 w-5" />
+            </Button>
           )}
           {isAdmin && !row.publishedAt && (
-            <button
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
               onClick={() => handleApprove(row.id)}
-              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
             >
-              <CheckCircle style={{ width: 16, height: 16 }} />
-            </button>
+              <CheckCircle className="h-5 w-5" />
+            </Button>
           )}
           {canDelete && (
-            <button
+            <Button
+              variant="outline"
+              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
               onClick={() => handleDelete(row.slug)}
-              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
             >
-              <Trash2 style={{ width: 16, height: 16 }} />
-            </button>
+              <Trash2 className="h-5 w-5" />
+            </Button>
           )}
         </div>
       ),
@@ -201,7 +253,12 @@ const ArticlesPage = () => {
     <section className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {dynamicStats.map((item) => (
-          <SummaryCard key={item.label} label={item.label} value={item.value} icon={item.icon} />
+          <SummaryCard
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            icon={item.icon}
+          />
         ))}
       </div>
 
@@ -214,7 +271,11 @@ const ArticlesPage = () => {
           search={search}
           searchPlaceholder="Search articles..."
           filterOptions={[
-            { key: "status", label: "Status", values: ["Published", "Draft", "Deleted"] },
+            {
+              key: "status",
+              label: "Status",
+              values: ["Published", "Draft", "Deleted"],
+            },
           ]}
           activeFilters={{}}
           onFilterChange={() => {}}

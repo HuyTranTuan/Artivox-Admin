@@ -12,15 +12,15 @@ export default function SummaryCard({
   return (
     <Card className="p-5 flex items-center gap-5">
       <div
-        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${color} text-white`}
+        className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-linear-to-br ${color}`}
       >
         <Icon className="h-7 w-7" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">
+        <div className="text-xs font-medium uppercase tracking-wider">
           {label}
         </div>
-        <div className="font-title text-2xl font-bold text-slate-900 mt-1 font-mono">
+        <div className="font-title text-2xl font-bold mt-1 font-mono">
           {value}
         </div>
         {change != null && (

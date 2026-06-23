@@ -1,11 +1,11 @@
 /**
- * ChatPanel — reusable chat interface component.
+ * ChatPanel ” reusable chat interface component.
  *
  * Props:
- *   rooms          Room[]  — sidebar room list
+ *   rooms          Room[]  ” sidebar room list
  *   activeRoomId   string | null
  *   onSelectRoom   fn(roomId)
- *   messages       Message[]  — messages for active room
+ *   messages       Message[]  ” messages for active room
  *   onSendText     fn(text) => Promise
  *   onSendFile     fn(file, base64, mimeType) => Promise
  *   connectionStatus "connected" | "connecting" | "disconnected" | "error"
@@ -71,7 +71,7 @@ const downloadFile = async (url, name) => {
 
 const isImageType = (t) => t?.startsWith("image/");
 
-/* ── Message bubble ── */
+/* Message bubble */
 const MessageContent = ({ message, onImageClick }) => {
   const { t } = useTranslation();
 
@@ -99,7 +99,7 @@ const MessageContent = ({ message, onImageClick }) => {
             onError={() => setImgErr(true)}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all">
-            <Eye className="h-8 w-8 text-white opacity-0 group-hover:opacity-100" />
+            <Eye className="h-8 w-8  opacity-0 group-hover:opacity-100" />
           </div>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -122,11 +122,11 @@ const MessageContent = ({ message, onImageClick }) => {
   if (type === "file")
     return (
       <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-        <File className="h-5 w-5 text-slate-400 shrink-0" />
+        <File className="h-5 w-5  shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-sm truncate">{name}</div>
           {message.fileSize && (
-            <div className="text-[10px] text-slate-400">
+            <div className="text-[10px] ">
               {formatFileSize(message.fileSize)}
             </div>
           )}
@@ -149,7 +149,7 @@ const MessageContent = ({ message, onImageClick }) => {
   );
 };
 
-/* ── Status dot ── */
+/* Status dot */
 const StatusDot = ({ status }) => {
   const color =
     {
@@ -161,7 +161,7 @@ const StatusDot = ({ status }) => {
   return <span className={`inline-block h-2 w-2 rounded-full ${color}`} />;
 };
 
-/* ── Main ChatPanel ── */
+/* Main ChatPanel */
 export const ChatPanel = ({
   rooms = [],
   activeRoomId,
@@ -179,7 +179,7 @@ export const ChatPanel = ({
   roomSubLabel,
   headerActions,
   emptyRoomsText = "No conversations.",
-  inputPlaceholder = "Type a message…",
+  inputPlaceholder = "Type a message¦",
   maxFileSize = MAX_FILE_SIZE_DEFAULT,
   className = "",
 }) => {
@@ -276,23 +276,19 @@ export const ChatPanel = ({
       {sidebarOpen && (
         <div className="w-72 shrink-0 border-r border-slate-200 flex flex-col overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-            <span className="font-semibold text-sm text-slate-800">
-              {t("conversations")}
-            </span>
+            <span className="font-semibold text-sm ">{t("conversations")}</span>
             <div className="flex items-center gap-1.5">
               <StatusDot status={connectionStatus} />
-              <span className="text-[10px] text-slate-500 capitalize">
+              <span className="text-[10px]  capitalize">
                 {connectionStatus}
               </span>
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
             {loadingRooms ? (
-              <div className="px-4 py-6 text-sm text-slate-400 text-center">
-                Loading…
-              </div>
+              <div className="px-4 py-6 text-sm  text-center">Loading¦</div>
             ) : rooms.length === 0 ? (
-              <div className="px-4 py-6 text-sm text-slate-400 text-center">
+              <div className="px-4 py-6 text-sm  text-center">
                 {emptyRoomsText}
               </div>
             ) : (
@@ -306,33 +302,31 @@ export const ChatPanel = ({
                   : room.lastMessage?.content || room.status || "";
                 const unread = room.unreadCount || 0;
                 return (
-                  <button
+                  <Button
                     key={room.id}
-                    type="button"
+                    variant="outline"
                     onClick={() => onSelectRoom?.(String(room.id))}
-                    className={`w-full flex items-center gap-3 px-4 py-3 border-b border-slate-100 text-left transition hover:bg-slate-50 ${isActive ? "bg-amber-50 border-l-2 border-l-amber-500" : ""}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3 border-b border-slate-100 text-left transition hover:bg-slate-50 ${isActive ? "bg-amber-2000 border-l-2 border-l-(--color-primary)" : ""}`}
                   >
-                    <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-sm font-bold text-slate-600">
+                    <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-sm font-bold ">
                       {label[0]?.toUpperCase() || "?"}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-800 truncate">
+                        <span className="text-sm font-semibold  truncate">
                           {label}
                         </span>
                         {unread > 0 && (
-                          <span className="ml-1 shrink-0 h-5 min-w-5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center px-1">
+                          <span className="ml-1 shrink-0 h-5 min-w-5 rounded-full bg-(--color-primary)  text-[10px] font-bold flex items-center justify-center px-1">
                             {unread}
                           </span>
                         )}
                       </div>
                       {sub && (
-                        <div className="text-xs text-slate-400 truncate mt-0.5">
-                          {sub}
-                        </div>
+                        <div className="text-xs  truncate mt-0.5">{sub}</div>
                       )}
                     </div>
-                  </button>
+                  </Button>
                 );
               })
             )}
@@ -345,35 +339,31 @@ export const ChatPanel = ({
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 shrink-0">
           {onToggleSidebar && (
-            <button
-              type="button"
+            <Button
+              variant="outline"
               onClick={onToggleSidebar}
-              className="text-slate-400 hover:text-slate-700 transition"
+              className=" hover:text-slate-700 transition"
             >
               {sidebarOpen ? (
                 <PanelRightClose className="h-5 w-5" />
               ) : (
                 <PanelRightOpen className="h-5 w-5" />
               )}
-            </button>
+            </Button>
           )}
           {activeRoom ? (
             <div className="flex-1 min-w-0">
-              <div className="font-semibold text-sm text-slate-900">
+              <div className="font-semibold text-sm ">
                 {roomLabel
                   ? roomLabel(activeRoom)
                   : activeRoom.name || `Room ${activeRoom.id}`}
               </div>
               {roomSubLabel && (
-                <div className="text-xs text-slate-400">
-                  {roomSubLabel(activeRoom)}
-                </div>
+                <div className="text-xs ">{roomSubLabel(activeRoom)}</div>
               )}
             </div>
           ) : (
-            <div className="flex-1 text-sm text-slate-400">
-              {t("selectAConversation")}
-            </div>
+            <div className="flex-1 text-sm ">{t("selectAConversation")}</div>
           )}
           {headerActions}
         </div>
@@ -381,11 +371,11 @@ export const ChatPanel = ({
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
           {!activeRoomId ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">
+            <div className="flex h-full items-center justify-center text-sm ">
               {t("selectAConversationToStartChatting")}
             </div>
           ) : messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-sm text-slate-400">
+            <div className="flex h-full items-center justify-center text-sm ">
               {t("noMessagesYet")}
             </div>
           ) : (
@@ -397,7 +387,7 @@ export const ChatPanel = ({
                   className={`flex ${own ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${own ? "bg-slate-950 text-white rounded-br-sm" : "bg-slate-100 text-slate-800 rounded-bl-sm"}`}
+                    className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${own ? "rounded-br-sm" : "rounded-bl-sm"}`}
                   >
                     <MessageContent
                       message={msg}
@@ -406,12 +396,12 @@ export const ChatPanel = ({
                       }
                     />
                     <div
-                      className={`mt-1 text-[10px] ${own ? "text-slate-400 text-right" : "text-slate-400"}`}
+                      className={`mt-1 text-[10px] ${own ? " text-right" : ""}`}
                     >
                       {msg.timestamp || msg.createdAt
                         ? formatTime(msg.timestamp || msg.createdAt)
                         : ""}
-                      {own && msg.isRead && " · Seen"}
+                      {own && msg.isRead && <Check className="h-3 w-3" />}
                     </div>
                   </div>
                 </div>
@@ -431,23 +421,23 @@ export const ChatPanel = ({
                 className="h-16 w-16 object-cover rounded-lg border border-slate-200"
               />
               <div className="flex-1">
-                <div className="text-xs text-slate-600 truncate">
+                <div className="text-xs  truncate">
                   {imagePreview.file.name}
                 </div>
-                <div className="text-[10px] text-slate-400">
+                <div className="text-[10px] ">
                   {formatFileSize(imagePreview.file.size)}
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                variant={"secondary"}
                 onClick={() => {
                   setImagePreview(null);
                   URL.revokeObjectURL(imagePreview.url);
                 }}
-                className="text-slate-400 hover:text-slate-700"
+                className=" hover:text-slate-700"
               >
                 <X className="h-4 w-4" />
-              </button>
+              </Button>
               <Button size="sm" onClick={sendImagePreview} disabled={sending}>
                 {t("common.send")}
               </Button>
@@ -461,13 +451,13 @@ export const ChatPanel = ({
 
         {/* Input */}
         <div className="px-4 py-3 border-t border-slate-100 flex items-center gap-2 shrink-0">
-          <input
+          <Input
             ref={fileInputRef}
             type="file"
             className="hidden"
             onChange={(e) => handleFileSelect(e, "file")}
           />
-          <input
+          <Input
             ref={imageInputRef}
             type="file"
             accept="image/*"
@@ -475,24 +465,24 @@ export const ChatPanel = ({
             onChange={(e) => handleFileSelect(e, "image")}
           />
 
-          <button
-            type="button"
+          <Button
+            variant={"secondary"}
             onClick={() => imageInputRef.current?.click()}
-            className="text-slate-400 hover:text-slate-700 transition shrink-0"
+            className=" hover:text-slate-700 transition shrink-0"
             title="Attach image"
             disabled={!activeRoomId}
           >
             <ImagePlus className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant={"secondary"}
             onClick={() => fileInputRef.current?.click()}
-            className="text-slate-400 hover:text-slate-700 transition shrink-0"
+            className=" hover:text-slate-700 transition shrink-0"
             title="Attach file"
             disabled={!activeRoomId}
           >
             <Paperclip className="h-5 w-5" />
-          </button>
+          </Button>
 
           <Input
             className="flex-1"

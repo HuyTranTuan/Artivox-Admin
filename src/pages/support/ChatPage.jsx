@@ -9,6 +9,7 @@ import {
   Eye,
   PanelRightClose,
   PanelRightOpen,
+  UserCheck2,
 } from "lucide-react";
 import { io } from "socket.io-client";
 import { Button } from "@components/ui/button";
@@ -18,6 +19,7 @@ import ImageViewer from "@/components/ImageViewer";
 import { chatService } from "@services/chatService";
 import { useAuthStore } from "@/store/authStore";
 import useTranslation from "@/hooks/useTranslation";
+import useToast from "@/hooks/useToast";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const API_URL =
@@ -76,7 +78,7 @@ const MessageContent = ({ message, onImageClick }) => {
           <img
             src={fileUrl}
             alt={name}
-            className="max-w-full max-h-48 object-contain bg-slate-100"
+            className="max-w-full max-h-48 object-contain"
             onError={() => setImgErr(true)}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all">
@@ -102,24 +104,24 @@ const MessageContent = ({ message, onImageClick }) => {
   if (type === "file")
     return (
       <div className="space-y-1.5">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-          <File className="h-5 w-5 text-slate-400 shrink-0" />
+        <div className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2">
+          <File className="h-5 w-5 shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-sm truncate">{name}</div>
             {message.fileSize && (
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] ">
                 {formatFileSize(message.fileSize)}
               </div>
             )}
           </div>
-          <button
-            type="button"
+          <Button
+            variant={"outline"}
             onClick={() => downloadFile(fileUrl || "#", name)}
             className="text-xs font-medium text-blue-500 hover:text-blue-700 shrink-0"
             disabled={!fileUrl}
           >
             <Download className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -130,6 +132,7 @@ const MessageContent = ({ message, onImageClick }) => {
 const ChatPage = () => {
   const { user } = useAuthStore();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const chatSocketRef = useRef(null);
   const notifSocketRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -152,7 +155,7 @@ const ChatPage = () => {
     visible: false,
   });
 
-  // ── Load all staff rooms once ──
+  // â”€â”€ Load all staff rooms once â”€â”€
   useEffect(() => {
     chatService
       .getRooms()
@@ -165,7 +168,7 @@ const ChatPage = () => {
       .finally(() => setLoadingRooms(false));
   }, []);
 
-  // ── Load messages when active room changes ──
+  // â”€â”€ Load messages when active room changes â”€â”€
   useEffect(() => {
     if (!activeRoomId) return;
     if (fetchedRooms.has(activeRoomId)) return;
@@ -189,13 +192,13 @@ const ChatPage = () => {
       .catch(() => {});
   }, [activeRoomId, fetchedRooms]);
 
-  // ── Mark as read when admin opens a room ──
+  // â”€â”€ Mark as read when admin opens a room â”€â”€
   useEffect(() => {
     if (!activeRoomId) return;
     chatService.markAsRead(activeRoomId).catch(() => {});
   }, [activeRoomId]);
 
-  // ── Socket.io — connect once ──
+  // â”€â”€ Socket.io ” connect once â”€â”€
   useEffect(() => {
     const token = useAuthStore.getState().accessToken;
 
@@ -272,7 +275,7 @@ const ChatPage = () => {
     // Notification when a message arrives while NOT in that room
     notifSocket.on("new_notification", (data) => {
       setChatToast({
-        message: `💬 ${data.title}: ${data.message}`,
+        message: `ðŸ’¬ ${data.title}: ${data.message}`,
         roomId: data.chatRoomId,
         visible: true,
       });
@@ -305,7 +308,7 @@ const ChatPage = () => {
     };
   }, []); // connect once
 
-  // ── Join/leave specific chat room on the /chat socket ──
+  // â”€â”€ Join/leave specific chat room on the /chat socket â”€â”€
   useEffect(() => {
     const socket = chatSocketRef.current;
     if (!socket || !activeRoomId) return;
@@ -388,6 +391,10 @@ const ChatPage = () => {
           (m) => m.id !== optimistic.id,
         ),
       }));
+      toastTopRight(
+        "error",
+        t("chat.sendMessageError", "Error happened when sent message"),
+      );
     }
   };
 
@@ -398,7 +405,7 @@ const ChatPage = () => {
       const newRoom = result.data || result;
       const newRoomId = String(newRoom.id);
 
-      // Reload full room list — claimRoom may have deleted the old assigned
+      // Reload full room list ” claimRoom may have deleted the old assigned
       // room (existingRoom merge), so stale entries must be purged.
       const freshData = await chatService.getRooms();
       const freshList = Array.isArray(freshData)
@@ -505,10 +512,10 @@ const ChatPage = () => {
 
       <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
-          <div className="font-title text-2xl font-bold text-slate-950">
+          <div className="font-title text-2xl font-bold ">
             {t("chat.supportTitle", "Customer support chat")}
           </div>
-          <div className="mt-1 text-sm text-slate-500">
+          <div className="mt-1 text-sm ">
             {t("chat.conversations", {
               count: rooms.length,
               defaultValue: "{{count}} conversation{{s}}",
@@ -537,20 +544,20 @@ const ChatPage = () => {
               )}
             </Button>
             <div>
-              <div className="font-title text-lg font-semibold text-slate-950">
+              <div className="font-title text-lg font-semibold ">
                 {activeRoom?.customer?.fullName ||
                   t("chat.roomName", {
                     id: activeRoomId,
                     defaultValue: "Room {{id}}",
                   })}
               </div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs ">
                 {t("common.id", "ID")}:{" "}
                 {activeRoom?.customer?.id || activeRoom?.customerId}
               </div>
             </div>
           </div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs ">
             {activeMessages.length
               ? `${t("chat.last", "Last")}: ${formatTime(activeMessages[activeMessages.length - 1].createdAt || activeMessages[activeMessages.length - 1].timestamp)}`
               : t("chat.noHistory", "No history")}
@@ -561,15 +568,15 @@ const ChatPage = () => {
           {/* Customer list sidebar */}
           {customerListOpen && (
             <div
-              className="border-r border-slate-200 overflow-y-auto shrink-0 bg-slate-50/50"
+              className="border-r border-slate-200 overflow-y-auto shrink-0"
               style={{ width: 250, height: "calc(100vh - 410px)" }}
             >
               {loadingRooms ? (
-                <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                <div className="flex items-center justify-center h-20 text-sm ">
                   {t("common.loading", "Loading...")}
                 </div>
               ) : rooms.length === 0 ? (
-                <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                <div className="flex items-center justify-center h-20 text-sm ">
                   {t("chat.noConversations", "No conversations")}
                 </div>
               ) : (
@@ -582,13 +589,13 @@ const ChatPage = () => {
                       key={room.id}
                       type="button"
                       onClick={() => setActiveRoomId(String(room.id))}
-                      className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-100 ${
+                      className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-(--color-primary)/50 ${
                         isActive
-                          ? "bg-amber-50 border-l-2 border-l-amber-500"
+                          ? "bg-(--color-primary)/30 border-l-2 border-l-(--color-primary)"
                           : "border-l-2 border-l-transparent"
                       }`}
                     >
-                      <div className="text-sm font-semibold text-slate-900 truncate">
+                      <div className="text-sm font-semibold truncate">
                         {room.customer?.fullName ||
                           t("chat.customerLabel", {
                             id: room.customerId,
@@ -600,7 +607,7 @@ const ChatPage = () => {
                           {t("unassigned")}
                         </div>
                       )}
-                      <div className="text-xs text-slate-500 truncate mt-0.5">
+                      <div className="text-xs  truncate mt-0.5">
                         {last?.content ||
                           t("chat.noMessagesYet", "No messages yet")}
                       </div>
@@ -614,7 +621,7 @@ const ChatPage = () => {
           {/* Messages */}
           <div className="flex-1 flex flex-col min-w-0">
             <div
-              className="space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6"
+              className="space-y-4 overflow-y-auto px-6 py-6"
               style={{ height: "calc(100vh - 440px)" }}
             >
               {activeMessages.length ? (
@@ -634,8 +641,8 @@ const ChatPage = () => {
                         item.senderType?.toUpperCase() === "ADMIN" ||
                         item.senderType?.toUpperCase() === "STAFF" ||
                         item.sender === "admin"
-                          ? "bg-slate-950 text-white"
-                          : "border border-slate-200 bg-white text-slate-700"
+                          ? "bg-(--color-primary)/20"
+                          : "bg-(--color-primary)/50 border border-(--color-primary)/20"
                       }`}
                     >
                       <MessageContent
@@ -647,8 +654,8 @@ const ChatPage = () => {
                           item.senderType?.toUpperCase() === "ADMIN" ||
                           item.senderType?.toUpperCase() === "STAFF" ||
                           item.sender === "admin"
-                            ? "text-white/70 justify-end"
-                            : "text-slate-400 justify-start"
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
                         {formatTime(item.createdAt || item.timestamp)}
@@ -656,14 +663,16 @@ const ChatPage = () => {
                           item.senderType?.toUpperCase() === "STAFF" ||
                           item.sender === "admin") &&
                           item.isRead && (
-                            <span className="ml-1 opacity-70">✓✓</span>
+                            <span className="ml-1 opacity-70">
+                              <UserCheck2 />
+                            </span>
                           )}
                       </div>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                <div className="flex h-full items-center justify-center text-sm ">
                   {t("chat.noMessagesYet", "No messages yet.")}
                 </div>
               )}
@@ -686,7 +695,7 @@ const ChatPage = () => {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="border-t border-slate-200 bg-white px-6 py-4"
+                className="border-t border-slate-200 px-6 py-4"
               >
                 <div className="flex items-end gap-3">
                   <div className="flex flex-1 items-end gap-2">
@@ -697,13 +706,13 @@ const ChatPage = () => {
                       onChange={(e) => setMessage(e.target.value)}
                       disabled={!activeRoomId}
                     />
-                    <input
+                    <Input
                       ref={fileInputRef}
                       type="file"
                       className="hidden"
                       onChange={(e) => handleFileSelect(e, "file")}
                     />
-                    <input
+                    <Input
                       ref={imageInputRef}
                       type="file"
                       accept="image/*"
@@ -711,7 +720,6 @@ const ChatPage = () => {
                       onChange={(e) => handleFileSelect(e, "image")}
                     />
                     <Button
-                      type="button"
                       variant="ghost"
                       className="h-12 w-12 p-0"
                       title={t("chat.attachFile", "Attach file (max 15MB)")}
@@ -720,7 +728,6 @@ const ChatPage = () => {
                       <Paperclip style={{ width: 18, height: 18 }} />
                     </Button>
                     <Button
-                      type="button"
                       variant="ghost"
                       className="h-12 w-12 p-0"
                       title={t("chat.attachImage", "Attach image (max 15MB)")}

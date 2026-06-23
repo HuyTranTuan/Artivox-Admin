@@ -16,12 +16,8 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import { customerService } from "@services/customerService";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
+import { formatDate } from "@/utils/formatUtils";
 
-const statusColor = {
-  Active: "text-emerald-600",
-  Inactive: "text-slate-500",
-  Suspended: "text-rose-600",
-};
 const tierOptions = ["Standard", "Premium", "VIP"];
 const fmt = (v) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(
@@ -155,7 +151,7 @@ const CustomersPage = () => {
         return (
           <FormField
             type="select"
-            className="!space-y-0"
+            className="space-y-0!"
             value={value}
             onChange={(e) => updateDraft(customer.id, field, e.target.value)}
             autoFocus
@@ -164,7 +160,7 @@ const CustomersPage = () => {
         );
       return (
         <FormField
-          className="!space-y-0"
+          className="space-y-0!"
           value={value}
           onChange={(e) => updateDraft(customer.id, field, e.target.value)}
           onKeyDown={(e) => {
@@ -176,13 +172,13 @@ const CustomersPage = () => {
       );
     }
     return (
-      <button
-        type="button"
-        className="w-full text-left hover:text-slate-900 transition truncate"
+      <Button
+        variant="link"
+        className="w-full text-left transition truncate"
         onDoubleClick={() => startEditing(customer, field)}
       >
-        {customer[field] || "—"}
-      </button>
+        {customer[field] || ""}
+      </Button>
     );
   };
 
@@ -192,7 +188,7 @@ const CustomersPage = () => {
       label: t("customers.columns.name"),
       width: "2fr",
       render: (r) => (
-        <div className="font-semibold text-slate-900 truncate">
+        <div className="font-semibold truncate text-left">
           {renderCell(r, "fullName")}
         </div>
       ),
@@ -200,9 +196,11 @@ const CustomersPage = () => {
     {
       key: "email",
       label: t("customers.columns.email"),
-      width: "1.5fr",
+      width: "2fr",
       render: (r) => (
-        <div className="text-xs truncate">{renderCell(r, "email")}</div>
+        <div className="text-xs truncate text-left">
+          {renderCell(r, "email")}
+        </div>
       ),
     },
     {
@@ -215,8 +213,8 @@ const CustomersPage = () => {
       key: "createdAt",
       label: t("customers.columns.joined"),
       render: (r) => (
-        <span className="text-xs text-slate-500">
-          {r.createdAt || r.joinedAt || "—"}
+        <span className="text-xs">
+          {formatDate(r.createdAt || r.joinedAt || "")}
         </span>
       ),
     },
@@ -225,77 +223,84 @@ const CustomersPage = () => {
       label: t("customers.columns.status"),
       render: (r) => (
         <span
-          className={`text-xs font-medium ${r.verifiedAt ? "text-emerald-600" : "text-slate-500"}`}
+          className={`text-xs font-medium ${r.verifiedAt ? "text-emerald-600" : ""}`}
         >
           {r.verifiedAt ? "Verified" : "Not verified"}
         </span>
       ),
     },
     {
-      key: "spend",
+      key: "tier",
       label: t("customers.columns.tier"),
       sortable: false,
-      render: (r) => (
-        <div>
-          <div className="text-sm font-medium">
-            {r.orderCount || r.totalOrders || 0}
+      render: (r) => {
+        const spent = r.totalAmountSpent || r.totalSpent || 0;
+        let tierName = "Bronze";
+        if (spent >= 1000000000) tierName = "Diamond";
+        else if (spent >= 200000000) tierName = "Platinum";
+        else if (spent >= 50000000) tierName = "Gold";
+        else if (spent >= 10000000) tierName = "Silver";
+
+        return (
+          <div>
+            <div className="text-sm font-medium">{tierName}</div>
+            <div className="text-[10px] text-slate-400">
+              {fmt(spent)} ({r.orderCount || r.totalOrders || 0} orders)
+            </div>
           </div>
-          <div className="text-[10px] text-slate-400">
-            {fmt(r.totalAmountSpent || r.totalSpent || 0)}
-          </div>
-        </div>
-      ),
+        );
+      },
     },
     {
       key: "actions",
       label: t("customers.columns.actions"),
       sortable: false,
-      width: "110px",
+      width: "120px",
       render: (row) => (
         <div className="flex gap-1.5">
           {editingRowId === row.id ? (
             <>
-              <button
+              <Button
+                variant="outline"
                 onClick={() => saveCustomer(row.id)}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                style={{ padding: 5 }}
+                className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 transition cursor-pointer"
               >
-                <Save style={{ width: 16, height: 16 }} />
-              </button>
-              <button
+                <Save className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
                 onClick={cancelEditing}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-slate-500 hover:bg-slate-100 transition"
-                style={{ padding: 5 }}
+                className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-red-600 transition cursor-pointer"
               >
-                <X style={{ width: 16, height: 16 }} />
-              </button>
+                <X className="h-4 w-4" />
+              </Button>
             </>
           ) : (
             <>
-              <button
+              <Button
+                variant="outline"
                 onClick={() => navigate(`/customers/${row.id}`)}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-                style={{ padding: 5 }}
+                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 transition cursor-pointer"
               >
-                <Eye style={{ width: 16, height: 16 }} />
-              </button>
-              <button
+                <Eye className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => startEditing(row, "fullName")}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-                style={{ padding: 5 }}
+                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 transition cursor-pointer"
               >
-                <Pencil style={{ width: 16, height: 16 }} />
-              </button>
-              <button
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSelectedCustomer(row);
                   setOpenDialog("delete");
                 }}
-                className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-                style={{ padding: 5 }}
+                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 transition cursor-pointer"
               >
-                <Trash2 style={{ width: 16, height: 16 }} />
-              </button>
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </>
           )}
         </div>
@@ -354,12 +359,12 @@ const CustomersPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div
             ref={dialogRef}
-            className="mx-4 w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"
+            className="mx-4 w-full max-w-md rounded-2xl p-6 shadow-xl bg-(--color-background)"
           >
-            <h2 className="mb-4 font-title text-xl font-bold text-slate-900">
+            <h2 className="mb-4 font-title text-xl font-bold">
               {t("customers.deleteDialog.title")}
             </h2>
-            <p className="mb-4 text-sm text-slate-600">
+            <p className="mb-4 text-sm">
               {t("customers.deleteDialog.message", {
                 name: selectedCustomer?.name,
               })}
@@ -367,14 +372,14 @@ const CustomersPage = () => {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={() => setOpenDialog(null)}
               >
                 {t("customers.deleteDialog.cancel")}
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 cursor-pointer"
                 onClick={deleteCustomer}
               >
                 {t("customers.deleteDialog.delete")}

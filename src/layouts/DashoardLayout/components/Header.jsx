@@ -156,9 +156,7 @@ export const Header = () => {
           <Menu className="[&>svg]:w-8 [&>svg]:h-8 ![&>svg]:stroke-3" />
         </Button>
         <div className="min-w-0">
-          <div
-            className={`font-title text-sm lg:text-base font-bold truncate ${theme === "dark" ? "text-white" : "text-slate-950"}`}
-          >
+          <div className="font-title text-sm lg:text-base font-bold truncate">
             {roleLabel}
           </div>
         </div>
@@ -191,13 +189,13 @@ export const Header = () => {
                 }}
               />
               {search.value ? (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   onClick={search.clear}
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               ) : null}
             </div>
           ) : null}

@@ -30,7 +30,7 @@ export const applyAxiosInterceptors = (axiosClient) => {
     async (error) => {
       const originalRequest = error.config;
 
-      // not a 401 or already retried → reject
+      // not a 401 or already retried â†’ reject
       if (error?.response?.status !== 401 || originalRequest._retry) {
         return Promise.reject(error);
       }

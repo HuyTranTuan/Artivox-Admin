@@ -41,7 +41,7 @@ const SignInForm = () => {
   return (
     <Card className="w-full max-w-md p-8">
       <div className="mb-8">
-        <div className="font-title text-3xl font-bold text-slate-950 text-center">
+        <div className="font-title text-3xl font-bold text-center">
           {t("common.signIn")}
         </div>
         <div className="mt-2 text-sm text-slate-500 text-center">{t("")}</div>

@@ -30,27 +30,39 @@ export default function SearchResultPage() {
           discountService.getDiscounts(),
         ]);
 
-        const productsRes = results[0].status === "fulfilled" ? results[0].value : [];
-        const articlesRes = results[1].status === "fulfilled" ? results[1].value : [];
-        const discountsRes = results[2].status === "fulfilled" ? results[2].value : [];
+        const productsRes =
+          results[0].status === "fulfilled" ? results[0].value : [];
+        const articlesRes =
+          results[1].status === "fulfilled" ? results[1].value : [];
+        const discountsRes =
+          results[2].status === "fulfilled" ? results[2].value : [];
 
-        setProducts(productsRes?.items || productsRes?.data || productsRes || []);
+        setProducts(
+          productsRes?.items || productsRes?.data || productsRes || [],
+        );
 
         // Safely extract arrays for articles and discounts
-        const articlesList = articlesRes?.items || articlesRes?.data || articlesRes || [];
-        const discountsList = discountsRes?.items || discountsRes?.data || discountsRes || [];
+        const articlesList =
+          articlesRes?.items || articlesRes?.data || articlesRes || [];
+        const discountsList =
+          discountsRes?.items || discountsRes?.data || discountsRes || [];
 
         // Filter articles locally
-        const filteredArticles = (Array.isArray(articlesList) ? articlesList : []).filter((article) => {
+        const filteredArticles = (
+          Array.isArray(articlesList) ? articlesList : []
+        ).filter((article) => {
           const title = article.translations?.[0]?.title?.toLowerCase() || "";
-          const summary = article.translations?.[0]?.summary?.toLowerCase() || "";
+          const summary =
+            article.translations?.[0]?.summary?.toLowerCase() || "";
           const lowerQ = q.toLowerCase();
           return title.includes(lowerQ) || summary.includes(lowerQ);
         });
         setArticles(filteredArticles);
 
         // Filter discounts locally
-        const filteredDiscounts = (Array.isArray(discountsList) ? discountsList : []).filter((discount) => {
+        const filteredDiscounts = (
+          Array.isArray(discountsList) ? discountsList : []
+        ).filter((discount) => {
           const name = discount.name?.toLowerCase() || "";
           const code = discount.code?.toLowerCase() || "";
           const lowerQ = q.toLowerCase();
@@ -68,7 +80,7 @@ export default function SearchResultPage() {
   }, [q]);
 
   const NoItem = () => (
-    <div className="flex flex-col items-center justify-center p-8 text-slate-500">
+    <div className="flex flex-col items-center justify-center p-8 ">
       <Search className="h-8 w-8 mb-2 opacity-50" />
       <p>{t("search.noResult") || "No items found"}</p>
     </div>
@@ -99,14 +111,16 @@ export default function SearchResultPage() {
                   {products.map((item) => (
                     <li
                       key={item.id}
-                      className="cursor-pointer hover:bg-slate-100 p-2 rounded-md transition"
+                      className="cursor-pointer hover:bg-(--color-primary)/10 p-2 rounded-md transition"
                       onClick={() => {
-                        const type = item.type ? item.type.toLowerCase() + "s" : "models";
+                        const type = item.type
+                          ? item.type.toLowerCase() + "s"
+                          : "models";
                         navigate(`/catalog/${type}/${item.slug}`);
                       }}
                     >
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-slate-500">{item.type || "Model"}</p>
+                      <p className="text-sm ">{item.type || "Model"}</p>
                     </li>
                   ))}
                 </ul>
@@ -127,14 +141,16 @@ export default function SearchResultPage() {
                   {articles.map((item) => (
                     <li
                       key={item.id}
-                      className="cursor-pointer hover:bg-slate-100 p-2 rounded-md transition"
+                      className="cursor-pointer hover:bg-(--color-primary)/10 p-2 rounded-md transition"
                       onClick={() => navigate(`/articles/${item.slug}`)}
                     >
                       <p className="font-semibold">
                         {item.translations?.[0]?.title || item.title}
                       </p>
-                      <p className="text-sm text-slate-500">
-                        {item.translations?.[0]?.summary?.substring(0, 50) || ""}...
+                      <p className="text-sm ">
+                        {item.translations?.[0]?.summary?.substring(0, 50) ||
+                          ""}
+                        ...
                       </p>
                     </li>
                   ))}
@@ -156,13 +172,11 @@ export default function SearchResultPage() {
                   {discounts.map((item) => (
                     <li
                       key={item.id}
-                      className="cursor-pointer hover:bg-slate-100 p-2 rounded-md transition"
-                      onClick={() => navigate(`/discount/${item.slug}`)} 
+                      className="cursor-pointer hover:bg-(--color-primary)/10 p-2 rounded-md transition"
+                      onClick={() => navigate(`/discount/${item.slug}`)}
                     >
                       <p className="font-semibold">{item.name}</p>
-                      <p className="text-sm text-slate-500">
-                        Code: {item.code}
-                      </p>
+                      <p className="text-sm ">Code: {item.code}</p>
                     </li>
                   ))}
                 </ul>

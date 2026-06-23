@@ -90,9 +90,7 @@ export const Header = () => {
           <Menu style={{ width: 22, height: 22 }} />
         </Button>
         <div>
-          <div className="font-title text-xl font-bold text-slate-950">
-            Campaign Control
-          </div>
+          <div className="font-title text-xl font-bold">Campaign Control</div>
           <div className="text-sm text-slate-500">
             Manage content, products, and orders
           </div>

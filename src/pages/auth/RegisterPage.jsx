@@ -6,10 +6,8 @@ const RegisterPage = () => {
 
   return (
     <Card className="w-full max-w-md p-8">
-      <div className="font-title text-3xl font-bold text-slate-950">
-        {t("auth.register")}
-      </div>
-      <div className="mt-3 text-sm text-slate-500">
+      <div className="font-title text-3xl font-bold">{t("auth.register")}</div>
+      <div className="mt-3 text-sm text-slate-500 dark:text-white">
         {t("reservedForAdminOnboardingFlow")}
       </div>
     </Card>

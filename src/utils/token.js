@@ -12,7 +12,7 @@ const decodeToken = (token) => {
 
 const isTokenExpired = (token) => {
   const decoded = decodeToken(token);
-  if (!decoded?.exp) return false; // no exp claim → assume valid
+  if (!decoded?.exp) return false; // no exp claim â†’ assume valid
   return Date.now() >= decoded.exp * 1000;
 };
 

@@ -151,7 +151,7 @@ export const Sidebar = ({ forcedOpen }) => {
           onClick={handleNavClick}
           className="block cursor-pointer hover:opacity-80 transition"
         >
-          <div className=" h-full w-full bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20 overflow-hidden">
+          <div className="h-full w-full overflow-hidden">
             <img
               src={isOpen ? artivoxLogo : artivoxSquareLogo}
               alt="Artivox"

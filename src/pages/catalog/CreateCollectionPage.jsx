@@ -91,10 +91,16 @@ const CreateCollectionPage = () => {
 
       if (isEditMode) {
         await collectionService.updateCollection(slug, formData);
-        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.updateSuccess", "Updated successfully"),
+        );
       } else {
         await collectionService.createCollection(formData);
-        toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
+        toastTopRight(
+          "success",
+          t("catalog.createSuccess", "Created successfully"),
+        );
       }
       navigate("/catalog/collections");
     } catch (err) {
@@ -102,7 +108,12 @@ const CreateCollectionPage = () => {
         isEditMode ? "Update collection failed:" : "Create collection failed:",
         err,
       );
-      toastTopRight("error", isEditMode ? t("catalog.updateError", "Failed to update") : t("catalog.createError", "Failed to create"));
+      toastTopRight(
+        "error",
+        isEditMode
+          ? t("catalog.updateError", "Failed to update")
+          : t("catalog.createError", "Failed to create"),
+      );
     } finally {
       setLoading(false);
     }
@@ -120,13 +131,14 @@ const CreateCollectionPage = () => {
     <section className="flex flex-col lg:flex-row lg:space-x-6 lg:space-y-0 space-y-6">
       <Card className="p-6 space-y-5 lg:w-2/3 w-full">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate("/catalog/collections")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-amber-400 hover:text-white cursor-pointer"
+            className="flex h-11 w-11! p-0! items-center justify-center rounded-lg hover:bg-(--color-primary)! cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h2 className="font-title text-xl font-bold text-slate-950">
+          </Button>
+          <h2 className="font-title text-xl font-bold">
             {isEditMode
               ? t("catalog.editCollection")
               : t("catalog.addNewCollection")}
@@ -148,7 +160,7 @@ const CreateCollectionPage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-800">
+            <label className="mb-1.5 block text-sm font-medium">
               {t("catalog.name")}
             </label>
             <Input
@@ -159,7 +171,7 @@ const CreateCollectionPage = () => {
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-800">
+            <label className="mb-1.5 block text-sm font-medium">
               {t("catalog.slug")}
             </label>
             <Input
@@ -171,7 +183,7 @@ const CreateCollectionPage = () => {
           </div>
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-800">
+          <label className="mb-1.5 block text-sm font-medium">
             {t("catalog.description")}
           </label>
           <textarea
@@ -179,11 +191,11 @@ const CreateCollectionPage = () => {
             onChange={(e) => handleChange("description", e.target.value)}
             rows={6}
             placeholder={t("catalog.collectionDescriptionPlaceholder")}
-            className="h-36 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white text-slate-950 placeholder:text-slate-500 resize-none"
+            className="h-36 w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none placeholder:text-slate-500"
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-800">
+          <label className="mb-1.5 block text-sm font-medium">
             {t("catalog.status")}
           </label>
           <select
@@ -191,7 +203,7 @@ const CreateCollectionPage = () => {
             onChange={(e) =>
               handleChange("isActive", e.target.value === "active")
             }
-            className="h-13 w-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none bg-white placeholder:text-slate-500 resize-none text-slate-600"
+            className="h-13 w-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none placeholder:text-slate-500"
           >
             <option value="active">{t("catalog.active")}</option>
             <option value="inactive">{t("catalog.inactive")}</option>
@@ -205,7 +217,7 @@ const CreateCollectionPage = () => {
         </h3>
 
         <div>
-          <label className="text-xs font-semibold text-slate-800 mb-1.5 block">
+          <label className="text-xs font-semibold mb-1.5 block">
             {t("catalog.image")}
           </label>
           <div className="flex items-center gap-3">

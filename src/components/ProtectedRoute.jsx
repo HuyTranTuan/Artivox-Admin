@@ -12,19 +12,19 @@ const ProtectedRoute = () => {
 
   useEffect(() => {
     const verify = async () => {
-      // no token at all → redirect
+      // no token at all â†’ redirect
       if (!accessToken) {
         setChecking(false);
         return;
       }
 
-      // token not expired → proceed
+      // token not expired â†’ proceed
       if (!isTokenExpired(accessToken)) {
         setChecking(false);
         return;
       }
 
-      // token expired → try refresh
+      // token expired â†’ try refresh
       if (!refreshToken) {
         signOut();
         setChecking(false);

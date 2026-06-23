@@ -8,6 +8,7 @@ import RichTextEditor from "@/components/RichTextEditor";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
 import { articleService } from "@services/articleService";
+import useToast from "@hooks/useToast";
 
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
@@ -18,6 +19,7 @@ const CreateArticlePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { toastTopRight } = useToast();
 
   const [isSaving, setIsSaving] = useState(false);
   const [slug, setSlug] = useState("");
@@ -80,9 +82,17 @@ const CreateArticlePage = () => {
       }
 
       await articleService.createArticle(formData);
+      toastTopRight(
+        "success",
+        t("articles.createSuccess", "Article created successfully"),
+      );
       navigate("/articles");
     } catch (error) {
       console.error("Failed to create article", error);
+      toastTopRight(
+        "error",
+        t("articles.createError", "Failed to create article"),
+      );
     } finally {
       setIsSaving(false);
     }
@@ -105,7 +115,7 @@ const CreateArticlePage = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCancel}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
@@ -150,7 +160,7 @@ const CreateArticlePage = () => {
                 className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
                   activeTab === tab.value
                     ? "border-amber-500 text-amber-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
                 }`}
               >
                 {t(tab.labelKey)}

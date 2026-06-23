@@ -16,7 +16,10 @@ export const Input = forwardRef(({ className, onChange, ...props }, ref) => {
         const originalValue = e.target.value;
         const sanitized = sanitize(originalValue);
         if (sanitized !== originalValue) {
-          Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value").set.call(e.target, sanitized);
+          Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype,
+            "value",
+          ).set.call(e.target, sanitized);
           e.target.value = sanitized;
         }
         onChange(e);
@@ -28,7 +31,10 @@ export const Input = forwardRef(({ className, onChange, ...props }, ref) => {
   return (
     <input
       ref={ref}
-      className={cn("w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-amber-400", className)}
+      className={cn(
+        "w-full rounded-xl border border-slate-200 bg-transparent px-4 py-3 text-sm outline-none transition focus:border-(--color-primary)",
+        className,
+      )}
       onChange={handleChange}
       {...props}
     />

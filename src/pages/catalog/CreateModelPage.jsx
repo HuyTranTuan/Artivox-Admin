@@ -103,7 +103,10 @@ const CreateModelPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 50 * 1024 * 1024) {
-      toastTopRight("error", t("catalog.fileTooLarge", "File exceeds 50MB limit"));
+      toastTopRight(
+        "error",
+        t("catalog.fileTooLarge", "File exceeds 50MB limit"),
+      );
       e.target.value = "";
       return;
     }
@@ -131,9 +134,12 @@ const CreateModelPage = () => {
       formData.append("previewFileUrl", form.previewFileUrl);
       if (form.collectionId) formData.append("collectionId", form.collectionId);
 
-      if (sourceFile) formData.append("source_file", sourceFile, sourceFile.name);
-      if (imgMobile?.file) formData.append("img_mobile", imgMobile.file, imgMobile.file.name);
-      if (imgTablet?.file) formData.append("img_tablet", imgTablet.file, imgTablet.file.name);
+      if (sourceFile)
+        formData.append("source_file", sourceFile, sourceFile.name);
+      if (imgMobile?.file)
+        formData.append("img_mobile", imgMobile.file, imgMobile.file.name);
+      if (imgTablet?.file)
+        formData.append("img_tablet", imgTablet.file, imgTablet.file.name);
       if (imgPc?.file) formData.append("img_pc", imgPc.file, imgPc.file.name);
 
       if (thumbnailBefore?.file) {
@@ -157,7 +163,10 @@ const CreateModelPage = () => {
       });
 
       await modelsService.createModel(formData);
-      toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.createSuccess", "Created successfully"),
+      );
       navigate("/catalog/models");
     } catch (err) {
       console.error(err);
@@ -177,9 +186,7 @@ const CreateModelPage = () => {
     recommended,
   }) => (
     <div>
-      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-        {label}
-      </label>
+      <label className="text-xs font-semibold  mb-1.5 block">{label}</label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
@@ -196,10 +203,8 @@ const CreateModelPage = () => {
             />
           ) : (
             <div className="text-center">
-              <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-              <span className="text-[10px] text-slate-400">
-                {t("catalog.upload")}
-              </span>
+              <Upload className="h-5 w-5  mx-auto mb-1" />
+              <span className="text-[10px] ">{t("catalog.upload")}</span>
             </div>
           )}
         </div>
@@ -210,8 +215,8 @@ const CreateModelPage = () => {
           className="hidden"
           onChange={onChange}
         />
-        <div className="text-xs text-slate-400">
-          <p className="font-medium text-slate-600">{label}</p>
+        <div className="text-xs ">
+          <p className="font-medium">{label}</p>
           <p>{recommended}</p>
           <p className="text-[10px] mt-0.5">{t("pngJpgWebp")}</p>
         </div>
@@ -232,12 +237,13 @@ const CreateModelPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => navigate("/catalog/models")}
-            className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-9 w-9 p-0! cursor-pointer items-center justify-center rounded-lg transition hover:bg-(--color-primary)"
+            variant="outline"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
+          </Button>
           <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewModel")}
           </h2>
@@ -257,7 +263,7 @@ const CreateModelPage = () => {
       </div>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3">
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -316,7 +322,9 @@ const CreateModelPage = () => {
             type="select"
             label={t("catalog.status")}
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            onChange={(e) =>
+              handleChange("isActive", e.target.value === "active")
+            }
             options={[
               { value: "active", label: t("catalog.active") },
               { value: "inactive", label: t("catalog.inactive") },
@@ -324,7 +332,7 @@ const CreateModelPage = () => {
           />
         </div>
 
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3 pt-2">
           {t("catalog.3dModelFiles")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -336,22 +344,30 @@ const CreateModelPage = () => {
             className="placeholder:text-gray-600"
           />
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium ">
               {t("catalog.sourceFile")} <span className="text-rose-500">*</span>
-              <span className="ml-1 text-xs font-normal text-slate-400">(max 50MB)</span>
+              <span className="ml-1 text-xs font-normal ">(max 50MB)</span>
             </label>
             <div
               onClick={() => sourceFileRef.current?.click()}
               className="flex h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-4 hover:border-orange-400 hover:bg-orange-50/50 transition"
             >
-              <Upload className="h-4 w-4 shrink-0 text-slate-400" />
-              <span className="flex-1 truncate text-sm text-slate-500">
-                {sourceFile ? sourceFile.name : t("catalog.chooseFile", "Choose 3D file (glb, gltf, fbx, obj…)")}
+              <Upload className="h-4 w-4 shrink-0 " />
+              <span className="flex-1 truncate text-sm">
+                {sourceFile
+                  ? sourceFile.name
+                  : t(
+                      "catalog.chooseFile",
+                      "Choose 3D file (glb, gltf, fbx, obj¦)",
+                    )}
               </span>
               {sourceFile && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); setSourceFile(null); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSourceFile(null);
+                  }}
                   className="text-rose-500 hover:text-rose-700"
                 >
                   <X className="h-4 w-4" />
@@ -370,7 +386,7 @@ const CreateModelPage = () => {
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3">
           {t("catalog.productImages")}
         </h3>
 
@@ -393,13 +409,13 @@ const CreateModelPage = () => {
         />
 
         <div>
-          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+          <label className="text-xs font-semibold  mb-1.5 block">
             {t("catalog.gallery")} ({galleryImages.length})
           </label>
           <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
             {galleryImages.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-400">
-                <ImageIcon className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+              <div className="text-center py-6 text-xs ">
+                <ImageIcon className="h-8 w-8 mx-auto mb-2 " />
                 {t("catalog.noImages")}
               </div>
             ) : (
@@ -408,7 +424,7 @@ const CreateModelPage = () => {
                   key={idx}
                   className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5"
                 >
-                  <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
+                  <GripVertical className="h-4 w-4  shrink-0 cursor-grab" />
                   <img
                     src={img.preview}
                     srcSet={`${img.preview} 400w, ${img.preview} 800w, ${img.preview} 1200w`}
@@ -417,7 +433,7 @@ const CreateModelPage = () => {
                     alt={`Gallery ${idx + 1}`}
                     className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
                   />
-                  <span className="flex-1 text-xs text-slate-600 truncate">
+                  <span className="flex-1 text-xs truncate">
                     {img.file.name}
                   </span>
                   <button
@@ -440,10 +456,8 @@ const CreateModelPage = () => {
             onChange={handleGalleryAdd}
           />
           <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            className="mt-2 gap-1.5 text-xs cursor-pointer hover:bg-slate-50"
+            variant="outline"
+            className="mt-2 gap-1.5 text-xs cursor-pointer hover:bg-(--color-primary) border-(--color-secondary)!"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />
@@ -453,38 +467,66 @@ const CreateModelPage = () => {
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
-          {t("catalog.srcsetImages", "Responsive Images (srcset)")}
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3">
+          {t("catalog.srcsetImages")}
         </h3>
-        <p className="text-xs text-slate-400">{t("catalog.srcsetHint", "Upload separate images for mobile (≤640px), tablet (641–1024px), and desktop (>1024px) for optimized loading.")}</p>
+        <p className="text-xs ">{t("catalog.srcsetHint")}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {[
-            { label: t("catalog.imgMobile", "Mobile (≤640px)"), state: imgMobile, setter: setImgMobile, ref: imgMobileRef, hint: "360x480" },
-            { label: t("catalog.imgTablet", "Tablet (641–1024px)"), state: imgTablet, setter: setImgTablet, ref: imgTabletRef, hint: "768x1024" },
-            { label: t("catalog.imgPc", "Desktop (>1024px)"), state: imgPc, setter: setImgPc, ref: imgPcRef, hint: "1200x900" },
+            {
+              label: t("catalog.imgMobile"),
+              state: imgMobile,
+              setter: setImgMobile,
+              ref: imgMobileRef,
+              hint: "360x480",
+            },
+            {
+              label: t("catalog.imgTablet"),
+              state: imgTablet,
+              setter: setImgTablet,
+              ref: imgTabletRef,
+              hint: "768x1024",
+            },
+            {
+              label: t("catalog.imgPC"),
+              state: imgPc,
+              setter: setImgPc,
+              ref: imgPcRef,
+              hint: "1200x900",
+            },
           ].map((v) => (
             <div key={v.label}>
-              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">{v.label}</label>
+              <label className="text-xs font-semibold  mb-1.5 block">
+                {v.label}
+              </label>
               <div
                 onClick={() => v.ref.current?.click()}
                 className="relative h-32 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition overflow-hidden"
               >
                 {v.state?.preview ? (
-                  <img src={v.state.preview} alt={v.label} className="h-full w-full object-cover" />
+                  <img
+                    src={v.state.preview}
+                    alt={v.label}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="text-center">
-                    <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-                    <span className="text-[10px] text-slate-400">{v.hint}</span>
+                    <Upload className="h-5 w-5  mx-auto mb-1" />
+                    <span className="text-[10px] ">{v.hint}</span>
                   </div>
                 )}
                 {v.state && (
-                  <button
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); v.setter(null); }}
-                    className="absolute top-1.5 right-1.5 bg-white/80 rounded-full p-0.5 text-rose-500 hover:text-rose-700"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      v.setter(null);
+                    }}
+                    className="absolute top-1.5 right-1.5 text-rose-500 hover:text-rose-700"
                   >
                     <X className="h-3.5 w-3.5" />
-                  </button>
+                  </Button>
                 )}
               </div>
               <input
@@ -494,7 +536,11 @@ const CreateModelPage = () => {
                 className="hidden"
                 onChange={handleSrcsetImageChange(v.setter)}
               />
-              {v.state && <p className="mt-1 text-[10px] text-slate-400 truncate">{v.state.file?.name}</p>}
+              {v.state && (
+                <p className="mt-1 text-[10px]  truncate">
+                  {v.state.file?.name}
+                </p>
+              )}
             </div>
           ))}
         </div>

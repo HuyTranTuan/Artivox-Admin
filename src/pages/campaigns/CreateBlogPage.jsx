@@ -35,7 +35,6 @@ const CreateBlogPage = () => {
     vi: { title: "", content: "" },
     en: { title: "", content: "" },
   });
-  const { t } = useTranslation();
 
   const handleSave = () => {
     navigate("/blogs");
@@ -56,13 +55,14 @@ const CreateBlogPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={handleCancel}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-8 w-8 p-0! items-center justify-center rounded-lg border border-slate-200 transition hover:bg-(--color-primary)"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h2 className="font-title text-xl font-bold text-slate-900">
+          </Button>
+          <h2 className="font-title text-xl font-bold ">
             {t("articles.createArticle")}
           </h2>
         </div>
@@ -78,12 +78,12 @@ const CreateBlogPage = () => {
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
             {t("articles.slug")}
           </label>
-          <input
+          <Input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={t("articles.slugPlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
 
@@ -92,40 +92,44 @@ const CreateBlogPage = () => {
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
             {t("articles.coverImage")}
           </label>
-          <input
+          <Input
             type="text"
             value={coverImage}
             onChange={(e) => setCoverImage(e.target.value)}
             placeholder={t("articles.coverImagePlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
 
         {/* Category */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('catalog.category')}</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("catalog.category")}
+          </label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
-            <option value="general">{t('general')}</option>
-            <option value="technology">{t('technology')}</option>
-            <option value="design">{t('design')}</option>
-            <option value="materials">{t('catalog.materials')}</option>
-            <option value="news">{t('news')}</option>
+            <option value="general">{t("general")}</option>
+            <option value="technology">{t("technology")}</option>
+            <option value="design">{t("design")}</option>
+            <option value="materials">{t("catalog.materials")}</option>
+            <option value="news">{t("news")}</option>
           </select>
         </div>
 
         {/* Tags */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t('tags')}</label>
-          <input
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            {t("tags")}
+          </label>
+          <Input
             type="text"
             value={tags}
             onChange={(e) => setTags(e.target.value)}
-            placeholder={t('enterTagsSeparatedByCommas')}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            placeholder={t("enterTagsSeparatedByCommas")}
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
 
@@ -137,7 +141,7 @@ const CreateBlogPage = () => {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
             {statuses.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -157,7 +161,7 @@ const CreateBlogPage = () => {
                 className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
                   activeTab === tab.value
                     ? "border-amber-500 text-amber-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
                 }`}
               >
                 {t(tab.labelKey)}
@@ -181,7 +185,7 @@ const CreateBlogPage = () => {
               placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 

@@ -46,10 +46,10 @@ const ModelDetailPage = () => {
     return (
       <section className="space-y-6">
         <Card className="p-6">
-          <div className="text-sm text-slate-500">{t("catalog.noModels")}</div>
+          <div className="text-sm">{t("catalog.noModels")}</div>
           <Button
-            variant="ghost"
-            className="mt-4"
+            variant="outline"
+            className="mt-4 cursor-pointer p-0! rounded-lg"
             onClick={() => navigate("/catalog/models")}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -65,8 +65,8 @@ const ModelDetailPage = () => {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
-          className="h-10 w-10 p-0! rounded-lg text-amber-500! cursor-pointer"
+          variant="outline"
+          className="h-10 w-10 p-0! rounded-lg cursor-pointer hover:bg-(--color-primary)"
           onClick={() => navigate("/catalog/models")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -78,11 +78,11 @@ const ModelDetailPage = () => {
         {/* Image Gallery */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Box className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+              <Box className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
+              <h2 className="font-title text-lg font-semibold">
                 {t("catalog.modelDetail")}
               </h2>
             </div>
@@ -91,7 +91,7 @@ const ModelDetailPage = () => {
           {model.images && model.images.length > 0 ? (
             <div className="space-y-4">
               <div
-                className="relative h-64 rounded-xl overflow-hidden bg-slate-100 cursor-pointer group"
+                className="relative h-64 rounded-xl overflow-hidden cursor-pointer group bg-(--color-border)"
                 onClick={() => {
                   setGalleryIndex(0);
                   setGalleryOpen(true);
@@ -105,8 +105,8 @@ const ModelDetailPage = () => {
                     e.target.style.display = "none";
                   }}
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition text-white font-semibold bg-black/50 rounded-lg px-4 py-2">
+                <div className="absolute inset-0 transition flex items-center justify-center">
+                  <div className="opacity-30 group-hover:opacity-100 transition rounded-lg px-4 py-2">
                     {t("catalog.viewAllImages", { count: model.images.length })}
                   </div>
                 </div>
@@ -118,7 +118,7 @@ const ModelDetailPage = () => {
                       key={idx}
                       src={img.thumb || img.url}
                       alt=""
-                      className="h-16 w-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-amber-500 transition shrink-0"
+                      className="h-16 w-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-(--color-primary) transition shrink-0"
                       onClick={() => {
                         setGalleryIndex(idx);
                         setGalleryOpen(true);
@@ -132,9 +132,9 @@ const ModelDetailPage = () => {
               )}
             </div>
           ) : (
-            <div className="h-48 rounded-xl bg-slate-100 flex items-center justify-center">
-              <div className="text-center text-slate-400">
-                <Eye className="h-10 w-10 mx-auto mb-2" />
+            <div className="h-48 rounded-xl flex items-center justify-center">
+              <div className="text-center">
+                <Eye className="h-10 w-10 p-0! mx-auto mb-2" />
                 <span className="text-xs">{t("catalog.noImages")}</span>
               </div>
             </div>
@@ -144,64 +144,45 @@ const ModelDetailPage = () => {
         {/* Info Card */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Package className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+              <Package className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
+              <h2 className="font-title text-lg font-semibold">
                 {t("catalog.info")}
               </h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+              <div className="text-xs uppercase flex items-center gap-1">
                 <Package className="h-3 w-3" /> {t("catalog.name")}
               </div>
-              <div className="text-sm font-medium text-slate-900 mt-1">
-                {model.name}
-              </div>
+              <div className="text-sm font-medium mt-1">{model.name}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                {t("catalog.category")}
-              </div>
-              <div className="text-sm text-slate-700 mt-1">
-                {model.category || "—"}
-              </div>
+              <div className="text-xs uppercase">{t("catalog.category")}</div>
+              <div className="text-sm mt-1">{model.category || ""}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                {t("catalog.status")}
-              </div>
+              <div className="text-xs uppercase">{t("catalog.status")}</div>
               <div className="mt-1">
                 <Badge>{model.status}</Badge>
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+              <div className="text-xs uppercase flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" /> {t("catalog.createdAt")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">
-                {formatDate(model.createdAt)}
-              </div>
+              <div className="text-sm mt-1">{formatDate(model.createdAt)}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+              <div className="text-xs uppercase flex items-center gap-1">
                 <User className="h-3 w-3" /> {t("catalog.author")}
               </div>
-              <div className="text-sm text-slate-700 mt-1">
-                {model.author || "—"}
-              </div>
+              <div className="text-sm mt-1">{model.author?.email || ""}</div>
             </div>
           </div>
-          <Button
-            className="w-full mt-6 cursor-pointer"
-            variant="secondary"
-            onClick={() => navigate("/catalog/models")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" /> {t("catalog.back")}
-          </Button>
         </Card>
       </div>
 

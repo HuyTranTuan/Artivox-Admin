@@ -8,11 +8,12 @@ import { DataTable, TableToolbar, useDataTable } from "@components/DataTable";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { staffService } from "@services/staffService";
 import useToast from "@hooks/useToast";
+import { useRBAC } from "@/hooks/useRBAC";
 
 const StaffPermissionsPage = () => {
   const { t } = useTranslation();
-
   const { toastTopRight } = useToast();
+  const { isAdmin } = useRBAC();
 
   const fetchStaff = useCallback(async () => {
     // getAdminUsers returns an array of staff/admin users. We map them into paginated structure for compatibility.
@@ -83,6 +84,16 @@ const StaffPermissionsPage = () => {
   };
 
   const handleSave = async (user) => {
+    if (!isAdmin) {
+      toastTopRight(
+        "error",
+        t(
+          "staff.noPermission",
+          "You do not have permission to perform this action",
+        ),
+      );
+      return;
+    }
     setSavingId(user.email);
     try {
       const perms = permissionsState[user.email] || {
@@ -91,11 +102,17 @@ const StaffPermissionsPage = () => {
         del: false,
       };
       await staffService.updateStaffPermissions(user.email, perms);
-      toastTopRight("success", "Permissions updated successfully");
+      toastTopRight(
+        "success",
+        t("staff.permissionsUpdated", "Permissions updated successfully"),
+      );
       refetch();
     } catch (err) {
       console.error(err);
-      toastTopRight("error", "Failed to update permissions");
+      toastTopRight(
+        "error",
+        t("staff.permissionsUpdateError", "Failed to update permissions"),
+      );
     } finally {
       setSavingId(null);
     }
@@ -114,7 +131,7 @@ const StaffPermissionsPage = () => {
       width: "2fr",
       render: (item) => (
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-slate-100 flex shrink-0 items-center justify-center overflow-hidden">
+          <div className="h-10 w-10 rounded-full bg-(--color-primary)/10 flex shrink-0 items-center justify-center overflow-hidden">
             {item.avatar ? (
               <img
                 src={item.avatar}
@@ -122,17 +139,17 @@ const StaffPermissionsPage = () => {
                 className="h-full w-full object-cover"
               />
             ) : (
-              <span className="text-sm font-semibold text-slate-500">
+              <span className="text-sm font-semibold ">
                 {item.fullName?.[0]?.toUpperCase() ||
                   item.email[0].toUpperCase()}
               </span>
             )}
           </div>
           <div>
-            <div className="font-title text-sm font-semibold text-slate-900">
+            <div className="font-title text-sm font-semibold ">
               {item.fullName || "No Name"}
             </div>
-            <div className="text-xs text-slate-500">{item.email}</div>
+            <div className="text-xs ">{item.email}</div>
           </div>
         </div>
       ),
@@ -170,7 +187,7 @@ const StaffPermissionsPage = () => {
                   checked={perms.create}
                   onChange={() => handleToggle(item.email, "create")}
                 />
-                <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-3 w-3"
@@ -185,7 +202,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-emerald-600 transition-colors">
+              <span className="text-sm font-medium  select-none group-hover:text-emerald-600 transition-colors">
                 {t("catalog.create")}
               </span>
             </label>
@@ -198,7 +215,7 @@ const StaffPermissionsPage = () => {
                   checked={perms.update}
                   onChange={() => handleToggle(item.email, "update")}
                 />
-                <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-3 w-3"
@@ -213,7 +230,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-amber-600 transition-colors">
+              <span className="text-sm font-medium  select-none group-hover:text-amber-600 transition-colors">
                 {t("update")}
               </span>
             </label>
@@ -226,7 +243,7 @@ const StaffPermissionsPage = () => {
                   checked={perms.del}
                   onChange={() => handleToggle(item.email, "del")}
                 />
-                <span className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-3 w-3"
@@ -241,7 +258,7 @@ const StaffPermissionsPage = () => {
                   </svg>
                 </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 select-none group-hover:text-rose-600 transition-colors">
+              <span className="text-sm font-medium  select-none group-hover:text-rose-600 transition-colors">
                 {t("catalog.delete")}
               </span>
             </label>

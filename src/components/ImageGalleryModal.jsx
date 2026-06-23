@@ -86,7 +86,7 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
             ) : (
               <div className="flex h-64 w-64 items-center justify-center rounded-xl bg-slate-800 text-slate-400">
                 <div className="text-center">
-                  <div className="text-4xl mb-2">🖼️</div>
+                  <div className="text-4xl mb-2">ðŸ–¼ï¸</div>
                   <div className="text-sm">{t('imageUnavailable')}</div>
                 </div>
               </div>

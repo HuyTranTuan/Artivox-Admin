@@ -40,7 +40,7 @@ export default CreateProductForm = () => {
   return (
     <Card className="w-full max-w-md p-8">
       <div className="mb-8">
-        <div className="font-title text-3xl font-bold text-slate-950">
+        <div className="font-title text-3xl font-bold">
           {t("common.signIn")}
         </div>
         <div className="mt-2 text-sm text-slate-500">

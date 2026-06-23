@@ -18,6 +18,12 @@ export const customerService = {
     return response;
   },
 
+  // Fetch a single customer by id
+  getCustomerById: async (id) => {
+    const response = await axiosClient.get(`/customers/id/${id}`);
+    return response;
+  },
+
   // Update customer
   updateCustomer: async (id, data) => {
     const response = await axiosClient.patch(`/customers/${id}/update`, data);

@@ -6,7 +6,9 @@ import { Card } from "@components/ui/card";
 import RichTextEditor from "@/components/RichTextEditor";
 import { useUiStore } from "@store/uiStore";
 import { useAuthStore } from "@store/authStore";
+import { useRBAC } from "@hooks/useRBAC";
 import { useTranslation } from "@hooks/useTranslation";
+import { useToast } from "@hooks/useToast";
 import { articleService } from "@services/articleService";
 import Loading from "@components/Loading";
 
@@ -33,6 +35,7 @@ const EditArticlePage = () => {
 
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { toastTopRight } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -127,10 +130,18 @@ const EditArticlePage = () => {
       }
 
       await articleService.updateArticle(articleSlug, formData);
+      toastTopRight(
+        "success",
+        t("articles.updateSuccess") || "Article updated successfully",
+      );
       navigate("/articles");
     } catch (err) {
       console.error("Failed to update article", err);
       setError("Failed to update article");
+      toastTopRight(
+        "error",
+        t("articles.updateError") || "Failed to update article",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -162,11 +173,11 @@ const EditArticlePage = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={handleCancel}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-amber-500 hover:text-white cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 dark:text-white transition hover:bg-amber-500 hover:text-white cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
-            <h2 className="font-title text-xl font-bold text-slate-900">
+            <h2 className="font-title text-xl font-bold text-slate-900 dark:text-white">
               {t("catalog.edit")}
             </h2>
           </div>
@@ -189,7 +200,7 @@ const EditArticlePage = () => {
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={t("articles.slugPlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
         </div>
 
@@ -211,9 +222,9 @@ const EditArticlePage = () => {
             type="file"
             accept="image/*"
             onChange={(e) => setCoverImage(e.target.files[0])}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           />
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-500 dark:text-white">
             {t("articles.coverImage") ||
               "Upload a new image to replace the current one."}
           </p>
@@ -229,7 +240,7 @@ const EditArticlePage = () => {
                 className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
                   activeTab === tab.value
                     ? "border-amber-500 text-amber-600"
-                    : "border-transparent text-slate-500 hover:text-slate-700"
+                    : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
                 }`}
               >
                 {t(tab.labelKey)}
@@ -253,7 +264,7 @@ const EditArticlePage = () => {
               placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
@@ -274,7 +285,7 @@ const EditArticlePage = () => {
                   locale: activeTab.toUpperCase(),
                 }) || "Enter summary"
               }
-              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 

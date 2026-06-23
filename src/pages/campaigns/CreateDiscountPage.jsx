@@ -8,8 +8,8 @@ import { Input } from "@components/ui/input";
 import { discountService } from "@services/discountService";
 
 const discountTypes = [
-  { value: "PERCENT", label: "Percentage (%)" },
-  { value: "FIXED", label: "Fixed Amount (₫)" },
+  { value: "PERCENT", label: "discounts.percentage" },
+  { value: "FIXED", label: "discounts.fixed" },
 ];
 
 const CreateDiscountPage = () => {
@@ -111,12 +111,13 @@ const CreateDiscountPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={handleCancel}
-            className="flex h-13 w-13 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            variant={"outline"}
+            className="h-13 w-13 rounded-lg transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
+          </Button>
           <h2 className="font-title text-xl font-bold">
             {isEditMode ? "Edit Discount" : "Create Discount"}
           </h2>
@@ -135,7 +136,7 @@ const CreateDiscountPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Discount Code (ex. SUMMER20)
+              {t("catalog.discountCode")} (ex. SUMMER20)
             </label>
             <Input
               value={form.code}
@@ -147,7 +148,7 @@ const CreateDiscountPage = () => {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Campaign Name (Internal)
+              {t("catalog.campaignName")}
             </label>
             <Input
               value={form.name}
@@ -177,11 +178,11 @@ const CreateDiscountPage = () => {
             <select
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="h-13 w-full rounded-xl border border-slate-300 px-3 text-sm outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             >
               {discountTypes.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {t(opt.label)}
                 </option>
               ))}
             </select>
@@ -189,14 +190,14 @@ const CreateDiscountPage = () => {
 
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Value {form.type === "PERCENT" ? "(%)" : "(₫)"}
+              {t("catalog.value")} {form.type === "PERCENT" ? "(%)" : "(VNĐ)"}
             </label>
             <Input
               type="number"
               value={form.value}
               onChange={(e) => handleChange("value", e.target.value)}
               placeholder={form.type === "PERCENT" ? "e.g. 20" : "e.g. 50000"}
-              min="0"
+              min="10000"
             />
           </div>
         </div>
@@ -205,7 +206,7 @@ const CreateDiscountPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              Minimum Order (₫)
+              {t("discounts.minimumOrder")}
             </label>
             <Input
               type="number"
@@ -265,7 +266,7 @@ const CreateDiscountPage = () => {
             onChange={(e) =>
               handleChange("isActive", e.target.value === "active")
             }
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
             <option value="active">{t("catalog.active")}</option>
             <option value="inactive">{t("catalog.inactive")}</option>

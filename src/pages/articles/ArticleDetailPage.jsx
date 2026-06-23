@@ -53,15 +53,15 @@ const ArticleDetailPage = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/articles")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <h1 className="font-title text-xl font-bold text-slate-900">
+          <h1 className="font-title text-xl font-bold">
             {t("articleNotFound")}
           </h1>
         </div>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm">
           {t("theArticleYoureLookingForDoesntExistOrHasBeenRemoved")}
         </p>
       </section>
@@ -75,20 +75,21 @@ const ArticleDetailPage = () => {
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-3">
-        <button
+        <Button
+          variant="outline"
+          className="flex h-8 w-8 items-center justify-center rounded-lg cursor-pointer hover:bg-(--color-primary) p-0!"
           onClick={() => navigate("/articles")}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
         >
           <ArrowLeft className="h-4 w-4" />
-        </button>
-        <h1 className="font-title text-xl font-bold text-slate-900">
+        </Button>
+        <h1 className="font-title text-xl font-bold">
           {translation.title || article.title || "Untitled"}
         </h1>
       </div>
 
       <Card className="p-6 space-y-6">
         {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+        <div className="flex flex-wrap items-center gap-4 text-sm">
           <div className="flex items-center gap-1.5">
             <User className="h-4 w-4" />
             <span>{authorName}</span>

@@ -53,12 +53,10 @@ const MaterialDetailPage = () => {
     return (
       <section className="space-y-6">
         <Card className="p-6">
-          <div className="text-sm text-slate-500">
-            {t("catalog.noMaterials")}
-          </div>
+          <div className="text-sm ">{t("catalog.noMaterials")}</div>
           <Button
             variant="ghost"
-            className="mt-4"
+            className="mt-4 "
             onClick={() => navigate("/catalog/materials")}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -74,27 +72,22 @@ const MaterialDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 p-0 rounded-lg"
+          className="h-10 w-10 p-0! rounded-lg hover:bg-(--color-primary)! cursor-pointer"
           onClick={() => navigate("/catalog/materials")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <div>
-          <h1 className="font-title text-2xl font-bold text-slate-950">
-            {material.name}
-          </h1>
-          <p className="text-sm text-slate-500 font-mono">{material.slug}</p>
-        </div>
+        <h1 className="font-title text-2xl font-bold ">{material.name}</h1>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Layers className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg  flex items-center justify-center">
+              <Layers className="h-5 w-5 " />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
+              <h2 className="font-title text-lg font-semibold ">
                 {t("catalog.materialDetail")}
               </h2>
             </div>
@@ -103,7 +96,7 @@ const MaterialDetailPage = () => {
           {material.images && material.images.length > 0 ? (
             <div className="space-y-4">
               <div
-                className="relative h-64 rounded-xl overflow-hidden bg-slate-100 cursor-pointer group"
+                className="relative h-64 rounded-xl overflow-hidden  cursor-pointer group"
                 onClick={() => {
                   setGalleryIndex(0);
                   setGalleryOpen(true);
@@ -117,8 +110,8 @@ const MaterialDetailPage = () => {
                     e.target.style.display = "none";
                   }}
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition text-white font-semibold bg-black/50 rounded-lg px-4 py-2">
+                <div className="absolute inset-0 bg-(--color-border) group-hover:bg-black/30 transition flex items-center justify-center">
+                  <div className="opacity-30 group-hover:opacity-100 transition font-semibold rounded-lg px-4 py-2">
                     {t("catalog.viewAllImages", {
                       count: material.images.length,
                     })}
@@ -146,7 +139,7 @@ const MaterialDetailPage = () => {
               )}
             </div>
           ) : (
-            <div className="h-48 rounded-xl bg-slate-100 flex items-center justify-center">
+            <div className="h-48 rounded-xl  flex items-center justify-center">
               <div className="text-center text-slate-400">
                 <Layers className="h-10 w-10 mx-auto mb-2" />
                 <span className="text-xs">{t("catalog.noImages")}</span>
@@ -157,62 +150,54 @@ const MaterialDetailPage = () => {
 
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Package className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg  flex items-center justify-center">
+              <Package className="h-5 w-5 " />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">
+              <h2 className="font-title text-lg font-semibold ">
                 {t("catalog.info")}
               </h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                {t("catalog.name")}
-              </div>
-              <div className="text-sm font-medium text-slate-900 mt-1">
-                {material.name}
-              </div>
+              <div className="text-xs  uppercase">{t("catalog.name")}</div>
+              <div className="text-sm font-medium  mt-1">{material.name}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                {t("catalog.type")}
-              </div>
+              <div className="text-xs  uppercase">{t("catalog.type")}</div>
               <div className="text-sm text-slate-700 mt-1">
-                {material.type || "—"}
+                {material.type || ""}
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">
-                {t("catalog.status")}
-              </div>
+              <div className="text-xs  uppercase">{t("catalog.status")}</div>
               <div className="mt-1">
                 <Badge>{material.status}</Badge>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+                <div className="text-xs  uppercase flex items-center gap-1">
                   <PackageCheck className="h-3 w-3" /> {t("catalog.stock")}
                 </div>
                 <div className="text-sm text-slate-700 mt-1">
-                  {material.stock ?? "—"}
+                  {material.stock ?? ""}
                 </div>
               </div>
               <div>
-                <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+                <div className="text-xs  uppercase flex items-center gap-1">
                   <DollarSign className="h-3 w-3" /> {t("catalog.price")}
                 </div>
                 <div className="text-sm text-slate-700 mt-1">
                   {material.price
-                    ? `₫${Number(material.price).toLocaleString()}`
-                    : "—"}
+                    ? `${Number(material.price).toLocaleString()}`
+                    : ""}
                 </div>
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+              <div className="text-xs  uppercase flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" /> {t("catalog.createdAt")}
               </div>
               <div className="text-sm text-slate-700 mt-1">
@@ -220,21 +205,14 @@ const MaterialDetailPage = () => {
               </div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase flex items-center gap-1">
+              <div className="text-xs  uppercase flex items-center gap-1">
                 <User className="h-3 w-3" /> {t("catalog.author")}
               </div>
               <div className="text-sm text-slate-700 mt-1">
-                {material.author || "—"}
+                {material.author || ""}
               </div>
             </div>
           </div>
-          <Button
-            className="w-full mt-6"
-            variant="secondary"
-            onClick={() => navigate("/catalog/materials")}
-          >
-            <ArrowLeft className="h-4 w-4 mr-1" /> {t("catalog.back")}
-          </Button>
         </Card>
       </div>
 

@@ -30,12 +30,12 @@ const knowledgeBase = [
   {
     keywords: ["price", "cost", "how much", "cheap", "expensive", "discount"],
     reply:
-      "Our prices vary by product. You can check the catalog for exact pricing. We regularly offer discounts and bundle deals — I can notify you of current promotions if you'd like!",
+      "Our prices vary by product. You can check the catalog for exact pricing. We regularly offer discounts and bundle deals ” I can notify you of current promotions if you'd like!",
     intent: "pricing",
   },
   {
     keywords: ["hello", "hi", "hey", "good morning", "good evening", "help"],
-    reply: "Hello! 👋 Welcome to Artivox Support. How can I assist you today? You can ask about orders, materials, shipping, or anything else!",
+    reply: "Hello! ðŸ‘‹ Welcome to Artivox Support. How can I assist you today? You can ask about orders, materials, shipping, or anything else!",
     intent: "greeting",
   },
   {
@@ -61,7 +61,7 @@ const knowledgeBase = [
 ];
 
 const FALLBACK_REPLIES = [
-  "Thank you for reaching out. I'm checking this for you — could you provide a bit more detail?",
+  "Thank you for reaching out. I'm checking this for you ” could you provide a bit more detail?",
   "I see your message. Let me look into this and get back to you shortly.",
   "Thanks for your patience! Could you clarify your question so I can assist you better?",
   "Our support team will review your request and get back to you as soon as possible.",
@@ -86,7 +86,7 @@ export const getAutoReply = (message) => {
     let score = 0;
     for (const keyword of entry.keywords) {
       if (lower.includes(keyword)) {
-        // Weight by keyword length — more specific keywords = higher score
+        // Weight by keyword length ” more specific keywords = higher score
         score += keyword.length * 1.5;
       }
       // Also check word boundary matches

@@ -42,12 +42,16 @@ const CollectionDetailPage = () => {
     return (
       <section className="space-y-6">
         <Card className="p-6">
-          <div className="text-sm text-slate-500">{t('collectionNotFound')}</div>
+          <div className="text-sm text-slate-500 dark:text-white">
+            {t("collectionNotFound")}
+          </div>
           <Button
             variant="ghost"
             className="mt-4"
             onClick={() => navigate("/catalog/collections")}
-          >{t('backToCollections')}</Button>
+          >
+            {t("backToCollections")}
+          </Button>
         </Card>
       </section>
     );
@@ -59,7 +63,7 @@ const CollectionDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 p-0! rounded-lg"
+          className="h-10 w-10 p-0! rounded-lg hover:bg-(--color-primary)! cursor-pointer"
           onClick={() => navigate("/catalog/collections")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -71,35 +75,39 @@ const CollectionDetailPage = () => {
         {/* Info Card */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Package className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+              <Package className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t('catalog.collectionInfo')}</h2>
+              <h2 className="font-title text-lg font-semibold">
+                {t("catalog.collectionInfo")}
+              </h2>
             </div>
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t('catalog.name')}</div>
-              <div className="text-sm font-medium text-slate-900 mt-1">
-                {collection.name}
+              <div className="text-xs font-semibold uppercase">
+                {t("catalog.name")}
               </div>
+              <div className="text-sm mt-1">{collection.name}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t('articles.slug')}</div>
-              <div className="text-sm font-mono text-slate-700 mt-1">
-                {collection.slug}
+              <div className="text-xs font-semibold uppercase">
+                {t("articles.slug")}
               </div>
+              <div className="text-sm mt-1">{collection.slug}</div>
             </div>
             <div>
-              <div className="text-xs text-slate-500 uppercase">{t('catalog.description')}</div>
-              <div className="text-sm text-slate-700 mt-1">
-                {collection.description || "—"}
+              <div className="text-xs font-semibold uppercase">
+                {t("catalog.description")}
               </div>
+              <div className="text-sm mt-1">{collection.description}</div>
             </div>
             {collection.status && (
               <div>
-                <div className="text-xs text-slate-500 uppercase">{t('articles.status')}</div>
+                <div className="text-xs font-semibold uppercase">
+                  {t("articles.status")}
+                </div>
                 <div className="mt-1">
                   <Badge>{collection.status}</Badge>
                 </div>
@@ -111,31 +119,37 @@ const CollectionDetailPage = () => {
         {/* Products in this collection */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-              <Eye className="h-5 w-5 text-slate-600" />
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+              <Eye className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="font-title text-lg font-semibold text-slate-900">{t('catalog.products')}</h2>
-              <p className="text-xs text-slate-500">
-                {collection.products?.length || 0} items
-              </p>
+              <h2 className="font-title text-lg font-semibold flex items-center gap-2">
+                {t("catalog.products")}
+                <span className="text-sm">({collection.products?.length})</span>
+              </h2>
             </div>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 border-b border-slate-300">
-              <div>{t('catalog.product')}</div>
-              <div>{t('catalog.type')}</div>
-              <div>{t('catalog.price')}</div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 text-xs uppercase tracking-[0.2em] border-b border-slate-300">
+              <div className="font-semibold">{t("catalog.product")}</div>
+              <div className="font-semibold">{t("catalog.type")}</div>
+              <div className="font-semibold">{t("catalog.price")}</div>
             </div>
             {(collection.products || []).length === 0 ? (
-              <div className="px-4 py-8 text-sm text-slate-500 text-center">{t('catalog.noProducts')}</div>
+              <div className="px-4 py-8 text-sm text-center">
+                {t("catalog.noProducts")}
+              </div>
             ) : (
               <div className="divide-y divide-slate-100">
                 {collection.products.map((product) => (
-                  <div key={product.id} className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 items-center hover:bg-slate-50 transition-colors">
-                    <div className="text-sm font-medium text-slate-900">{product.name}</div>
-                    <div className="text-xs text-slate-500">{product.type}</div>
-                    <div className="text-sm text-slate-900">${product.basePrice}</div>
+                  <div
+                    key={product.id}
+                    className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 items-center hover:bg-slate-50 dark:hover:bg-neutral-800\/50 transition-colors"
+                  >
+                    <div className="text-sm font-medium ">{product.name}</div>
+                    <div className="text-xs ">{product.type}</div>
+                    <div className="text-sm ">${product.basePrice}</div>
                   </div>
                 ))}
               </div>

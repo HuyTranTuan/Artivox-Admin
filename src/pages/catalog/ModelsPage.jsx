@@ -10,6 +10,7 @@ import {
   GripVertical,
   Loader2,
 } from "lucide-react";
+
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
@@ -25,6 +26,7 @@ import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { useAuthStore } from "@store/authStore";
+import { useRBAC } from "@hooks/useRBAC";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
@@ -32,41 +34,8 @@ import { useTranslation } from "@hooks/useTranslation";
 import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
 import useToast from "@hooks/useToast";
-
-const ThumbnailPreview = ({ images, onClick }) => {
-  const { t } = useTranslation();
-
-  if (!images || images.length === 0) {
-    return (
-      <div
-        onClick={onClick}
-        className="h-16 w-16 rounded-lg bg-slate-100 flex items-center justify-center cursor-pointer hover:bg-slate-200 transition border border-slate-200"
-      >
-        <ImageIcon className="h-5 w-5 text-slate-400" />
-      </div>
-    );
-  }
-  const firstImg = images[0];
-  const imgSrc =
-    typeof firstImg === "string" ? firstImg : firstImg?.thumb || firstImg?.url;
-  return (
-    <div className="relative group" onClick={onClick}>
-      <img
-        src={imgSrc}
-        alt="thumbnail"
-        className="h-16 w-16 rounded-lg object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
-        onError={(e) => {
-          e.target.style.display = "none";
-        }}
-      />
-      {images.length > 1 && (
-        <span className="absolute -bottom-1.5 -right-1.5 bg-amber-500 text-white text-[9px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow">
-          +{images.length - 1}
-        </span>
-      )}
-    </div>
-  );
-};
+import ThumbnailPreview from "@components/ThumbnailPreview";
+import { Input } from "@/components/ui/input";
 
 const ModelsPage = () => {
   const navigate = useNavigate();
@@ -202,9 +171,7 @@ const ModelsPage = () => {
       label: t("catalog.name"),
       width: "2fr",
       render: (item) => (
-        <div className="font-title text-base font-semibold text-slate-900">
-          {item.name}
-        </div>
+        <div className="font-title text-base font-semibold">{item.name}</div>
       ),
     },
     {
@@ -227,19 +194,13 @@ const ModelsPage = () => {
       key: "createdAt",
       label: t("catalog.createdAt"),
       width: "1fr",
-      render: (item) => (
-        <div className="text-xs text-slate-500">
-          {formatDate(item.createdAt)}
-        </div>
-      ),
+      render: (item) => <div className="">{formatDate(item.createdAt)}</div>,
     },
     {
       key: "stock",
       label: t("catalog.stock"),
       width: "1fr",
-      render: (item) => (
-        <div className="text-xs text-slate-500">{item.stock}</div>
-      ),
+      render: (item) => <div className="">{item.stock}</div>,
     },
     {
       key: "actions",
@@ -404,40 +365,40 @@ const ModelsPage = () => {
 
   const renderActionButtons = (item) => (
     <div className="flex gap-1.5">
-      <button
+      <Button
         onClick={(e) => {
           e.stopPropagation();
           handleRowClick(item.slug);
         }}
-        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-        style={{ padding: 5 }}
+        className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+        variant="default"
       >
         <Eye style={{ width: 18, height: 18 }} />
-      </button>
+      </Button>
       {canUpdate && (
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             handleEdit(item);
           }}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-          style={{ padding: 5 }}
+          className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+          variant="outline"
         >
           <Edit style={{ width: 18, height: 18 }} />
-        </button>
+        </Button>
       )}
       {canDelete && (
-        <button
+        <Button
+          variant="destructive"
           onClick={(e) => {
             e.stopPropagation();
             setSelectedItem(item);
             setOpenDialog("delete");
           }}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-          style={{ padding: 5 }}
+          className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
         >
           <Trash2 style={{ width: 18, height: 18 }} />
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -445,15 +406,15 @@ const ModelsPage = () => {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div
         ref={dialogRef}
-        className="bg-white rounded-2xl shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-(--color-background) rounded-2xl shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <h2 className="font-title text-xl font-bold text-slate-900 mb-6">
+        <h2 className="font-title text-xl font-bold dark:mb-6">
           {t("catalog.editModel")}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-title text-sm font-semibold0 dark:border-b border-slate-100 pb-2">
               {t("catalog.info")}
             </h3>
             <FormField
@@ -467,13 +428,15 @@ const ModelsPage = () => {
               value={form.slug}
               readOnly
               placeholder={t("catalog.slug")}
-              className="bg-slate-50 text-slate-500 cursor-not-allowed border-slate-200"
+              className="cursor-not-allowed border-slate-200"
             />
             <FormField
               label={t("catalog.description")}
               type="textarea"
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder={t("catalog.description")}
               rows={3}
             />
@@ -482,7 +445,9 @@ const ModelsPage = () => {
                 label={`${t("catalog.price")} (VND)`}
                 type="number"
                 value={form.basePrice}
-                onChange={(e) => setForm({ ...form, basePrice: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, basePrice: e.target.value })
+                }
                 placeholder={t("catalog.price")}
               />
               <FormField
@@ -497,42 +462,50 @@ const ModelsPage = () => {
               label={t("catalog.status")}
               type="select"
               value={form.isActive ? "active" : "inactive"}
-              onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
+              onChange={(e) =>
+                setForm({ ...form, isActive: e.target.value === "active" })
+              }
               options={[
                 { value: "active", label: t("catalog.active") },
-                { value: "inactive", label: t("catalog.inactive") }
+                { value: "inactive", label: t("catalog.inactive") },
               ]}
             />
             <FormField
               label={t("collection")}
               type="select"
               value={form.collectionId || ""}
-              onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, collectionId: e.target.value })
+              }
               options={[
                 { value: "", label: t("selectCollection") },
-                ...collections.map((c) => ({ value: c.id, label: c.name }))
+                ...collections.map((c) => ({ value: c.id, label: c.name })),
               ]}
             />
 
-            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2 pt-4">
+            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2 pt-4">
               {t("catalog.3dModelFiles")}
             </h3>
             <FormField
               label={t("catalog.previewFileUrl")}
               value={form.previewFileUrl}
-              onChange={(e) => setForm({ ...form, previewFileUrl: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, previewFileUrl: e.target.value })
+              }
               placeholder={t("catalog.previewFileUrl")}
             />
             <FormField
               label={t("catalog.sourceFileUrl")}
               value={form.sourceFileUrl}
-              onChange={(e) => setForm({ ...form, sourceFileUrl: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, sourceFileUrl: e.target.value })
+              }
               placeholder={t("catalog.sourceFileUrl")}
             />
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold text-slate-900 border-b border-slate-100 pb-2">
+            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2">
               {t("catalog.images")}
             </h3>
             <ImageUploadBox
@@ -554,41 +527,42 @@ const ModelsPage = () => {
               t={t}
             />
             <div>
-              <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+              <label className="text-xs font-semibold mb-1.5 block">
                 {t("catalog.gallery")} ({formGalleryImages.length})
               </label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2 bg-slate-50/50">
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2">
                 {formGalleryImages.length === 0 ? (
-                  <div className="text-center py-4 text-xs text-slate-400">
+                  <div className="text-center py-4 text-xs">
                     {t("catalog.noImages")}
                   </div>
                 ) : (
                   formGalleryImages.map((img, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 bg-white rounded-lg px-2 py-1.5 border border-slate-100 shadow-sm"
+                      className="flex items-center gap-2  rounded-lg px-2 py-1.5 border border-slate-100 shadow-sm"
                     >
-                      <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
+                      <GripVertical className="h-4 w-4 shrink-0 cursor-grab" />
                       <img
                         src={img.preview}
                         alt={img.alt || `Gallery ${idx + 1}`}
                         className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
                       />
-                      <span className="flex-1 text-xs text-slate-600 truncate">
+                      <span className="flex-1 text-xs dark:truncate">
                         {img.file?.name || img.alt || `Image ${idx + 1}`}
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => removeGalleryImage(idx)}
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-rose-500 hover:text-rose-700 shrink-0"
+                        onClick={() => removeGalleryImage(idx)}
                       >
                         <X className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   ))
                 )}
               </div>
-              <input
+              <Input
                 ref={galleryInputRef}
                 type="file"
                 accept="image/*"
@@ -597,10 +571,9 @@ const ModelsPage = () => {
                 onChange={handleGalleryAdd}
               />
               <Button
-                type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300"
+                className="mt-2 gap-1.5 text-xs h-12 w-full border border-dashed border-slate-300 hover:bg-(--color-primary)"
                 onClick={() => galleryInputRef.current?.click()}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -612,15 +585,15 @@ const ModelsPage = () => {
 
         <div className="flex gap-3 pt-4 border-t border-slate-100">
           <Button
-            variant="secondary"
-            className="flex-1 cursor-pointer"
+            variant="destructive"
+            className="flex-1 cursor-pointer h-12"
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
             {t("catalog.cancel")}
           </Button>
           <Button
-            className="flex-1 gap-2 cursor-pointer"
+            className="flex-1 gap-2 cursor-pointer h-12"
             onClick={handleSubmit}
             disabled={saving}
           >
@@ -640,8 +613,10 @@ const ModelsPage = () => {
             <div className="text-rose-500 font-semibold mb-2">
               {t("catalog.errorLoading")}
             </div>
-            <div className="text-sm text-slate-500 mb-4">{error}</div>
-            <Button onClick={refetch}>{t("catalog.retry")}</Button>
+            <div className="text-sm mb-4">{error}</div>
+            <Button onClick={refetch} className="h-12">
+              {t("catalog.retry")}
+            </Button>
           </div>
         </Card>
       </section>
@@ -694,12 +669,9 @@ const ModelsPage = () => {
             {loading ? (
               <div className="col-span-full flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-                <span className="ml-3 text-sm text-slate-500">
-                  {t("catalog.loading")}
-                </span>
               </div>
             ) : dt.paginated.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-sm text-slate-500">
+              <div className="col-span-full text-center py-8 text-sm">
                 {t("catalog.noModels")}
               </div>
             ) : (
@@ -710,7 +682,7 @@ const ModelsPage = () => {
                   onClick={() => handleRowClick(item.slug)}
                 >
                   <div
-                    className="relative h-48 bg-slate-100 cursor-pointer overflow-hidden"
+                    className="relative h-48 cursor-pointer overflow-hidden"
                     onClick={(e) => {
                       e.stopPropagation();
                       openGallery(item.images);
@@ -727,7 +699,7 @@ const ModelsPage = () => {
                           }}
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-                          <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 bg-white/90 rounded-full px-4 py-2 text-sm font-semibold text-slate-800">
+                          <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 /90 rounded-full px-4 py-2 text-sm font-semibold">
                             <ImageIcon className="h-4 w-4" />{" "}
                             {t("catalog.viewGallery")} ({item.images.length})
                           </div>
@@ -737,7 +709,7 @@ const ModelsPage = () => {
                             {item.images.slice(0, 3).map((_, idx) => (
                               <div
                                 key={idx}
-                                className="h-2 w-2 rounded-full bg-white/80"
+                                className="h-2 w-2 rounded-full /80"
                               />
                             ))}
                           </div>
@@ -745,7 +717,7 @@ const ModelsPage = () => {
                       </>
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
-                        <div className="text-center text-slate-400">
+                        <div className="text-center">
                           <ImageIcon className="h-10 w-10 mx-auto mb-2" />
                           <span className="text-xs">
                             {t("catalog.noImages")}
@@ -755,11 +727,11 @@ const ModelsPage = () => {
                     )}
                   </div>
                   <div className="p-4">
-                    <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                    <div className="font-title text-base font-semibold dark:mb-1">
                       {item.name}
                     </div>
-                    <div className="text-xs text-slate-500 mb-3">
-                      {item.basePrice?.toLocaleString()} VND •{" "}
+                    <div className="text-xs mb-3">
+                      {item.basePrice?.toLocaleString()} VND ¢{" "}
                       {t("catalog.createdAt")} {formatDate(item.createdAt)}
                     </div>
                     <div className="flex items-center justify-between">
@@ -796,12 +768,12 @@ const ModelsPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className=" rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
-            <h2 className="font-title text-xl font-bold text-slate-900 mb-4">
+            <h2 className="font-title text-xl font-bold dark:mb-4">
               {t("catalog.deleteTitle")}
             </h2>
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm dark:mb-4">
               {t("catalog.deleteConfirm", { name: selectedItem.name })}
             </p>
             <div className="flex gap-3">

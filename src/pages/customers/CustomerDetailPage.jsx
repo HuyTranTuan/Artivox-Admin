@@ -1,6 +1,6 @@
 import useTranslation from "@/hooks/useTranslation";
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowLeft,
   Mail,
@@ -14,34 +14,17 @@ import {
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-
-const mockCustomer = (id) => ({
-  id,
-  name: `Nguyen Minh ${id}`,
-  email: `customer${id}@example.com`,
-  phone: `+84 90000000${id}`,
-  status: ["Active", "Inactive", "Suspended"][id % 3],
-  tier: ["Standard", "Premium", "VIP"][id % 3],
-  address: "123 Nguyen Hue, District 1, HCMC",
-  totalOrders: 24,
-  totalSpent: 12500000,
-  joinedAt: "2025-08-15",
-  orders: Array.from({ length: 8 }, (_, i) => ({
-    id: 1000 + i,
-    date: new Date(
-      Date.now() - i * 7 * 24 * 60 * 60 * 1000,
-    ).toLocaleDateString(),
-    total: Math.floor(Math.random() * 5000000) + 200000,
-    status: ["Delivered", "Processing", "Shipped", "Pending"][i % 4],
-    items: Math.floor(Math.random() * 5) + 1,
-  })),
-});
-
+import { formatPrice } from "@/utils/formatUtils";
+import { customerService } from "@/services/customerService";
+import { orderService } from "@/services/orderService";
 const orderStatusColor = {
-  Delivered: "text-emerald-600",
-  Processing: "text-amber-600",
-  Shipped: "text-blue-600",
-  Pending: "text-slate-500",
+  DELIVERED: "text-emerald-600",
+  COMPLETED: "text-emerald-600",
+  PROCESSING: "text-amber-600",
+  SHIPPED: "text-blue-600",
+  PENDING: "text-(--color-primary)",
+  PAYMENT_CONFIRMED: "text-indigo-600",
+  CANCELED: "text-red-600",
 };
 
 const CustomerDetailPage = () => {
@@ -49,26 +32,52 @@ const CustomerDetailPage = () => {
 
   const { id } = useParams();
   const navigate = useNavigate();
-  const [customer] = useState(mockCustomer(Number(id)));
-  const fmt = (v) =>
-    new Intl.NumberFormat("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    }).format(v);
+  const [customer, setCustomer] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [customerRes, ordersRes] = await Promise.all([
+          customerService.getCustomerById(id),
+          orderService.listOrders({ customerId: id })
+        ]);
+        setCustomer(customerRes?.data || customerRes);
+        setOrders(ordersRes?.data || ordersRes || []);
+      } catch (error) {
+        console.error("Failed to fetch customer details", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-slate-500">Loading...</div>;
+  }
+
+  if (!customer) {
+    return <div className="p-8 text-center text-slate-500">Customer not found</div>;
+  }
+
+  const totalSpent = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
 
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
-          className="h-13 w-13 p-0! rounded-lg text-slate-500 hover:text-slate-50 hover:bg-slate-500"
+          variant="outline"
+          className="h-9 w-9 p-0! rounded-lg hover:bg-(--color-primary) cursor-pointer"
           onClick={() => navigate("/customers")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="font-title text-xl font-bold">{customer.fullName}</h1>
-          <p className="text-xl text-slate-500">Customer #{customer.id}</p>
+          <p className="text-xl">Customer #{customer.id}</p>
         </div>
       </div>
 
@@ -76,30 +85,28 @@ const CustomerDetailPage = () => {
         {/* Profile Card */}
         <Card className="p-6 lg:col-span-1">
           <div className="flex flex-col items-center text-center mb-6">
-            <div className="h-20 w-20 rounded-full bg-linear-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white text-2xl font-bold mb-3">
-              {customer.name.charAt(0)}
+            <div className="h-20 w-20 rounded-full bg-linear-to-br from-amber-500 to-orange-500 flex items-center justify-center text-2xl font-bold mb-3 text-white">
+              {customer.fullName?.charAt(0) || customer.email?.charAt(0) || "C"}
             </div>
-            <div className="font-title text-lg font-bold text-slate-900">
-              {customer.name}
-            </div>
-            <Badge className="mt-1">{customer.tier}</Badge>
+            <div className="font-title text-lg font-bold ">{customer.fullName}</div>
+            <Badge className="mt-1">Standard</Badge>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-slate-400 shrink-0" />
               {customer.email}
             </div>
-            <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="flex items-center gap-3 text-sm">
               <Phone className="h-4 w-4 text-slate-400 shrink-0" />
-              {customer.phone}
+              {customer.phone || "N/A"}
             </div>
-            <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="flex items-center gap-3 text-sm">
               <MapPin className="h-4 w-4 text-slate-400 shrink-0" />
-              {customer.address}
+              {customer.address || "N/A"}
             </div>
-            <div className="flex items-center gap-3 text-sm text-slate-600">
+            <div className="flex items-center gap-3 text-sm">
               <Calendar className="h-4 w-4 text-slate-400 shrink-0" />
-              Joined {customer.joinedAt}
+              Joined {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : "N/A"}
             </div>
           </div>
           <div className="mt-6 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4 text-center">
@@ -107,45 +114,47 @@ const CustomerDetailPage = () => {
               <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">
                 <ShoppingBag className="h-4 w-4" />
               </div>
-              <div className="font-title text-xl font-bold text-slate-900">
-                {customer.totalOrders}
+              <div className="font-title text-xl font-bold ">
+                {orders.length}
               </div>
-              <div className="text-xs text-slate-500">{t('customers.columns.orders')}</div>
+              <div className="text-xs ">{t("customers.columns.orders")}</div>
             </div>
             <div>
               <div className="flex items-center justify-center gap-1 text-slate-400 mb-1">
                 <CreditCard className="h-4 w-4" />
               </div>
-              <div className="font-title text-xl font-bold text-slate-900">
-                {fmt(customer.totalSpent)}
+              <div className="font-title text-xl font-bold ">
+                {formatPrice(totalSpent)}
               </div>
-              <div className="text-xs text-slate-500">{t('spent')}</div>
+              <div className="text-xs ">{t("spent")}</div>
             </div>
           </div>
         </Card>
 
         {/* Orders */}
         <Card className="p-6 lg:col-span-2">
-          <h2 className="font-title text-lg font-bold text-slate-900 mb-4">{t('dashboard.recentOrders')}</h2>
+          <h2 className="font-title text-lg font-bold  mb-4">
+            {t("dashboard.recentOrders")}
+          </h2>
           <div className="overflow-hidden rounded-2xl border border-slate-200">
-            <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em] text-slate-500 border-b border-slate-300">
-              <div>{t('orderId')}</div>
-              <div>{t('orders.date')}</div>
-              <div>{t('items')}</div>
-              <div>{t('total')}</div>
-              <div>{t('articles.status')}</div>
+            <div className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 bg-slate-50 px-4 py-3 text-xs uppercase tracking-[0.2em]  border-b border-slate-300">
+              <div>{t("orderId")}</div>
+              <div>{t("orders.date")}</div>
+              <div>{t("items")}</div>
+              <div>{t("total")}</div>
+              <div>{t("articles.status")}</div>
             </div>
-            {customer.orders.map((o) => (
+            {orders.map((o) => (
               <div
                 key={o.id}
-                className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-slate-200 px-4 py-3 text-sm text-slate-600"
+                className="grid grid-cols-[1fr_1fr_1fr_1fr_1fr] gap-4 border-b border-slate-200 px-4 py-3 text-sm"
               >
-                <div className="font-medium text-slate-900">#{o.id}</div>
-                <div>{o.date}</div>
-                <div>{o.items} items</div>
-                <div className="font-medium">{fmt(o.total)}</div>
+                <div className="font-medium ">#{o.orderNumber || o.id}</div>
+                <div>{new Date(o.createdAt || o.date).toLocaleDateString()}</div>
+                <div>{o.items?.length || o.items} </div>
+                <div className="font-medium">{formatPrice(o.totalAmount || o.total)}</div>
                 <div>
-                  <span className={`font-medium ${orderStatusColor[o.status]}`}>
+                  <span className={`font-medium ${orderStatusColor[o.status] || ''}`}>
                     {o.status}
                   </span>
                 </div>

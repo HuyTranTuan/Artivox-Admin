@@ -11,37 +11,61 @@ import Loading from "@components/Loading";
 import { useAuth } from "@hooks/useAuth";
 
 const RegisterPage = lazy(() => import("@pages/auth/RegisterPage"));
-const ArticleDetailPage = lazy(() => import("@pages/articles/ArticleDetailPage"));
+const ArticleDetailPage = lazy(
+  () => import("@pages/articles/ArticleDetailPage"),
+);
 const ArticlesPage = lazy(() => import("@/pages/campaigns/ArticlesPage"));
-const CreateArticlePage = lazy(() => import("@pages/campaigns/CreateArticlePage"));
+const CreateArticlePage = lazy(
+  () => import("@pages/campaigns/CreateArticlePage"),
+);
 const EditArticlePage = lazy(() => import("@/pages/campaigns/EditArticlePage"));
 const DiscountsPage = lazy(() => import("@/pages/campaigns/DiscountsPage"));
-const CreateDiscountPage = lazy(() => import("@/pages/campaigns/CreateDiscountPage"));
+const CreateDiscountPage = lazy(
+  () => import("@/pages/campaigns/CreateDiscountPage"),
+);
 const OrdersPage = lazy(() => import("@pages/orders/OrdersPage"));
 const OrderDetailPage = lazy(() => import("@pages/orders/OrderDetailPage"));
 const ModelsPage = lazy(() => import("@/pages/catalog/ModelsPage"));
 const CreateModelPage = lazy(() => import("@/pages/catalog/CreateModelPage"));
 const ModelDetailPage = lazy(() => import("@/pages/catalog/ModelDetailPage"));
 const MaterialsPage = lazy(() => import("@/pages/catalog/MaterialsPage"));
-const CreateMaterialPage = lazy(() => import("@/pages/catalog/CreateMaterialPage"));
-const MaterialDetailPage = lazy(() => import("@/pages/catalog/MaterialDetailPage"));
+const CreateMaterialPage = lazy(
+  () => import("@/pages/catalog/CreateMaterialPage"),
+);
+const MaterialDetailPage = lazy(
+  () => import("@/pages/catalog/MaterialDetailPage"),
+);
 const ToolsPage = lazy(() => import("@/pages/catalog/ToolsPage"));
 const CreateToolPage = lazy(() => import("@/pages/catalog/CreateToolPage"));
 const ToolDetailPage = lazy(() => import("@/pages/catalog/ToolDetailPage"));
 const CollectionsPage = lazy(() => import("@/pages/catalog/CollectionsPage"));
-const CreateCollectionPage = lazy(() => import("@/pages/catalog/CreateCollectionPage"));
-const CollectionDetailPage = lazy(() => import("@/pages/catalog/CollectionDetailPage"));
-const PersonalSettingsPage = lazy(() => import("@pages/settings/PersonalSettingsPage"));
+const CreateCollectionPage = lazy(
+  () => import("@/pages/catalog/CreateCollectionPage"),
+);
+const CollectionDetailPage = lazy(
+  () => import("@/pages/catalog/CollectionDetailPage"),
+);
+const PersonalSettingsPage = lazy(
+  () => import("@pages/settings/PersonalSettingsPage"),
+);
 const ChatPage = lazy(() => import("@pages/support/ChatPage"));
 const CustomersPage = lazy(() => import("@pages/customers/CustomersPage"));
-const CustomerDetailPage = lazy(() => import("@pages/customers/CustomerDetailPage"));
-const NotificationsPage = lazy(() => import("@pages/notifications/NotificationsPage"));
-const NotificationDetailPage = lazy(() => import("@pages/notifications/NotificationDetailPage"));
+const CustomerDetailPage = lazy(
+  () => import("@pages/customers/CustomerDetailPage"),
+);
+const NotificationsPage = lazy(
+  () => import("@pages/notifications/NotificationsPage"),
+);
+const NotificationDetailPage = lazy(
+  () => import("@pages/notifications/NotificationDetailPage"),
+);
 const OrderApprovalPage = lazy(() => import("@pages/orders/OrderApprovalPage"));
 const StaffAiChatPage = lazy(() => import("@pages/support/StaffAiChatPage"));
 const ChatAdminPage = lazy(() => import("@pages/support/ChatAdminPage"));
 const SearchResultPage = lazy(() => import("@pages/search/SearchResultPage"));
-const StaffPermissionsPage = lazy(() => import("@pages/staff/StaffPermissionsPage"));
+const StaffPermissionsPage = lazy(
+  () => import("@pages/staff/StaffPermissionsPage"),
+);
 
 const withLazyLoad = (Component) => (
   <Suspense fallback={<Loading />}>

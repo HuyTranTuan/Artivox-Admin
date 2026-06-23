@@ -311,7 +311,7 @@ const PersonalSettingsPage = () => {
           {/* Avatar */}
           <div className="relative">
             <div
-              className={`h-20 w-20 rounded-2xl flex items-center justify-center text-white text-3xl font-bold overflow-hidden ${
+              className={`h-20 w-20 rounded-2xl flex items-center justify-center text-3xl font-bold overflow-hidden ${
                 profile.avatar ? "" : DEFAULT_AVATAR_COLOR
               }`}
             >
@@ -325,11 +325,11 @@ const PersonalSettingsPage = () => {
                 initial
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-white flex items-center justify-center shadow-md border border-slate-200 cursor-pointer hover:bg-slate-50 transition">
+            <label className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full  flex items-center justify-center shadow-md border border-slate-200 cursor-pointer hover:bg-slate-50 hover:text-rose-500 transition">
               {avatarUploading ? (
-                <Loader2 className="h-3.5 w-3.5 text-slate-600 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5  animate-spin" />
               ) : (
-                <Camera className="h-3.5 w-3.5 text-slate-600" />
+                <Camera className="h-3.5 w-3.5 " />
               )}
               <input
                 type="file"
@@ -340,21 +340,22 @@ const PersonalSettingsPage = () => {
               />
             </label>
             {profile.avatar && (
-              <button
-                type="button"
+              <Button
+                variant="destructive"
+                size="sm"
+                className="absolute -top-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center shadow-sm transition"
                 onClick={handleRemoveAvatar}
-                className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-rose-500 shadow-sm transition"
               >
                 <X className="h-3 w-3" />
-              </button>
+              </Button>
             )}
           </div>
 
           <div>
-            <h1 className="font-title text-2xl font-bold text-slate-950">
+            <h1 className="font-title text-2xl font-bold ">
               {t("settings.title", "Personal settings")}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm ">
               {t(
                 "settings.subtitle",
                 "Manage your profile, security, and notification preferences",
@@ -375,14 +376,14 @@ const PersonalSettingsPage = () => {
           {/* Profile Information */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <User className="h-5 w-5 text-slate-600" />
+              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+                <User className="h-5 w-5 " />
               </div>
               <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
+                <h2 className="font-title text-lg font-semibold ">
                   {t("settings.profileInfo", "Profile Information")}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs ">
                   {t("settings.updateDetails", "Update your personal details")}
                 </p>
               </div>
@@ -391,7 +392,7 @@ const PersonalSettingsPage = () => {
             <form onSubmit={handleSaveProfile} className="space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.fullName", "Full Name")}
                 </label>
                 <Input
@@ -404,11 +405,11 @@ const PersonalSettingsPage = () => {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.emailAddress", "Email Address")}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                   <Input
                     type="email"
                     value={profile.email}
@@ -423,7 +424,7 @@ const PersonalSettingsPage = () => {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.phoneNumber", "Phone Number")}
                 </label>
                 <Input
@@ -435,14 +436,14 @@ const PersonalSettingsPage = () => {
 
               {/* Bio */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.bio", "Bio")}
                 </label>
                 <textarea
                   rows={3}
                   value={profile.bio}
                   onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition resize-none"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm  placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition resize-none"
                   placeholder={t(
                     "settings.bioPlaceholder",
                     "Tell us about yourself",
@@ -453,17 +454,17 @@ const PersonalSettingsPage = () => {
               {/* Language & Timezone */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium  mb-1.5">
                     {t("settings.language", "Language")}
                   </label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                     <select
                       value={profile.language}
                       onChange={(e) =>
                         handleProfileChange("language", e.target.value)
                       }
-                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
+                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
                     >
                       <option>English (US)</option>
                       <option>{t("vietnamese")}</option>
@@ -472,17 +473,17 @@ const PersonalSettingsPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  <label className="block text-sm font-medium  mb-1.5">
                     {t("settings.timezone", "Timezone")}
                   </label>
                   <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                     <select
                       value={profile.timezone}
                       onChange={(e) =>
                         handleProfileChange("timezone", e.target.value)
                       }
-                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
+                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
                     >
                       <option>Asia/Saigon (UTC+7)</option>
                       <option>Asia/Tokyo (UTC+9)</option>
@@ -511,14 +512,14 @@ const PersonalSettingsPage = () => {
           {/* Two-Factor Authentication */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-slate-600" />
+              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 " />
               </div>
               <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
+                <h2 className="font-title text-lg font-semibold ">
                   {t("settings.twoFactorAuth", "Two-Factor Authentication")}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs ">
                   {t(
                     "settings.twoFactorSubtitle",
                     "Add an extra layer of security to your account",
@@ -529,10 +530,10 @@ const PersonalSettingsPage = () => {
 
             <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
               <div>
-                <div className="text-sm font-medium text-slate-900">
+                <div className="text-sm font-medium ">
                   {t("settings.twoFactorAuthShort", "Two-Factor Auth")}
                 </div>
-                <div className="text-xs text-slate-500 mt-0.5">
+                <div className="text-xs  mt-0.5">
                   {profile.twoFactorEnabled
                     ? t(
                         "settings.2faProtected",
@@ -559,7 +560,7 @@ const PersonalSettingsPage = () => {
                   }`}
                 >
                   <span
-                    className={`block h-5 w-5 rounded-full bg-white shadow-sm transition transform translate-y-[2px] ${
+                    className={`block h-5 w-5 rounded-full  shadow-sm transition transform translate-y-[2px] ${
                       profile.twoFactorEnabled
                         ? "translate-x-[22px]"
                         : "translate-x-[2px]"
@@ -573,14 +574,14 @@ const PersonalSettingsPage = () => {
           {/* Avatar Upload Card */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Upload className="h-5 w-5 text-slate-600" />
+              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+                <Upload className="h-5 w-5 " />
               </div>
               <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
+                <h2 className="font-title text-lg font-semibold ">
                   {t("settings.avatar", "Avatar")}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs ">
                   {t(
                     "settings.uploadRemoveAvatar",
                     "Upload or remove your profile picture",
@@ -590,7 +591,7 @@ const PersonalSettingsPage = () => {
             </div>
             <div className="flex items-center gap-4">
               <label className="cursor-pointer">
-                <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition">
+                <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm  hover:bg-slate-50 dark:hover:bg-neutral-800\/50 transition">
                   <Camera className="h-4 w-4" />
                   {t("settings.chooseImage", "Choose image")}
                 </div>
@@ -621,14 +622,14 @@ const PersonalSettingsPage = () => {
           {/* Security */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Shield className="h-5 w-5 text-slate-600" />
+              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+                <Shield className="h-5 w-5 " />
               </div>
               <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
+                <h2 className="font-title text-lg font-semibold ">
                   {t("settings.security", "Security")}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs ">
                   {t(
                     "settings.securitySubtitle",
                     "Update your password and security settings",
@@ -640,7 +641,7 @@ const PersonalSettingsPage = () => {
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.currentPassword", "Current Password")}
                 </label>
                 <div className="relative">
@@ -664,7 +665,7 @@ const PersonalSettingsPage = () => {
                     onClick={() =>
                       setShowPw((prev) => ({ ...prev, current: !prev.current }))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2  hover: transition"
                   >
                     {showPw.current ? (
                       <EyeOff className="h-4 w-4" />
@@ -677,7 +678,7 @@ const PersonalSettingsPage = () => {
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.newPassword", "New Password")}
                 </label>
                 <div className="relative">
@@ -701,7 +702,7 @@ const PersonalSettingsPage = () => {
                     onClick={() =>
                       setShowPw((prev) => ({ ...prev, new: !prev.new }))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2  hover: transition"
                   >
                     {showPw.new ? (
                       <EyeOff className="h-4 w-4" />
@@ -714,7 +715,7 @@ const PersonalSettingsPage = () => {
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label className="block text-sm font-medium  mb-1.5">
                   {t("settings.confirmNewPassword", "Confirm New Password")}
                 </label>
                 <div className="relative">
@@ -741,7 +742,7 @@ const PersonalSettingsPage = () => {
                         confirm: !prev.confirm,
                       }))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2  hover: transition"
                   >
                     {showPw.confirm ? (
                       <EyeOff className="h-4 w-4" />
@@ -792,14 +793,14 @@ const PersonalSettingsPage = () => {
           {/* Notifications */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Bell className="h-5 w-5 text-slate-600" />
+              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+                <Bell className="h-5 w-5 " />
               </div>
               <div>
-                <h2 className="font-title text-lg font-semibold text-slate-900">
+                <h2 className="font-title text-lg font-semibold ">
                   {t("settings.notifications", "Notifications")}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs ">
                   {t(
                     "settings.notificationsSubtitle",
                     "Control what notifications you receive",
@@ -856,15 +857,11 @@ const PersonalSettingsPage = () => {
               ].map((item) => (
                 <label
                   key={item.key}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-800\/50 transition cursor-pointer"
                 >
                   <div>
-                    <div className="text-sm font-medium text-slate-900">
-                      {item.label}
-                    </div>
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {item.desc}
-                    </div>
+                    <div className="text-sm font-medium ">{item.label}</div>
+                    <div className="text-xs  mt-0.5">{item.desc}</div>
                   </div>
                   <div className="relative">
                     <input
@@ -883,7 +880,7 @@ const PersonalSettingsPage = () => {
                       }`}
                     >
                       <span
-                        className={`block h-5 w-5 rounded-full bg-white shadow-sm transition transform translate-y-[2px] ${
+                        className={`block h-5 w-5 rounded-full  shadow-sm transition transform translate-y-[2px] ${
                           notifications[item.key]
                             ? "translate-x-[22px]"
                             : "translate-x-[2px]"

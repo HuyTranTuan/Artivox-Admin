@@ -19,6 +19,7 @@ import { ImageIcon } from "lucide-react";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
+import { useRBAC } from "@hooks/useRBAC";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 
 const CollectionsPage = () => {
@@ -85,7 +86,10 @@ const CollectionsPage = () => {
     setDeleting(true);
     try {
       await collectionService.deleteCollection(selectedItem.slug);
-      toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.deleteSuccess", "Deleted successfully"),
+      );
       setOpenDialog(null);
       refetch();
     } catch (e) {
@@ -120,7 +124,7 @@ const CollectionsPage = () => {
       width: "80px",
       sortable: false,
       render: (item) => (
-        <div className="h-12 w-12 rounded bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden">
+        <div className="h-12 w-12 rounded-lg overflow-hidden flex items-center justify-center bg-amber-300">
           {item.image ? (
             <img
               src={item.image}
@@ -128,7 +132,7 @@ const CollectionsPage = () => {
               className="h-full w-full object-cover"
             />
           ) : (
-            <ImageIcon className="h-5 w-5 text-slate-400" />
+            <ImageIcon className="h-5 w-5" />
           )}
         </div>
       ),
@@ -139,10 +143,8 @@ const CollectionsPage = () => {
       width: "2fr",
       render: (r) => (
         <div>
-          <div className="font-semibold text-slate-900 truncate">
-            {r.name || r.title}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">{r.slug}</div>
+          <div className="text-sm font-semibold">{r.name || r.title}</div>
+          <div className="text-xs mt-1">{r.slug}</div>
         </div>
       ),
     },
@@ -151,10 +153,7 @@ const CollectionsPage = () => {
       label: t("catalog.description"),
       width: "2fr",
       render: (r) => (
-        <div
-          className="text-xs text-slate-500 line-clamp-2"
-          title={r.description}
-        >
+        <div className="text-xs line-clamp-2" title={r.description}>
           {r.description || "-"}
         </div>
       ),
@@ -187,21 +186,13 @@ const CollectionsPage = () => {
       key: "createdAt",
       label: t("catalog.createdAt"),
       width: "1fr",
-      render: (r) => (
-        <span className="text-xs text-slate-500">
-          {formatDate(r.createdAt)}
-        </span>
-      ),
+      render: (r) => <span className="text-xs">{formatDate(r.createdAt)}</span>,
     },
     {
       key: "updatedAt",
       label: t("catalog.updatedAt"),
       width: "1fr",
-      render: (r) => (
-        <span className="text-xs text-slate-500">
-          {formatDate(r.updatedAt)}
-        </span>
-      ),
+      render: (r) => <span className="text-xs">{formatDate(r.updatedAt)}</span>,
     },
     {
       key: "actions",
@@ -296,7 +287,7 @@ const CollectionsPage = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
               </div>
             ) : dt.paginated.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-sm text-slate-500">
+              <div className="col-span-full text-center py-8 text-sm">
                 {t("catalog.noCollections")}
               </div>
             ) : (
@@ -306,12 +297,10 @@ const CollectionsPage = () => {
                   className="border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition cursor-pointer"
                   onClick={() => navigate(`/catalog/collections/${item.slug}`)}
                 >
-                  <div className="font-title text-base font-semibold text-slate-900 mb-1">
+                  <div className="font-title text-base font-semibold mb-1">
                     {item.name}
                   </div>
-                  <div className="text-xs text-slate-500 mb-3 font-mono">
-                    {item.slug}
-                  </div>
+                  <div className="text-xs mb-3 font-mono">{item.slug}</div>
                   <div className="flex items-center justify-between">
                     <Badge className="mb-0">
                       {item.isActive
@@ -332,7 +321,9 @@ const CollectionsPage = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/catalog/collections/edit/${item.slug || item.id}`);
+                            navigate(
+                              `/catalog/collections/edit/${item.slug || item.id}`,
+                            );
                           }}
                           className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                         >
@@ -371,12 +362,12 @@ const CollectionsPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className="bg-white rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
             <h2 className="font-title text-xl font-bold mb-3">
               {t("catalog.confirmDelete")}
             </h2>
-            <p className="text-sm text-slate-600 mb-5">
+            <p className="text-sm mb-5">
               {t("catalog.deleteConfirmMsg", { name: selectedItem?.name })}
             </p>
             <div className="flex gap-3">

@@ -20,6 +20,7 @@ import ImageViewer from "@/components/ImageViewer";
 import { chatService } from "@services/chatService";
 import { useAuthStore } from "@/store/authStore";
 import useTranslation from "@/hooks/useTranslation";
+import useToast from "@/hooks/useToast";
 
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const API_URL =
@@ -78,11 +79,11 @@ const MessageContent = ({ message, onImageClick }) => {
           <img
             src={fileUrl}
             alt={name}
-            className="max-w-full max-h-48 object-contain bg-slate-100"
+            className="max-w-full max-h-48 object-contain bg-(--color-secondary)"
             onError={() => setImgErr(true)}
           />
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/30 transition-all">
-            <Eye className="h-8 w-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Eye className="h-8 w-8  opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -105,11 +106,11 @@ const MessageContent = ({ message, onImageClick }) => {
     return (
       <div className="space-y-1.5">
         <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
-          <File className="h-5 w-5 text-slate-400 shrink-0" />
+          <File className="h-5 w-5  shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-sm truncate">{name}</div>
             {message.fileSize && (
-              <div className="text-[10px] text-slate-400">
+              <div className="text-[10px] ">
                 {formatFileSize(message.fileSize)}
               </div>
             )}
@@ -132,6 +133,7 @@ const MessageContent = ({ message, onImageClick }) => {
 const ChatAdminPage = () => {
   const { user } = useAuthStore();
   const { t } = useTranslation();
+  const { toastTopRight } = useToast();
   const chatSocketRef = useRef(null);
   const notifSocketRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -155,7 +157,7 @@ const ChatAdminPage = () => {
     visible: false,
   });
 
-  // ── Load all internal rooms and users once ──
+  // â”€â”€ Load all internal rooms and users once â”€â”€
   useEffect(() => {
     Promise.all([
       chatService.getInternalRooms(),
@@ -175,7 +177,7 @@ const ChatAdminPage = () => {
       .finally(() => setLoadingRooms(false));
   }, []);
 
-  // ── Load messages when active room changes ──
+  // â”€â”€ Load messages when active room changes â”€â”€
   useEffect(() => {
     if (!activeRoomId) return;
     if (conversations[activeRoomId]) return;
@@ -188,13 +190,13 @@ const ChatAdminPage = () => {
       .catch(() => {});
   }, [activeRoomId]);
 
-  // ── Mark as read when opening a room ──
+  // â”€â”€ Mark as read when opening a room â”€â”€
   useEffect(() => {
     if (!activeRoomId) return;
     chatService.markInternalAsRead(activeRoomId).catch(() => {});
   }, [activeRoomId]);
 
-  // ── Socket.io — connect once ──
+  // â”€â”€ Socket.io ” connect once â”€â”€
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
 
@@ -268,7 +270,7 @@ const ChatAdminPage = () => {
     notifSocket.on("new_notification", (data) => {
       if (data.type === "INTERNAL_MESSAGE") {
         setChatToast({
-          message: `💬 ${data.title}: ${data.message}`,
+          message: `ðŸ’¬ ${data.title}: ${data.message}`,
           roomId: data.roomId,
           visible: true,
         });
@@ -291,7 +293,7 @@ const ChatAdminPage = () => {
     };
   }, [user?.id]); // connect once
 
-  // ── Join/leave specific chat room on the /chat socket ──
+  // â”€â”€ Join/leave specific chat room on the /chat socket â”€â”€
   useEffect(() => {
     const socket = chatSocketRef.current;
     if (!socket?.connected || !activeRoomId) return;
@@ -359,13 +361,18 @@ const ChatAdminPage = () => {
             : existing.map((m) => (m.id === optimistic.id ? savedMsg : m)),
         };
       });
-    } catch {
+    } catch (error) {
+      console.error("Error sending message:", error);
       setConversations((prev) => ({
         ...prev,
         [activeRoomId]: (prev[activeRoomId] || []).filter(
           (m) => m.id !== optimistic.id,
         ),
       }));
+      toastTopRight(
+        "error",
+        t("chat.sendMessageError", "Error happened when sent message"),
+      );
     }
   };
 
@@ -462,15 +469,15 @@ const ChatAdminPage = () => {
           }}
         >
           <span className="text-sm font-medium">{chatToast.message}</span>
-          <button
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               setChatToast((prev) => ({ ...prev, visible: false }));
             }}
-            className="text-white/70 hover:text-white ml-2"
+            variant="ghost"
           >
             <X className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -485,10 +492,10 @@ const ChatAdminPage = () => {
       <Card className="p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <div className="font-title text-2xl font-bold text-slate-950">
+            <div className="font-title text-2xl font-bold ">
               {t("internalTeamChat")}
             </div>
-            <div className="mt-1 text-sm text-slate-500">
+            <div className="mt-1 text-sm ">
               {t("collaborateDirectlyWithOtherStaffMembersAndAdmins")}
             </div>
           </div>
@@ -504,7 +511,7 @@ const ChatAdminPage = () => {
               <MessageSquarePlus className="h-4 w-4" />
               {t("newChat")}
             </Button>
-            <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <div className="rounded-full bg-(--color-secondary) px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ">
               {connectionStatus}
             </div>
           </div>
@@ -530,20 +537,20 @@ const ChatAdminPage = () => {
               )}
             </Button>
             <div>
-              <div className="font-title text-lg font-semibold text-slate-950">
+              <div className="font-title text-lg font-semibold ">
                 {otherUser?.fullName ||
                   (activeRoomId
                     ? `Room ${activeRoomId}`
                     : "Select a conversation")}
               </div>
               {otherUser && (
-                <div className="text-xs text-slate-400 capitalize">
-                  {otherUser.role} • {otherUser.email}
+                <div className="text-xs  capitalize">
+                  {otherUser.role} ¢ {otherUser.email}
                 </div>
               )}
             </div>
           </div>
-          <div className="text-xs text-slate-400">
+          <div className="text-xs ">
             {activeMessages.length
               ? `${t("chat.last", "Last")}: ${formatTime(activeMessages[activeMessages.length - 1].createdAt || activeMessages[activeMessages.length - 1].timestamp)}`
               : ""}
@@ -554,17 +561,17 @@ const ChatAdminPage = () => {
           {/* Sidebar */}
           {sidebarOpen && (
             <div
-              className="border-r border-slate-200 overflow-y-auto shrink-0 bg-slate-50/50 flex flex-col"
+              className="border-r border-slate-200 overflow-y-auto shrink-0 flex flex-col"
               style={{ width: 280 }}
             >
               {showUserList ? (
                 // Users list
                 <div className="p-2">
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-2 pt-2">
+                  <div className="text-xs font-semibold  uppercase tracking-wider mb-2 px-2 pt-2">
                     {t("startANewChat")}
                   </div>
                   {internalUsers.length === 0 ? (
-                    <div className="text-sm text-slate-400 px-2 py-4">
+                    <div className="text-sm  px-2 py-4">
                       {t("noOtherTeamMembersFound")}
                     </div>
                   ) : (
@@ -573,9 +580,9 @@ const ChatAdminPage = () => {
                         key={u.id}
                         type="button"
                         onClick={() => handleStartChat(u.id)}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition hover:bg-slate-200/50"
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition hover:bg-(--color-secondary)/50"
                       >
-                        <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="h-8 w-8 rounded-full bg-(--color-secondary) flex items-center justify-center shrink-0 overflow-hidden">
                           {u.avatarUrl ? (
                             <img
                               src={u.avatarUrl}
@@ -583,14 +590,14 @@ const ChatAdminPage = () => {
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <User className="h-4 w-4 text-slate-400" />
+                            <User className="h-4 w-4 " />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-slate-900 truncate">
+                          <div className="text-sm font-semibold truncate">
                             {u.fullName}
                           </div>
-                          <div className="text-[10px] text-slate-500 capitalize">
+                          <div className="text-[10px]  capitalize">
                             {u.role}
                           </div>
                         </div>
@@ -601,15 +608,15 @@ const ChatAdminPage = () => {
               ) : (
                 // Rooms list
                 <>
-                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-4 pt-4">
+                  <div className="text-xs font-semibold  uppercase tracking-wider mb-2 px-4 pt-4">
                     {t("activeChats")}
                   </div>
                   {loadingRooms ? (
-                    <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                    <div className="flex items-center justify-center h-20 text-sm ">
                       {t("common.loading", "Loading...")}
                     </div>
                   ) : rooms.length === 0 ? (
-                    <div className="flex items-center justify-center h-20 text-sm text-slate-400">
+                    <div className="flex items-center justify-center h-20 text-sm ">
                       {t("chat.noConversations", "No conversations")}
                     </div>
                   ) : (
@@ -620,14 +627,12 @@ const ChatAdminPage = () => {
                       const participant = getOtherParticipant(room);
 
                       return (
-                        <button
+                        <Button
                           key={room.id}
-                          type="button"
+                          variant="link"
                           onClick={() => setActiveRoomId(String(room.id))}
-                          className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-slate-100 ${
-                            isActive
-                              ? "bg-amber-50 border-l-2 border-l-amber-500"
-                              : "border-l-2 border-l-transparent"
+                          className={`w-full border-b border-slate-100 px-4 py-3 text-left transition${
+                            isActive ? "border-l-2 border-l-primary" : ""
                           }`}
                         >
                           <div className="flex items-center gap-2 mb-1">
@@ -639,19 +644,19 @@ const ChatAdminPage = () => {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <User className="h-3 w-3 text-slate-400" />
+                                <User className="h-3 w-3" />
                               )}
                             </div>
-                            <div className="text-sm font-semibold text-slate-900 truncate">
+                            <div className="text-sm font-semibold truncate">
                               {participant?.fullName ||
                                 `Staff ${participant?.id || ""}`}
                             </div>
                           </div>
-                          <div className="text-xs text-slate-500 truncate mt-0.5 pl-8">
+                          <div className="text-xs  truncate mt-0.5 pl-8">
                             {last?.content ||
                               t("chat.noMessagesYet", "No messages yet")}
                           </div>
-                        </button>
+                        </Button>
                       );
                     })
                   )}
@@ -662,7 +667,7 @@ const ChatAdminPage = () => {
 
           {/* Messages */}
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6">
+            <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
               {activeMessages.length ? (
                 activeMessages.map((item) => {
                   const isMe = String(item.senderId) === String(user?.id);
@@ -676,8 +681,8 @@ const ChatAdminPage = () => {
                       <div
                         className={`max-w-[70%] rounded-2xl px-4 py-3 ${
                           isMe
-                            ? "bg-slate-950 text-white"
-                            : "border border-slate-200 bg-white text-slate-700"
+                            ? "bg-(--color-primary)/20"
+                            : "border border-(--color-primary)/20"
                         }`}
                       >
                         <MessageContent
@@ -688,12 +693,12 @@ const ChatAdminPage = () => {
                           className={`mt-2 flex items-center gap-1 text-[11px] ${
                             isMe
                               ? "text-white/70 justify-end"
-                              : "text-slate-400 justify-start"
+                              : " justify-start"
                           }`}
                         >
                           {formatTime(item.createdAt || item.timestamp)}
                           {isMe && item.isRead && (
-                            <span className="ml-1 opacity-70">✓✓</span>
+                            <span className="ml-1 opacity-70">✓</span>
                           )}
                         </div>
                       </div>
@@ -701,7 +706,7 @@ const ChatAdminPage = () => {
                   );
                 })
               ) : (
-                <div className="flex h-full items-center justify-center text-sm text-slate-400">
+                <div className="flex h-full items-center justify-center text-sm ">
                   {activeRoomId
                     ? t("chat.noMessagesYet", "No messages yet.")
                     : "Select a chat from the left sidebar or start a new one."}
@@ -713,7 +718,7 @@ const ChatAdminPage = () => {
             {/* Input */}
             <form
               onSubmit={handleSubmit}
-              className="border-t border-slate-200 bg-white px-6 py-4"
+              className="border-t border-slate-200 bg-background px-6 py-4"
             >
               <div className="flex items-end gap-3">
                 <div className="flex flex-1 items-end gap-2">
@@ -724,13 +729,13 @@ const ChatAdminPage = () => {
                     onChange={(e) => setMessage(e.target.value)}
                     disabled={!activeRoomId}
                   />
-                  <input
+                  <Input
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
                     onChange={(e) => handleFileSelect(e, "file")}
                   />
-                  <input
+                  <Input
                     ref={imageInputRef}
                     type="file"
                     accept="image/*"
@@ -739,8 +744,8 @@ const ChatAdminPage = () => {
                   />
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="h-12 w-12 p-0"
+                    variant="outline"
+                    className="h-12 w-12 p-0! cursor-pointer"
                     title={t("chat.attachFile", "Attach file (max 15MB)")}
                     onClick={() => fileInputRef.current?.click()}
                     disabled={!activeRoomId}
@@ -749,8 +754,8 @@ const ChatAdminPage = () => {
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
-                    className="h-12 w-12 p-0"
+                    variant="outline"
+                    className="h-12 w-12 p-0! cursor-pointer"
                     title={t("chat.attachImage", "Attach image (max 15MB)")}
                     onClick={() => imageInputRef.current?.click()}
                     disabled={!activeRoomId}

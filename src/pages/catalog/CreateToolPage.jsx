@@ -17,6 +17,7 @@ import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { toolsService } from "@services/toolsService";
 import { collectionService } from "@services/collectionService";
+import { Input } from "@/components/ui/input";
 
 const CreateToolPage = () => {
   const navigate = useNavigate();
@@ -134,7 +135,10 @@ const CreateToolPage = () => {
       });
 
       await toolsService.createTool(formData);
-      toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.createSuccess", "Created successfully"),
+      );
       navigate("/catalog/tools");
     } catch (err) {
       console.error(err);
@@ -154,9 +158,7 @@ const CreateToolPage = () => {
     recommended,
   }) => (
     <div>
-      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-        {label}
-      </label>
+      <label className="text-xs font-semibold mb-1.5 block">{label}</label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
@@ -187,19 +189,20 @@ const CreateToolPage = () => {
           className="hidden"
           onChange={onChange}
         />
-        <div className="text-xs text-slate-400">
-          <p className="font-medium text-slate-600">{label}</p>
+        <div className="text-xs">
+          <p className="font-medium">{label}</p>
           <p>{recommended}</p>
           <p className="text-[10px] mt-0.5">{t("pngJpgWebp")}</p>
         </div>
         {value && (
-          <button
-            type="button"
+          <Button
+            variant="destructive"
+            size="icon"
             onClick={onClear}
-            className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
+            className="ml-auto"
           >
             {t("catalog.remove")}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -209,12 +212,13 @@ const CreateToolPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
             onClick={() => navigate("/catalog/tools")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            variant="outline"
+            className="gap-2 cursor-pointer border h-9 w-9 p-0! hover:bg-(--color-primary)"
           >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewTool")}
           </h2>
@@ -234,7 +238,7 @@ const CreateToolPage = () => {
       </div>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b  pb-3">
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -257,8 +261,11 @@ const CreateToolPage = () => {
           value={form.description}
           onChange={(e) => handleChange("description", e.target.value)}
           rows={3}
-          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500 bg-white"
-          placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+          className="w-full  focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500"
+          placeholder={t(
+            "catalog.descriptionPlaceholder",
+            "Product description...",
+          )}
         />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField
@@ -291,7 +298,9 @@ const CreateToolPage = () => {
             type="select"
             label={t("catalog.status")}
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            onChange={(e) =>
+              handleChange("isActive", e.target.value === "active")
+            }
             options={[
               { value: "active", label: t("catalog.active") },
               { value: "inactive", label: t("catalog.inactive") },
@@ -299,7 +308,7 @@ const CreateToolPage = () => {
           />
         </div>
 
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
+        <h3 className="font-title text-lg font-semibold border-b  pb-3 pt-2">
           {t("catalog.toolProperties")}
         </h3>
         <FormField
@@ -308,13 +317,13 @@ const CreateToolPage = () => {
           value={form.specifications}
           onChange={(e) => handleChange("specifications", e.target.value)}
           rows={3}
-          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono placeholder-gray-500 bg-white"
+          className="w-full  focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none font-mono placeholder-gray-500"
           placeholder='{"power": "1000W", "weight": "2kg"}'
         />
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b  pb-3">
           {t("catalog.productImages")}
         </h3>
 
@@ -340,7 +349,7 @@ const CreateToolPage = () => {
           <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
             {t("catalog.gallery")} ({galleryImages.length})
           </label>
-          <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
+          <div className="space-y-2 max-h-60 overflow-y-auto border  rounded-xl p-3">
             {galleryImages.length === 0 ? (
               <div className="text-center py-6 text-xs text-slate-400">
                 <ImageIcon className="h-8 w-8 mx-auto mb-2 text-slate-300" />
@@ -359,23 +368,23 @@ const CreateToolPage = () => {
                     sizes="40px"
                     loading="lazy"
                     alt={`Gallery ${idx + 1}`}
-                    className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                    className="h-10 w-10 rounded-lg object-cover border  shrink-0"
                   />
-                  <span className="flex-1 text-xs text-slate-600 truncate">
+                  <span className="flex-1 text-xs  truncate">
                     {img.file.name}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={() => removeGalleryImage(idx)}
-                    className="text-rose-500 hover:text-rose-700 shrink-0"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               ))
             )}
           </div>
-          <input
+          <Input
             ref={galleryInputRef}
             type="file"
             accept="image/png,image/jpg,image/jpeg,image/webp"
@@ -384,8 +393,7 @@ const CreateToolPage = () => {
             onChange={handleGalleryAdd}
           />
           <Button
-            type="button"
-            variant="secondary"
+            variant="primary"
             size="sm"
             className="mt-2 gap-1.5 text-xs cursor-pointer"
             onClick={() => galleryInputRef.current?.click()}

@@ -17,6 +17,7 @@ import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
+import { Input } from "@/components/ui/input";
 
 const CreateMaterialPage = () => {
   const navigate = useNavigate();
@@ -127,7 +128,10 @@ const CreateMaterialPage = () => {
       });
 
       await materialsService.createMaterial(formData);
-      toastTopRight("success", t("catalog.createSuccess", "Created successfully"));
+      toastTopRight(
+        "success",
+        t("catalog.createSuccess", "Created successfully"),
+      );
       navigate("/catalog/materials");
     } catch (err) {
       console.error(err);
@@ -147,13 +151,11 @@ const CreateMaterialPage = () => {
     recommended,
   }) => (
     <div>
-      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-        {label}
-      </label>
+      <label className="text-xs font-semibold  mb-1.5 block">{label}</label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
-          className="h-28 w-28 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/50 transition overflow-hidden shrink-0"
+          className="h-28 w-28 rounded-xl border-2 border-dashed  flex items-center justify-center cursor-pointer hover:border-(--color-primary)! hover:bg-(--color-primary)!/5 transition overflow-hidden shrink-0"
         >
           {value?.preview ? (
             <img
@@ -166,33 +168,32 @@ const CreateMaterialPage = () => {
             />
           ) : (
             <div className="text-center">
-              <Upload className="h-5 w-5 text-slate-400 mx-auto mb-1" />
-              <span className="text-[10px] text-slate-400">
-                {t("catalog.upload")}
-              </span>
+              <Upload className="h-5 w-5  mx-auto mb-1" />
+              <span className="text-[10px] ">{t("catalog.upload")}</span>
             </div>
           )}
         </div>
-        <input
+        <Input
           ref={inputRef}
           type="file"
           accept="image/png,image/jpg,image/jpeg,image/webp"
           className="hidden"
           onChange={onChange}
         />
-        <div className="text-xs text-slate-400">
-          <p className="font-medium text-slate-600">{label}</p>
+        <div className="text-xs ">
+          <p className="font-medium ">{label}</p>
           <p>{recommended}</p>
           <p className="text-[10px] mt-0.5">{t("pngJpgWebp")}</p>
         </div>
         {value && (
-          <button
+          <Button
             type="button"
+            variant="destructive"
+            size="sm"
             onClick={onClear}
-            className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
           >
             {t("catalog.remove")}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -202,12 +203,17 @@ const CreateMaterialPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="icon-sm"
             onClick={() => navigate("/catalog/materials")}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100"
+            className={
+              "h-9 w-9 p-0! hover:bg-(--color-primary) rounded-lg cursor-pointer"
+            }
           >
             <ArrowLeft className="h-4 w-4" />
-          </button>
+          </Button>
           <h2 className="font-title text-xl font-bold">
             {t("catalog.addNewMaterial")}
           </h2>
@@ -223,7 +229,7 @@ const CreateMaterialPage = () => {
       </div>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3">
           {t("catalog.productInfo")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -246,8 +252,11 @@ const CreateMaterialPage = () => {
           value={form.description}
           onChange={(e) => handleChange("description", e.target.value)}
           rows={3}
-          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500 bg-white"
-          placeholder={t("catalog.descriptionPlaceholder", "Product description...")}
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder-gray-500"
+          placeholder={t(
+            "catalog.descriptionPlaceholder",
+            "Product description...",
+          )}
         />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <FormField
@@ -280,7 +289,9 @@ const CreateMaterialPage = () => {
             type="select"
             label={t("catalog.status")}
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) => handleChange("isActive", e.target.value === "active")}
+            onChange={(e) =>
+              handleChange("isActive", e.target.value === "active")
+            }
             options={[
               { value: "active", label: t("catalog.active") },
               { value: "inactive", label: t("catalog.inactive") },
@@ -288,7 +299,7 @@ const CreateMaterialPage = () => {
           />
         </div>
 
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3 pt-2">
+        <h3 className="font-title text-lg font-semibold  border-b border-slate-200 pb-3 pt-2">
           {t("catalog.materialProperties")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -325,7 +336,7 @@ const CreateMaterialPage = () => {
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold  border-b border-slate-200 pb-3">
           {t("catalog.productImages")}
         </h3>
 
@@ -348,13 +359,13 @@ const CreateMaterialPage = () => {
         />
 
         <div>
-          <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
+          <label className="text-xs font-semibold mb-1.5 block">
             {t("catalog.gallery")} ({galleryImages.length})
           </label>
           <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
             {galleryImages.length === 0 ? (
-              <div className="text-center py-6 text-xs text-slate-400">
-                <ImageIcon className="h-8 w-8 mx-auto mb-2 text-slate-300" />
+              <div className="text-center py-6 text-xs ">
+                <ImageIcon className="h-8 w-8 mx-auto mb-2 " />
                 {t("catalog.noImages")}
               </div>
             ) : (
@@ -363,7 +374,7 @@ const CreateMaterialPage = () => {
                   key={idx}
                   className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5"
                 >
-                  <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
+                  <GripVertical className="h-4 w-4 shrink-0 cursor-grab" />
                   <img
                     src={img.preview}
                     srcSet={`${img.preview} 400w, ${img.preview} 800w, ${img.preview} 1200w`}
@@ -372,16 +383,16 @@ const CreateMaterialPage = () => {
                     alt={`Gallery ${idx + 1}`}
                     className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
                   />
-                  <span className="flex-1 text-xs text-slate-600 truncate">
+                  <span className="flex-1 text-xs truncate">
                     {img.file.name}
                   </span>
-                  <button
-                    type="button"
+                  <Button
+                    variant="destructive"
                     onClick={() => removeGalleryImage(idx)}
-                    className="text-rose-500 hover:text-rose-700 shrink-0"
+                    size="sm"
                   >
                     <X className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
               ))
             )}
@@ -396,9 +407,9 @@ const CreateMaterialPage = () => {
           />
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             size="sm"
-            className="mt-2 gap-1.5 text-xs cursor-pointer"
+            className="mt-2 gap-1.5 text-xs cursor-pointer border border-(--color-border) hover:bg-(--color-primary)"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

@@ -12,13 +12,11 @@ const ImageUploadBox = ({
   const { t } = useTranslation();
   return (
     <div>
-      <label className="text-xs font-semibold text-slate-700 mb-1.5 block">
-        {label}
-      </label>
+      <label className="text-xs font-semibold mb-1.5 block">{label}</label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
-          className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 transition overflow-hidden shrink-0 bg-slate-50"
+          className="h-20 w-20 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-amber-400 hover:bg-amber-50/50 transition overflow-hidden shrink-0 bg-background"
         >
           {value?.preview ? (
             <img

@@ -15,7 +15,12 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import useTranslation from "@hooks/useTranslation";
 
-const ACTIVE_STATUSES = ["PAYMENT_CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+const ACTIVE_STATUSES = [
+  "PAYMENT_CONFIRMED",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+];
 
 const STATUS_LABELS = {
   PENDING: "Order Placed",
@@ -32,7 +37,7 @@ const statusColor = {
   DELIVERED: "text-purple-600",
 };
 
-const fmtPrice = (v) => (v == null ? "—" : `₫${Number(v).toLocaleString()}`);
+const fmtPrice = (v) => (v == null ? "”" : `${Number(v).toLocaleString()}`);
 
 const OrderApprovalPage = () => {
   const navigate = useNavigate();
@@ -46,10 +51,10 @@ const OrderApprovalPage = () => {
     totalItems,
     setPage,
     refetch,
-  } = usePaginatedApi(
-    (params) => orderService.listOrders({ ...params }),
-    { defaultLimit: 100, pageParam: "page" },
-  );
+  } = usePaginatedApi((params) => orderService.listOrders({ ...params }), {
+    defaultLimit: 100,
+    pageParam: "page",
+  });
 
   const [activeFilters, setActiveFilters] = useState({ status: null });
   const search = useExpandableSearch();
@@ -61,7 +66,12 @@ const OrderApprovalPage = () => {
       (o) => ACTIVE_STATUSES.includes(o.status) || o.status === "PENDING",
     );
     // Exclude DELIVERED, COMPLETED and CANCELED from this list
-    r = r.filter((o) => o.status !== "DELIVERED" && o.status !== "COMPLETED" && o.status !== "CANCELED");
+    r = r.filter(
+      (o) =>
+        o.status !== "DELIVERED" &&
+        o.status !== "COMPLETED" &&
+        o.status !== "CANCELED",
+    );
 
     const kw = debouncedSearch.toLowerCase();
     if (kw)
@@ -102,7 +112,7 @@ const OrderApprovalPage = () => {
       label: t("orders.code"),
       width: "1.2fr",
       render: (r) => (
-        <div className="font-semibold text-xs text-slate-900">{r.orderNumber}</div>
+        <div className="font-semibold text-xs ">{r.orderNumber}</div>
       ),
     },
     {
@@ -112,8 +122,8 @@ const OrderApprovalPage = () => {
       render: (r) => (
         <div>
           {typeof r.customer === "object"
-            ? r.customer?.fullName || r.customer?.name || "—"
-            : r.customer || "—"}
+            ? r.customer?.fullName || r.customer?.name || "”"
+            : r.customer || "”"}
         </div>
       ),
     },
@@ -121,16 +131,16 @@ const OrderApprovalPage = () => {
       key: "totalAmount",
       label: t("orders.amount"),
       render: (r) => (
-        <div className="font-semibold">{fmtPrice(r.totalAmount || r.amount)}</div>
+        <div className="font-semibold">
+          {fmtPrice(r.totalAmount || r.amount)}
+        </div>
       ),
     },
     {
       key: "status",
       label: t("orders.status"),
       render: (r) => (
-        <span
-          className={`text-xs font-medium ${statusColor[r.status] || "text-slate-500"}`}
-        >
+        <span className={`text-xs font-medium ${statusColor[r.status] || ""}`}>
           {STATUS_LABELS[r.status] || r.status}
         </span>
       ),
@@ -141,14 +151,14 @@ const OrderApprovalPage = () => {
       sortable: false,
       width: "80px",
       render: (row) => (
-        <button
+        <Button
           onClick={() => navigate(`/orders/${row.orderNumber}/approval`)}
-          className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-          style={{ padding: 5 }}
+          className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 hover:bg-(--color-primary) cursor-pointer"
           title="View & Process"
+          variant="outline"
         >
-          <Eye style={{ width: 16, height: 16 }} />
-        </button>
+          <Eye className="h-5 w-5" />
+        </Button>
       ),
     },
   ];
@@ -161,7 +171,7 @@ const OrderApprovalPage = () => {
             <div className="text-rose-500 font-semibold mb-2">
               {t("approval.failedToLoad")}
             </div>
-            <div className="text-sm text-slate-500 mb-4">{error}</div>
+            <div className="text-sm  mb-4">{error}</div>
             <Button onClick={refetch}>{t("approval.retry")}</Button>
           </div>
         </Card>
@@ -176,7 +186,10 @@ const OrderApprovalPage = () => {
           onRefresh={refetch}
           onExportCsv={dt.handleExport}
           search={search}
-          searchPlaceholder={t("approval.searchPlaceholder", "Search orders...")}
+          searchPlaceholder={t(
+            "approval.searchPlaceholder",
+            "Search orders...",
+          )}
           filterOptions={[
             {
               key: "status",
@@ -192,9 +205,7 @@ const OrderApprovalPage = () => {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-            <span className="ml-3 text-sm text-slate-500">
-              {t("approval.loading")}
-            </span>
+            <span className="ml-3 text-sm">{t("approval.loading")}</span>
           </div>
         ) : (
           <>

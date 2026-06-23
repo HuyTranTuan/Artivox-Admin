@@ -15,7 +15,7 @@ const formatTime = (value) =>
     minute: "2-digit",
   });
 
-// ── Typewriter hook: drains a text queue char-by-char into displayed text ──
+// â”€â”€ Typewriter hook: drains a text queue char-by-char into displayed text â”€â”€
 function useTypewriter(speed = 18) {
   const queueRef = useRef(""); // pending characters to type out
   const displayRef = useRef(""); // what's currently displayed
@@ -39,7 +39,7 @@ function useTypewriter(speed = 18) {
         displayRef.current += char;
         setDisplayed(displayRef.current);
       } else if (!activeRef.current) {
-        // Queue empty + streaming finished → done
+        // Queue empty + streaming finished â†’ done
         clearInterval(intervalRef.current);
         intervalRef.current = null;
         if (onDoneRef.current) onDoneRef.current(displayRef.current);
@@ -131,7 +131,7 @@ const StaffAiChatPage = () => {
     setThinking(true);
     setStreamingId(aiMessageId);
 
-    // Start the typewriter — when it finishes, save final text to messages state
+    // Start the typewriter ” when it finishes, save final text to messages state
     typewriter.start((finalText) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -194,7 +194,7 @@ const StaffAiChatPage = () => {
                 typewriter.push(parsed.token); // enqueue for typewriter
               }
             } catch (e) {
-              // partial JSON — skip
+              // partial JSON ” skip
             }
           }
         }
@@ -261,7 +261,7 @@ const StaffAiChatPage = () => {
               <div className="font-title text-2xl font-bold text-slate-950">
                 {t("chat.title", "AI Assistant Chat")}
               </div>
-              <div className="mt-1 text-sm text-slate-500">
+              <div className="mt-1 text-sm text-slate-500 dark:text-white">
                 {t(
                   "chat.subtitle",
                   "Ask me anything about products, orders, or customers",
@@ -298,7 +298,7 @@ const StaffAiChatPage = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-500 dark:text-white">
                 {t("common.online", "Online")}
               </span>
             </div>
@@ -306,7 +306,7 @@ const StaffAiChatPage = () => {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 space-y-4 overflow-y-auto bg-slate-50/70 px-6 py-6">
+        <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
           {messages.map((msg) => {
             // For the currently streaming message, show typewriter output
             const isStreaming = msg.id === streamingId;
@@ -322,8 +322,8 @@ const StaffAiChatPage = () => {
                 <div
                   className={`max-w-[75%] rounded-2xl px-4 py-3 ${
                     msg.sender === "staff"
-                      ? "bg-slate-950 text-white"
-                      : "bg-linear-to-r from-amber-50 to-orange-50 border border-amber-200 text-slate-800"
+                      ? "bg-(--color-primary)/10"
+                      : "bg-(--color-primary)/20 border border-(--color-primary)/20"
                   }`}
                 >
                   {msg.sender === "ai" && (
@@ -363,7 +363,7 @@ const StaffAiChatPage = () => {
                     )}
                   </div>
                   <div
-                    className={`mt-2 text-[11px] ${msg.sender === "staff" ? "text-white/70" : "text-amber-500/80"}`}
+                    className={`mt-2 text-[11px] ${msg.sender === "staff" ? "" : "text-amber-500/80"}`}
                   >
                     {formatTime(msg.timestamp)}
                     {msg.sender === "ai" &&
@@ -384,7 +384,7 @@ const StaffAiChatPage = () => {
         {/* Input */}
         <form
           onSubmit={handleSend}
-          className="border-t border-slate-200 bg-white px-6 py-4"
+          className="border-t border-slate-200 px-6 py-4"
         >
           <div className="flex items-end gap-3">
             <Input
@@ -410,7 +410,7 @@ const StaffAiChatPage = () => {
               {t("common.send", "Send")}
             </Button>
           </div>
-          <div className="mt-3 flex items-center gap-4 text-xs text-slate-400">
+          <div className="mt-3 flex items-center gap-4 text-xs">
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5" />
               {t("chat.poweredByAI", "Powered by AI knowledge base")}

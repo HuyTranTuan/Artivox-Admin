@@ -23,13 +23,16 @@ const _send = async (method, path, data, config) => {
     });
 
     const m = method.toLowerCase();
+    
     if (["post", "put", "patch", "delete"].includes(m) && !config?.hideToast && !path.includes("/auth")) {
       let defaultMsg = i18n.t("common.success", "Operation successful");
       if (m === "post") defaultMsg = i18n.t("common.createSuccess", "Created successfully");
       if (m === "put" || m === "patch") defaultMsg = i18n.t("common.updateSuccess", "Updated successfully");
       if (m === "delete") defaultMsg = i18n.t("common.deleteSuccess", "Deleted successfully");
       
-      toast.success(defaultMsg, { position: "top-right", autoClose: 3000 });
+      if(response.data.message !== "Message sent" && response.data.message !== "Chat rooms fetched" && response.data.message !== "Marked as read"){
+        toast.success(defaultMsg, { position: "top-right", autoClose: 3000 });
+      }
     }
 
     return response?.data;
