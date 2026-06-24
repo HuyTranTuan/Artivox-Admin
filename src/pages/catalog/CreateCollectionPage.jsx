@@ -134,7 +134,7 @@ const CreateCollectionPage = () => {
           <Button
             variant="ghost"
             onClick={() => navigate("/catalog/collections")}
-            className="flex h-11 w-11! p-0! items-center justify-center rounded-lg hover:bg-(--color-primary)! cursor-pointer"
+            className="flex h-11 w-11! p-0! items-center justify-center rounded-xl hover:bg-(--color-primary)! cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

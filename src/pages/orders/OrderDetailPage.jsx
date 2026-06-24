@@ -118,9 +118,9 @@ const OrderDetailPage = () => {
         setRawStatus(data.status);
         setOrder({
           id: data.orderNumber || `#${data.id}`,
-          customer: data.customer?.fullName || data.customer?.name || "”",
-          email: data.customer?.email || "”",
-          phone: data.customer?.phone || "”",
+          customer: data.customer?.fullName || data.customer?.name || "Unknown",
+          email: data.customer?.email || "Unknown",
+          phone: data.customer?.phone || "Unknown",
           amount: data.totalAmount,
           status: data.status,
           createdAt: new Date(data.createdAt).toLocaleDateString(),
@@ -130,13 +130,13 @@ const OrderDetailPage = () => {
           deliveredAt: ["DELIVERED", "COMPLETED"].includes(data.status)
             ? new Date(data.updatedAt || data.createdAt).toLocaleDateString()
             : null,
-          address: data.shippingAddress || "”",
-          paymentMethod: data.paymentMethod || "”",
-          note: data.note || "",
+          address: data.shippingAddress || "Unknown",
+          paymentMethod: data.paymentMethod || "Unknown",
+          note: data.note || "Unknown",
           items:
             data.items?.map((item) => ({
-              name: item.product?.name || "”",
-              sku: item.product?.sku || "”",
+              name: item.product?.name || "Unknown",
+              sku: item.product?.sku || "Unknown",
               qty: item.quantity,
               price:
                 item.product?.discountedPrice > 0
@@ -280,7 +280,7 @@ const OrderDetailPage = () => {
           <div className="flex gap-2 ml-2">
             <Button
               variant="destructive"
-              className="gap-2 cursor-pointer"
+              className="h-9 w-21 p-0! hover:bg-(--color-error) hover:text-white gap-2 cursor-pointer"
               onClick={() => navigate(-1)}
               disabled={updating}
             >
@@ -289,7 +289,7 @@ const OrderDetailPage = () => {
             </Button>
             {canAdvance && (
               <Button
-                className="gap-2 bg-(--color-primary) cursor-pointer"
+                className="h-9 w-50 p-0! hover:bg-(--color-primary) hover:text-white gap-2 cursor-pointer"
                 onClick={handleConfirm}
                 disabled={updating}
               >
@@ -383,7 +383,7 @@ const OrderDetailPage = () => {
               },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg   shrink-0 mt-0.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl   shrink-0 mt-0.5">
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
@@ -396,7 +396,7 @@ const OrderDetailPage = () => {
             ))}
             <div className="border-t border-slate-100 pt-4">
               <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg   shrink-0 mt-0.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl   shrink-0 mt-0.5">
                   <Truck className="h-4 w-4" />
                 </div>
                 <div className="flex-1">

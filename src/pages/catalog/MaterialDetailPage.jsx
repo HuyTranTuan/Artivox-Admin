@@ -72,7 +72,7 @@ const MaterialDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 p-0! rounded-lg hover:bg-(--color-primary)! cursor-pointer"
+          className="h-10 w-10 p-0! rounded-xl hover:bg-(--color-primary)! cursor-pointer"
           onClick={() => navigate("/catalog/materials")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -83,7 +83,7 @@ const MaterialDetailPage = () => {
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg  flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl  flex items-center justify-center">
               <Layers className="h-5 w-5 " />
             </div>
             <div>
@@ -111,7 +111,7 @@ const MaterialDetailPage = () => {
                   }}
                 />
                 <div className="absolute inset-0 bg-(--color-border) group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="opacity-30 group-hover:opacity-100 transition font-semibold rounded-lg px-4 py-2">
+                  <div className="opacity-30 group-hover:opacity-100 transition font-semibold rounded-xl px-4 py-2">
                     {t("catalog.viewAllImages", {
                       count: material.images.length,
                     })}
@@ -125,7 +125,7 @@ const MaterialDetailPage = () => {
                       key={idx}
                       src={img.thumb || img.url}
                       alt=""
-                      className="h-16 w-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-amber-500 transition shrink-0"
+                      className="h-16 w-16 rounded-xl object-cover cursor-pointer border-2 border-transparent hover:border-amber-500 transition shrink-0"
                       onClick={() => {
                         setGalleryIndex(idx);
                         setGalleryOpen(true);
@@ -150,7 +150,7 @@ const MaterialDetailPage = () => {
 
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg  flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl  flex items-center justify-center">
               <Package className="h-5 w-5 " />
             </div>
             <div>

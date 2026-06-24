@@ -115,7 +115,7 @@ const CreateArticlePage = () => {
         <div className="flex items-center gap-3">
           <button
             onClick={handleCancel}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 transition hover:bg-slate-100"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </button>

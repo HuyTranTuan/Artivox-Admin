@@ -289,7 +289,7 @@ const StaffAiChatPage = () => {
       <Card className="flex min-h-[70vh] flex-col overflow-hidden">
         {/* Chat header */}
         <div className="flex items-center gap-3 border-b border-slate-200 px-6 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-100">
             <Bot className="h-4 w-4 text-amber-600" />
           </div>
           <div>

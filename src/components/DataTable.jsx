@@ -49,7 +49,7 @@ export const TableToolbar = ({
         {onAddNew && (
           <Button
             variant="outline-orange"
-            className="gap-1.5 rounded-lg px-3 h-9 text-sm font-semibold "
+            className="gap-1.5 rounded-xl px-3 h-9 text-sm font-semibold "
             onClick={onAddNew}
           >
             <Plus className="h-4 w-4" />
@@ -83,7 +83,7 @@ export const TableToolbar = ({
 
         {/* View toggle */}
         {onViewChange && (
-          <div className="flex rounded-lg border border-slate-200 overflow-hidden">
+          <div className="flex rounded-xl border border-slate-200 overflow-hidden">
             <Button
               variant="orange"
               className={`h-9 w-9 p-0! flex items-center justify-center transition  ${

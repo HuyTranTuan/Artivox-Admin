@@ -263,14 +263,14 @@ const CustomersPage = () => {
               <Button
                 variant="outline"
                 onClick={() => saveCustomer(row.id)}
-                className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 transition cursor-pointer"
+                className="h-8 w-8 p-0! flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 transition cursor-pointer"
               >
                 <Save className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 onClick={cancelEditing}
-                className="h-8 w-8 p-0! flex items-center justify-center rounded-lg border border-slate-200 text-red-600 transition cursor-pointer"
+                className="h-8 w-8 p-0! flex items-center justify-center rounded-xl border border-slate-200 text-red-600 transition cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -280,14 +280,14 @@ const CustomersPage = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/customers/${row.id}`)}
-                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 transition cursor-pointer"
+                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 transition cursor-pointer"
               >
                 <Eye className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 onClick={() => startEditing(row, "fullName")}
-                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 transition cursor-pointer"
+                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 transition cursor-pointer"
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -297,7 +297,7 @@ const CustomersPage = () => {
                   setSelectedCustomer(row);
                   setOpenDialog("delete");
                 }}
-                className="h-8! w-8! flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 transition cursor-pointer"
+                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 transition cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

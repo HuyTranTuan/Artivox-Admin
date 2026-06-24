@@ -359,7 +359,7 @@ const CreateToolPage = () => {
               galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5"
+                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-2 py-1.5"
                 >
                   <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
                   <img
@@ -368,7 +368,7 @@ const CreateToolPage = () => {
                     sizes="40px"
                     loading="lazy"
                     alt={`Gallery ${idx + 1}`}
-                    className="h-10 w-10 rounded-lg object-cover border  shrink-0"
+                    className="h-10 w-10 rounded-xl object-cover border  shrink-0"
                   />
                   <span className="flex-1 text-xs  truncate">
                     {img.file.name}

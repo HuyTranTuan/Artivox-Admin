@@ -163,7 +163,7 @@ const EditArticlePage = () => {
   return (
     <section className="space-y-6">
       {error && (
-        <div className="p-4 rounded-lg bg-red-50 text-red-600 text-sm">
+        <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">
           {error}
         </div>
       )}
@@ -173,7 +173,7 @@ const EditArticlePage = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={handleCancel}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-600 dark:text-white transition hover:bg-amber-500 hover:text-white cursor-pointer"
+              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-600 dark:text-white transition hover:bg-amber-500 hover:text-white cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
             </button>
@@ -214,7 +214,7 @@ const EditArticlePage = () => {
               <img
                 src={currentCoverImage}
                 alt="Current cover"
-                className="h-32 w-auto object-cover rounded-lg border border-slate-200"
+                className="h-32 w-auto object-cover rounded-xl border border-slate-200"
               />
             </div>
           )}

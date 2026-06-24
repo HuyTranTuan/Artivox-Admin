@@ -239,7 +239,7 @@ const CreateModelPage = () => {
         <div className="flex items-center gap-3">
           <Button
             onClick={() => navigate("/catalog/models")}
-            className="flex h-9 w-9 p-0! cursor-pointer items-center justify-center rounded-lg transition hover:bg-(--color-primary)"
+            className="flex h-9 w-9 p-0! cursor-pointer items-center justify-center rounded-xl transition hover:bg-(--color-primary)"
             variant="outline"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -422,7 +422,7 @@ const CreateModelPage = () => {
               galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-slate-50 rounded-lg px-2 py-1.5"
+                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-2 py-1.5"
                 >
                   <GripVertical className="h-4 w-4  shrink-0 cursor-grab" />
                   <img
@@ -431,7 +431,7 @@ const CreateModelPage = () => {
                     sizes="40px"
                     loading="lazy"
                     alt={`Gallery ${idx + 1}`}
-                    className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                    className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0"
                   />
                   <span className="flex-1 text-xs truncate">
                     {img.file.name}

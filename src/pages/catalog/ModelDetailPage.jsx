@@ -49,7 +49,7 @@ const ModelDetailPage = () => {
           <div className="text-sm">{t("catalog.noModels")}</div>
           <Button
             variant="outline"
-            className="mt-4 cursor-pointer p-0! rounded-lg"
+            className="mt-4 cursor-pointer p-0! rounded-xl"
             onClick={() => navigate("/catalog/models")}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
@@ -66,7 +66,7 @@ const ModelDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
-          className="h-10 w-10 p-0! rounded-lg cursor-pointer hover:bg-(--color-primary)"
+          className="h-10 w-10 p-0! rounded-xl cursor-pointer hover:bg-(--color-primary)"
           onClick={() => navigate("/catalog/models")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -78,7 +78,7 @@ const ModelDetailPage = () => {
         {/* Image Gallery */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center">
               <Box className="h-5 w-5" />
             </div>
             <div>
@@ -106,7 +106,7 @@ const ModelDetailPage = () => {
                   }}
                 />
                 <div className="absolute inset-0 transition flex items-center justify-center">
-                  <div className="opacity-30 group-hover:opacity-100 transition rounded-lg px-4 py-2">
+                  <div className="opacity-30 group-hover:opacity-100 transition rounded-xl px-4 py-2">
                     {t("catalog.viewAllImages", { count: model.images.length })}
                   </div>
                 </div>
@@ -118,7 +118,7 @@ const ModelDetailPage = () => {
                       key={idx}
                       src={img.thumb || img.url}
                       alt=""
-                      className="h-16 w-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-(--color-primary) transition shrink-0"
+                      className="h-16 w-16 rounded-xl object-cover cursor-pointer border-2 border-transparent hover:border-(--color-primary) transition shrink-0"
                       onClick={() => {
                         setGalleryIndex(idx);
                         setGalleryOpen(true);
@@ -144,7 +144,7 @@ const ModelDetailPage = () => {
         {/* Info Card */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center">
               <Package className="h-5 w-5" />
             </div>
             <div>

@@ -284,7 +284,7 @@ export const Header = () => {
                         }
                         setNotificationOpen(false);
                       }}
-                      className={`group rounded-lg px-4 py-2.5 transition cursor-pointer ${item.isRead ? "hover:bg-amber-300" : "bg-amber-300 hover:bg-amber-100/80"}`}
+                      className={`group rounded-xl px-4 py-2.5 transition cursor-pointer ${item.isRead ? "hover:bg-amber-300" : "bg-amber-300 hover:bg-amber-100/80"}`}
                     >
                       <div className="flex items-start gap-2.5">
                         <span
@@ -321,7 +321,7 @@ export const Header = () => {
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className={`flex items-center gap-2.5 cursor-pointer focus:outline-none rounded-lg px-2 py-1.5 transition ${theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
+            className={`flex items-center gap-2.5 cursor-pointer focus:outline-none rounded-xl px-2 py-1.5 transition ${theme === "dark" ? "hover:bg-slate-800" : "hover:bg-slate-100"}`}
           >
             <div className="flex h-8 w-8 overflow-hidden items-center justify-center rounded-full bg-linear-to-br from-amber-500 to-orange-500 text-sm font-bold text-white shrink-0">
               {user?.avatar ? (
@@ -390,7 +390,7 @@ export const Header = () => {
                   setUserMenuOpen(false);
                   navigate("/settings/personal");
                 }}
-                className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"}`}
+                className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:bg-slate-800" : "text-slate-700 hover:bg-slate-100"}`}
               >
                 <Settings2
                   className={`h-4 w-4 shrink-0 ${theme === "dark" ? "text-white" : "text-slate-500"}`}
@@ -407,7 +407,7 @@ export const Header = () => {
                   setUserMenuOpen(false);
                   handleSignOut();
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-rose-600 transition hover:bg-rose-100 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-rose-600 transition hover:bg-rose-100 cursor-pointer"
               >
                 <LogOut className="h-4 w-4 shrink-0" />
                 <span>{t("header.signOut")}</span>

@@ -24,7 +24,7 @@
   - Background: `white` (#FFFFFF) / `slate-50` (#F8FAFC).
   - Text: `slate-900` (Title) / `slate-500` (Muted).
 - **UI Specs:**
-  - **Radius:** `rounded-xl` (12px) for cards, `rounded-lg` (8px) for buttons.
+  - **Radius:** `rounded-xl` (12px) for cards, `rounded-xl` (8px) for buttons.
   - **Shadow:** `shadow-sm` or `border-slate-200`. No heavy shadows.
   - **Icons:** `lucide-react` (size: 20).
   - **Font:** Sans-serif (Inter/System). No Monospace (except code).
@@ -38,7 +38,7 @@
   - Border: `slate-800` (#1E293B).
   - Text: `slate-50` (Title) / `slate-400` (Muted).
 - **UI Specs:**
-  - **Radius:** `rounded-xl` (12px) / `rounded-lg` (8px).
+  - **Radius:** `rounded-xl` (12px) / `rounded-xl` (8px).
   - **Shadow:** `none` (Use subtle borders instead).
   - **Glow:** Optional `shadow-amber-500/10` for active buttons.
 

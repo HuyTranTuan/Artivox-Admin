@@ -63,7 +63,7 @@ const CollectionDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 p-0! rounded-lg hover:bg-(--color-primary)! cursor-pointer"
+          className="h-10 w-10 p-0! rounded-xl hover:bg-(--color-primary)! cursor-pointer"
           onClick={() => navigate("/catalog/collections")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -75,7 +75,7 @@ const CollectionDetailPage = () => {
         {/* Info Card */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center">
               <Package className="h-5 w-5" />
             </div>
             <div>
@@ -119,7 +119,7 @@ const CollectionDetailPage = () => {
         {/* Products in this collection */}
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center">
               <Eye className="h-5 w-5" />
             </div>
             <div>

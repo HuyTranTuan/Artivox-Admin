@@ -165,7 +165,7 @@ const ChartsSection = ({ charts }) => {
                 : t("dashboard.customers")}
             </div>
           </div>
-          <div className="flex  p-0.5 rounded-lg">
+          <div className="flex  p-0.5 rounded-xl">
             <Button
               variant={chartView === "revenue" ? "primary" : "ghost"}
               onClick={() => setChartView("revenue")}
@@ -327,7 +327,7 @@ const TablesSection = ({ tables }) => {
                   key={staff.id || i}
                   className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
                     {staff?.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -381,7 +381,7 @@ const TablesSection = ({ tables }) => {
                   key={staff.id || i}
                   className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 font-bold text-sm shrink-0">
                     {staff.fullName?.charAt(0)?.toUpperCase() || "S"}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -435,7 +435,7 @@ const TablesSection = ({ tables }) => {
                 key={p.productId || i}
                 className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
               >
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg  text-slate-700 font-bold text-sm shrink-0">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl  text-slate-700 font-bold text-sm shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-1 min-w-0">

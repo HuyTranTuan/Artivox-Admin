@@ -89,7 +89,7 @@ const MessageContent = ({ message, onImageClick }) => {
     return (
       <div className="space-y-1.5">
         <div
-          className="relative group rounded-lg overflow-hidden cursor-pointer border border-slate-200/50"
+          className="relative group rounded-xl overflow-hidden cursor-pointer border border-slate-200/50"
           onClick={() => onImageClick(fileUrl, name)}
         >
           <img
@@ -121,7 +121,7 @@ const MessageContent = ({ message, onImageClick }) => {
 
   if (type === "file")
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
         <File className="h-5 w-5  shrink-0" />
         <div className="flex-1 min-w-0">
           <div className="text-sm truncate">{name}</div>
@@ -418,7 +418,7 @@ export const ChatPanel = ({
               <img
                 src={imagePreview.url}
                 alt="preview"
-                className="h-16 w-16 object-cover rounded-lg border border-slate-200"
+                className="h-16 w-16 object-cover rounded-xl border border-slate-200"
               />
               <div className="flex-1">
                 <div className="text-xs  truncate">

@@ -384,7 +384,7 @@ const MaterialsPage = () => {
           e.stopPropagation();
           handleRowClick(item.slug);
         }}
-        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+        className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
         style={{ padding: 5 }}
       >
         <Eye style={{ width: 18, height: 18 }} />
@@ -395,7 +395,7 @@ const MaterialsPage = () => {
             e.stopPropagation();
             handleEdit(item);
           }}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+          className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
           style={{ padding: 5 }}
         >
           <Edit style={{ width: 18, height: 18 }} />
@@ -408,7 +408,7 @@ const MaterialsPage = () => {
             setSelectedItem(item);
             setOpenDialog("delete");
           }}
-          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+          className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
           style={{ padding: 5 }}
         >
           <Trash2 style={{ width: 18, height: 18 }} />
@@ -525,7 +525,7 @@ const MaterialsPage = () => {
               <label className="text-xs font-semibold mb-1.5 block">
                 {t("catalog.gallery")} ({formGalleryImages.length})
               </label>
-              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-2">
+              <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-xl p-2">
                 {formGalleryImages.length === 0 ? (
                   <div className="text-center py-4 text-xs text-slate-400">
                     {t("catalog.noImages")}
@@ -534,13 +534,13 @@ const MaterialsPage = () => {
                   formGalleryImages.map((img, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 rounded-lg px-2 py-1.5 border border-slate-100 shadow-sm"
+                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 border border-slate-100 shadow-sm"
                     >
                       <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
                       <img
                         src={img.preview}
                         alt={img.alt || `Gallery ${idx + 1}`}
-                        className="h-10 w-10 rounded-lg object-cover border border-slate-200 shrink-0"
+                        className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0"
                       />
                       <span className="flex-1 text-xs  truncate">
                         {img.file?.name || img.alt || `Image ${idx + 1}`}

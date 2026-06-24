@@ -73,7 +73,7 @@ const ToolDetailPage = () => {
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
-          className="h-9 w-9 p-0! rounded-lg hover:bg-(--color-primary) mr-1 cursor-pointer"
+          className="h-9 w-9 p-0! rounded-xl hover:bg-(--color-primary) mr-1 cursor-pointer"
           onClick={() => navigate("/catalog/tools")}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -84,7 +84,7 @@ const ToolDetailPage = () => {
       <div className="grid gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-(--color-border) flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-(--color-border) flex items-center justify-center">
               <Wrench className="h-5 w-5 " />
             </div>
             <div>
@@ -112,7 +112,7 @@ const ToolDetailPage = () => {
                   }}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition flex items-center justify-center">
-                  <div className="opacity-30 group-hover:opacity-100 transition bg-(--color-border) rounded-lg px-4 py-2">
+                  <div className="opacity-30 group-hover:opacity-100 transition bg-(--color-border) rounded-xl px-4 py-2">
                     {t("catalog.viewAllImages", { count: tool.images.length })}
                   </div>
                 </div>
@@ -124,7 +124,7 @@ const ToolDetailPage = () => {
                       key={idx}
                       src={img.thumb || img.url}
                       alt=""
-                      className="h-16 w-16 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-amber-500 transition shrink-0"
+                      className="h-16 w-16 rounded-xl object-cover cursor-pointer border-2 border-transparent hover:border-amber-500 transition shrink-0"
                       onClick={() => {
                         setGalleryIndex(idx);
                         setGalleryOpen(true);
@@ -138,7 +138,7 @@ const ToolDetailPage = () => {
               )}
             </div>
           ) : (
-            <div className="h-48 rounded-lg bg-(--color-border) flex items-center justify-center">
+            <div className="h-48 rounded-xl bg-(--color-border) flex items-center justify-center">
               <div className="text-center">
                 <Wrench className="h-10 w-10 mx-auto mb-2" />
                 <span className="text-xs">{t("catalog.noImages")}</span>
@@ -149,7 +149,7 @@ const ToolDetailPage = () => {
 
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-lg bg-(--color-border) flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl bg-(--color-border) flex items-center justify-center">
               <Package className="h-5 w-5 " />
             </div>
             <div>

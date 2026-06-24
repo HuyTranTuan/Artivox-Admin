@@ -58,7 +58,7 @@ const CreateBlogPage = () => {
           <Button
             variant="outline"
             onClick={handleCancel}
-            className="flex h-8 w-8 p-0! items-center justify-center rounded-lg border border-slate-200 transition hover:bg-(--color-primary)"
+            className="flex h-8 w-8 p-0! items-center justify-center rounded-xl border border-slate-200 transition hover:bg-(--color-primary)"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

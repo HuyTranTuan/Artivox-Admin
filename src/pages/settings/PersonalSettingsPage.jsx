@@ -290,7 +290,7 @@ const PersonalSettingsPage = () => {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-[9999] flex items-center gap-2 rounded-xl px-4 py-3 shadow-lg transition-all ${
+          className={`fixed top-4 right-4 z-9999 flex items-center gap-2 rounded-xl px-4 py-3 shadow-lg transition-all ${
             toast.type === "success"
               ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
               : "bg-rose-50 text-rose-800 border border-rose-200"
@@ -376,7 +376,7 @@ const PersonalSettingsPage = () => {
           {/* Profile Information */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-(--color-primary)/10 flex items-center justify-center">
                 <User className="h-5 w-5 " />
               </div>
               <div>
@@ -443,7 +443,7 @@ const PersonalSettingsPage = () => {
                   rows={3}
                   value={profile.bio}
                   onChange={(e) => handleProfileChange("bio", e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm  placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition resize-none"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm  placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition resize-none"
                   placeholder={t(
                     "settings.bioPlaceholder",
                     "Tell us about yourself",
@@ -464,7 +464,7 @@ const PersonalSettingsPage = () => {
                       onChange={(e) =>
                         handleProfileChange("language", e.target.value)
                       }
-                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
+                      className="w-full rounded-xl border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
                     >
                       <option>English (US)</option>
                       <option>{t("vietnamese")}</option>
@@ -483,7 +483,7 @@ const PersonalSettingsPage = () => {
                       onChange={(e) =>
                         handleProfileChange("timezone", e.target.value)
                       }
-                      className="w-full rounded-lg border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
+                      className="w-full rounded-xl border border-slate-200 pl-10 pr-3 py-2.5 text-sm   focus:outline-none focus:ring-2 focus:ring-slate-950/20 focus:border-slate-950 transition appearance-none"
                     >
                       <option>Asia/Saigon (UTC+7)</option>
                       <option>Asia/Tokyo (UTC+9)</option>
@@ -512,7 +512,7 @@ const PersonalSettingsPage = () => {
           {/* Two-Factor Authentication */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-(--color-primary)/10 flex items-center justify-center">
                 <Shield className="h-5 w-5 " />
               </div>
               <div>
@@ -574,7 +574,7 @@ const PersonalSettingsPage = () => {
           {/* Avatar Upload Card */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-(--color-primary)/10 flex items-center justify-center">
                 <Upload className="h-5 w-5 " />
               </div>
               <div>
@@ -622,7 +622,7 @@ const PersonalSettingsPage = () => {
           {/* Security */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-(--color-primary)/10 flex items-center justify-center">
                 <Shield className="h-5 w-5 " />
               </div>
               <div>
@@ -755,7 +755,7 @@ const PersonalSettingsPage = () => {
 
               {/* Password error */}
               {passwordError && (
-                <div className="flex items-center gap-2 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                <div className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                   {passwordError}
                 </div>
@@ -793,7 +793,7 @@ const PersonalSettingsPage = () => {
           {/* Notifications */}
           <Card className="p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-9 w-9 rounded-lg bg-(--color-primary)/10 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-xl bg-(--color-primary)/10 flex items-center justify-center">
                 <Bell className="h-5 w-5 " />
               </div>
               <div>

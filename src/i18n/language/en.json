@@ -430,6 +430,7 @@
   "settings.notificationToggled": "Notification \"{key}\" {status}",
   "settings.notifications": "Notifications",
   "settings.notificationsSubtitle": "Control what notifications you receive",
+  "settings.claimChat": "Claim chat",
   "settings.orderUpdates": "Order updates",
   "settings.orderUpdatesDesc": "New orders, cancellations, and status changes",
   "settings.passwordUpdateFailed": "Failed to update password",

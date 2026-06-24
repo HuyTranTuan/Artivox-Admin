@@ -74,7 +74,7 @@ const SignInForm = () => {
           />
         </div>
         {error ? <div className="text-sm text-rose-600">{error}</div> : null}
-        <Button className="w-full" type="submit">
+        <Button className="w-full h-10 flex" type="submit" variant="primary">
           {t("accessDashboard")}
         </Button>
       </form>

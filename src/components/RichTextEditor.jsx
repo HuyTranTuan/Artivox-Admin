@@ -30,7 +30,7 @@ const ToolbarButton = ({ onClick, active, children, title }) => (
     type="button"
     onClick={onClick}
     title={title}
-    className={`flex h-8 w-8 items-center justify-center rounded-lg border transition ${
+    className={`flex h-8 w-8 items-center justify-center rounded-xl border transition ${
       active
         ? "border-amber-400 bg-amber-50 text-amber-700"
         : "border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-800"

@@ -5,7 +5,7 @@ const ThumbnailPreview = ({ images, onClick }) => {
     return (
       <div
         onClick={onClick}
-        className="h-16 w-16 rounded-lg bg-(--color-secondary) flex items-center justify-center cursor-pointer hover:bg-slate-200 transition border border-slate-200"
+        className="h-16 w-16 rounded-xl bg-(--color-secondary) flex items-center justify-center cursor-pointer hover:bg-slate-200 transition border border-slate-200"
       >
         <ImageIcon className="h-5 w-5 text-slate-400" />
       </div>
@@ -19,7 +19,7 @@ const ThumbnailPreview = ({ images, onClick }) => {
       <img
         src={imgSrc}
         alt="thumbnail"
-        className="h-16 w-16 rounded-lg object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
+        className="h-16 w-16 rounded-xl object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
         onError={(e) => {
           e.target.style.display = "none";
         }}

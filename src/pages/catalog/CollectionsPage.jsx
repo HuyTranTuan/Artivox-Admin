@@ -124,7 +124,7 @@ const CollectionsPage = () => {
       width: "80px",
       sortable: false,
       render: (item) => (
-        <div className="h-12 w-12 rounded-lg overflow-hidden flex items-center justify-center bg-amber-300">
+        <div className="h-12 w-12 rounded-xl overflow-hidden flex items-center justify-center bg-amber-300">
           {item.image ? (
             <img
               src={item.image}
@@ -313,7 +313,7 @@ const CollectionsPage = () => {
                           e.stopPropagation();
                           navigate(`/catalog/collections/${item.slug}`);
                         }}
-                        className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+                        className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
                       >
                         <Eye style={{ width: 16, height: 16 }} />
                       </button>
@@ -325,7 +325,7 @@ const CollectionsPage = () => {
                               `/catalog/collections/edit/${item.slug || item.id}`,
                             );
                           }}
-                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+                          className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                         >
                           <Edit style={{ width: 16, height: 16 }} />
                         </button>
@@ -337,7 +337,7 @@ const CollectionsPage = () => {
                             setSelectedItem(item);
                             setOpenDialog("delete");
                           }}
-                          className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+                          className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
                         >
                           <Trash2 style={{ width: 16, height: 16 }} />
                         </button>

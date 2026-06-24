@@ -172,7 +172,7 @@ export const Sidebar = ({ forcedOpen }) => {
               <div key={item.label}>
                 <button
                   onClick={() => toggleGroup(item.label)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:text-white/80" : "text-slate-500 hover:text-slate-700"}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm transition cursor-pointer ${theme === "dark" ? "text-white hover:text-white/80" : "text-slate-500 hover:text-slate-700"}`}
                 >
                   <Icon className="h-6 w-6 shrink-0" />
                   {isOpen ? (
@@ -203,7 +203,7 @@ export const Sidebar = ({ forcedOpen }) => {
                           onClick={handleNavClick}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition",
+                              "flex items-center gap-3 rounded-xl px-4 py-2 text-sm transition",
                               isActive
                                 ? "bg-amber-500 text-white font-semibold"
                                 : theme === "dark"
@@ -235,7 +235,7 @@ export const Sidebar = ({ forcedOpen }) => {
               onClick={handleNavClick}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition",
                   isActive
                     ? "bg-amber-500 text-white font-semibold"
                     : theme === "dark"

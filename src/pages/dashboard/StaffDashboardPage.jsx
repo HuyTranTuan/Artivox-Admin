@@ -218,7 +218,7 @@ const StaffDashboardPage = () => {
                     key={c.customerId || i}
                     className="flex items-center gap-3 p-2 rounded-xl hover:bg-(--color-primary)/10 transition"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700 font-bold text-sm shrink-0">
                       {c.customerName?.charAt(0)?.toUpperCase() || "?"}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -255,7 +255,7 @@ const StaffDashboardPage = () => {
                     key={order.id || i}
                     className="flex items-center gap-4 p-3 rounded-xl hover:bg-(--color-primary)/10 transition"
                   >
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-(--color-primary) text-(--color-primary) font-bold text-sm shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-(--color-primary) text-(--color-primary) font-bold text-sm shrink-0">
                       {i + 1}
                     </div>
                     <div className="flex-1 min-w-0">

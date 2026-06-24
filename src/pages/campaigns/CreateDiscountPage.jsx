@@ -114,7 +114,7 @@ const CreateDiscountPage = () => {
           <Button
             onClick={handleCancel}
             variant={"outline"}
-            className="h-13 w-13 rounded-lg transition hover:bg-slate-100"
+            className="h-13 w-13 rounded-xl transition hover:bg-slate-100"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>

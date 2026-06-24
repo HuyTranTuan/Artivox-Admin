@@ -77,7 +77,7 @@ export const Sidebar = ({ forcedOpen }) => {
           if (isGroup) {
             return (
               <div key={item.label}>
-                <div className="flex items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-600">
+                <div className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-600">
                   <Icon className="h-5 w-5 shrink-0" />
                   {isOpen ? (
                     <span className="font-title font-medium">{item.label}</span>
@@ -94,7 +94,7 @@ export const Sidebar = ({ forcedOpen }) => {
                           onClick={handleNavClick}
                           className={({ isActive }) =>
                             cn(
-                              "flex items-center gap-3 rounded-lg px-4 py-2 text-sm transition",
+                              "flex items-center gap-3 rounded-xl px-4 py-2 text-sm transition",
                               isActive
                                 ? "bg-amber-500 text-white font-semibold"
                                 : "text-slate-600 hover:bg-gray-200",
@@ -124,7 +124,7 @@ export const Sidebar = ({ forcedOpen }) => {
               onClick={handleNavClick}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition",
+                  "flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition",
                   isActive
                     ? "bg-amber-500 text-white font-semibold"
                     : "text-slate-600 hover:bg-gray-200",

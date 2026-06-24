@@ -30,7 +30,7 @@ const getNotificationIcon = (type) => {
     case "SUCCESS":
       return <CheckCircle className="h-6 w-6 text-emerald-600" />;
     default:
-      return <Info className="h-6 w-6 text-slate-600 dark:text-white" />;
+      return <Info className="h-6 w-6 " />;
   }
 };
 
@@ -106,10 +106,10 @@ export const NotificationDetailPage = () => {
       <section className="space-y-6">
         <Card className="p-8 text-center">
           <AlertCircle className="h-12 w-12 mx-auto mb-4 text-slate-400" />
-          <div className="font-title text-lg font-semibold text-slate-900 dark:text-white mb-2">
+          <div className="font-title text-lg font-semibold  mb-2">
             {t("notificationNotFound")}
           </div>
-          <div className="text-sm text-slate-500 dark:text-white mb-6">
+          <div className="text-sm  mb-6">
             {t("theNotificationYoureLookingForDoesntExist")}
           </div>
           <Button
@@ -139,13 +139,13 @@ export const NotificationDetailPage = () => {
     <section className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button
+        <Button
           onClick={() => navigate("/notifications")}
-          className="flex items-center gap-2 text-slate-600 dark:text-white hover:text-slate-900 dark:text-white transition"
+          variant="outline"
+          className="h-9 w-9 p-0! hover:bg-amber-600 hover:text-white "
         >
           <ArrowLeft className="h-5 w-5" />
-          <span className="text-sm font-medium">{t("catalog.back")}</span>
-        </button>
+        </Button>
         <div className="flex items-center gap-3">
           {!notification.isRead && (
             <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
@@ -161,40 +161,38 @@ export const NotificationDetailPage = () => {
         <div className="flex items-start gap-4 mb-8">
           <div className="mt-1">{getNotificationIcon(notification.type)}</div>
           <div className="flex-1">
-            <div className="font-title text-3xl font-bold text-slate-900 dark:text-white mb-2">
+            <div className="font-title text-3xl font-bold mb-2">
               {notification.title}
             </div>
-            <div className="text-slate-600 dark:text-white">
-              {notification.message}
-            </div>
+            <div className="">{notification?.message}</div>
           </div>
         </div>
 
         {/* Metadata */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-y border-slate-200">
           <div>
-            <div className="text-xs text-slate-500 dark:text-white uppercase tracking-wider mb-1">
+            <div className="text-xs  uppercase tracking-wider mb-1">
               {t("created")}
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2 text-sm ">
               <Calendar className="h-4 w-4 text-slate-400" />
               {formatDate(notification.createdAt)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-slate-500 dark:text-white uppercase tracking-wider mb-1">
+            <div className="text-xs  uppercase tracking-wider mb-1">
               {t("readAt")}
             </div>
-            <div className="flex items-center gap-2 text-sm text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2 text-sm ">
               <Clock className="h-4 w-4 text-slate-400" />
               {formatDate(notification.readAt)}
             </div>
           </div>
           <div>
-            <div className="text-xs text-slate-500 dark:text-white uppercase tracking-wider mb-1">
+            <div className="text-xs  uppercase tracking-wider mb-1">
               {t("catalog.type")}
             </div>
-            <div className="text-sm font-medium text-slate-900 dark:text-white capitalize">
+            <div className="text-sm font-medium  capitalize">
               {notification.type}
             </div>
           </div>
@@ -207,7 +205,8 @@ export const NotificationDetailPage = () => {
               onClick={() =>
                 navigate(`/orders/${notification.metadata.orderId}`)
               }
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              variant="primary"
+              className="gap-2 px-3 py-2 text-base"
             >
               {t("viewOrder")}
             </Button>
@@ -219,7 +218,8 @@ export const NotificationDetailPage = () => {
               onClick={() =>
                 navigate(`/articles/${notification.metadata.articleSlug}`)
               }
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              variant="primary"
+              className="gap-2 px-3 py-2 text-base"
             >
               {t("viewArticle")}
             </Button>
@@ -234,7 +234,7 @@ export const NotificationDetailPage = () => {
                 disabled={claiming}
               >
                 {claiming && <Loading />}
-                Claim Support Chat
+                {t("settings.claimChat")}
               </Button>
             </div>
           )}
@@ -242,9 +242,9 @@ export const NotificationDetailPage = () => {
         {/* Mark as Read / Archive */}
         <div className="mt-8 pt-6 border-t border-slate-200 flex gap-3">
           <Button
-            variant="outline"
-            className="gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+            variant="destructive"
             onClick={handleDelete}
+            className="gap-2 px-2 py-1.5"
           >
             <Trash2 className="h-4 w-4" />
             {t("catalog.delete")}

@@ -260,7 +260,7 @@ export const Header = () => {
                   setUserMenuOpen(false);
                   navigate("/settings/personal");
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-100 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-slate-700 transition hover:bg-slate-100 cursor-pointer"
               >
                 <Settings2 className="h-4 w-4 text-slate-500" />
                 <span>Settings</span>
@@ -271,7 +271,7 @@ export const Header = () => {
                   setUserMenuOpen(false);
                   handleSignOut();
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm text-rose-600 transition hover:bg-rose-100 cursor-pointer"
+                className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-rose-600 transition hover:bg-rose-100 cursor-pointer"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Sign out</span>

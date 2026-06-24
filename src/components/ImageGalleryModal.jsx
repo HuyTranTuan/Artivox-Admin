@@ -30,8 +30,14 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
     [total],
   );
 
-  const goPrev = useCallback(() => goTo(currentIndex - 1), [goTo, currentIndex]);
-  const goNext = useCallback(() => goTo(currentIndex + 1), [goTo, currentIndex]);
+  const goPrev = useCallback(
+    () => goTo(currentIndex - 1),
+    [goTo, currentIndex],
+  );
+  const goNext = useCallback(
+    () => goTo(currentIndex + 1),
+    [goTo, currentIndex],
+  );
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -50,19 +56,27 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
   if (!total) return null;
 
   const currentImage = images[currentIndex];
-  // Support both string URLs and { url, thumb, alt } objects
-  const src = typeof currentImage === "string" ? currentImage : currentImage?.url || currentImage?.src;
-  const alt = typeof currentImage === "string" ? `Image ${currentIndex + 1}` : currentImage?.alt || `Image ${currentIndex + 1}`;
+  const src =
+    typeof currentImage === "string"
+      ? currentImage
+      : currentImage?.url || currentImage?.src;
+  const alt =
+    typeof currentImage === "string"
+      ? `Image ${currentIndex + 1}`
+      : currentImage?.alt || `Image ${currentIndex + 1}`;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 backdrop-blur-sm"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose?.();
       }}
     >
       {/* Close button */}
-      <button onClick={onClose} className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/40">
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/40"
+      >
         <X className="h-6 w-6" />
       </button>
 
@@ -82,12 +96,17 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
           {/* Main image */}
           <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-xl">
             {!imgError ? (
-              <img src={src} alt={alt} className="max-h-full max-w-full rounded-xl object-contain shadow-2xl" onError={() => setImgError(true)} />
+              <img
+                src={src}
+                alt={alt}
+                className="max-h-full max-w-full rounded-xl object-contain shadow-2xl"
+                onError={() => setImgError(true)}
+              />
             ) : (
               <div className="flex h-64 w-64 items-center justify-center rounded-xl bg-slate-800 text-slate-400">
                 <div className="text-center">
                   <div className="text-4xl mb-2">ðŸ–¼ï¸</div>
-                  <div className="text-sm">{t('imageUnavailable')}</div>
+                  <div className="text-sm">{t("imageUnavailable")}</div>
                 </div>
               </div>
             )}
@@ -115,8 +134,14 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
         {total > 1 && (
           <div className="mt-4 flex max-w-full gap-2 overflow-x-auto px-2 pb-2">
             {images.map((img, idx) => {
-              const thumbSrc = typeof img === "string" ? img : img?.thumb || img?.url || img?.src;
-              const thumbAlt = typeof img === "string" ? `Thumb ${idx + 1}` : img?.alt || `Thumb ${idx + 1}`;
+              const thumbSrc =
+                typeof img === "string"
+                  ? img
+                  : img?.thumb || img?.url || img?.src;
+              const thumbAlt =
+                typeof img === "string"
+                  ? `Thumb ${idx + 1}`
+                  : img?.alt || `Thumb ${idx + 1}`;
               return (
                 <button
                   key={idx}
@@ -124,8 +149,10 @@ const ImageGalleryModal = ({ images, initialIndex = 0, onClose }) => {
                     setCurrentIndex(idx);
                     setImgError(false);
                   }}
-                  className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                    idx === currentIndex ? "border-amber-400 shadow-lg shadow-amber-400/30" : "border-white/30 hover:border-white/70"
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                    idx === currentIndex
+                      ? "border-amber-400 shadow-lg shadow-amber-400/30"
+                      : "border-white/30 hover:border-white/70"
                   }`}
                 >
                   <img

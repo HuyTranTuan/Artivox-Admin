@@ -73,7 +73,7 @@ const MessageContent = ({ message, onImageClick }) => {
     return (
       <div className="space-y-1.5">
         <div
-          className="relative group rounded-lg overflow-hidden cursor-pointer border border-slate-200/50"
+          className="relative group rounded-xl overflow-hidden cursor-pointer border border-slate-200/50"
           onClick={() => onImageClick(fileUrl, name)}
         >
           <img
@@ -105,7 +105,7 @@ const MessageContent = ({ message, onImageClick }) => {
   if (type === "file")
     return (
       <div className="space-y-1.5">
-        <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+        <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
           <File className="h-5 w-5  shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="text-sm truncate">{name}</div>
@@ -446,7 +446,7 @@ const ChatAdminPage = () => {
   return (
     <section className="space-y-6">
       {uploadError && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-4 py-3 shadow-lg animate-in slide-in-from-top-2">
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-xl bg-red-50 border border-red-200 px-4 py-3 shadow-lg animate-in slide-in-from-top-2">
           <X className="h-4 w-4 text-red-500 shrink-0" />
           <span className="text-sm text-red-700">{uploadError}</span>
           <Button
@@ -462,7 +462,7 @@ const ChatAdminPage = () => {
 
       {chatToast.visible && (
         <div
-          className="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg bg-blue-600 px-5 py-3 text-white shadow-xl cursor-pointer animate-in slide-in-from-top-2 hover:bg-blue-700 transition-colors"
+          className="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-xl bg-blue-600 px-5 py-3 text-white shadow-xl cursor-pointer animate-in slide-in-from-top-2 hover:bg-blue-700 transition-colors"
           onClick={() => {
             if (chatToast.roomId) setActiveRoomId(chatToast.roomId);
             setChatToast((prev) => ({ ...prev, visible: false }));
@@ -527,7 +527,7 @@ const ChatAdminPage = () => {
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
-              className="h-9 w-9 p-0 rounded-lg"
+              className="h-9 w-9 p-0 rounded-xl"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
               {sidebarOpen ? (
@@ -580,7 +580,7 @@ const ChatAdminPage = () => {
                         key={u.id}
                         type="button"
                         onClick={() => handleStartChat(u.id)}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-lg transition hover:bg-(--color-secondary)/50"
+                        className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-xl transition hover:bg-(--color-secondary)/50"
                       >
                         <div className="h-8 w-8 rounded-full bg-(--color-secondary) flex items-center justify-center shrink-0 overflow-hidden">
                           {u.avatarUrl ? (
