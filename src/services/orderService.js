@@ -29,6 +29,11 @@ export const orderService = {
     return response;
   },
 
+  updateOrderPaymentStatus: async (orderNumber, paymentStatus) => {
+    const response = await axiosClient.patch(`/orders/number/${orderNumber}/payment-status`, { paymentStatus });
+    return response;
+  },
+
   approveOrder: async (orderId) => {
     const response = await axiosClient.patch(`/orders/${orderId}/approve`);
     return response;

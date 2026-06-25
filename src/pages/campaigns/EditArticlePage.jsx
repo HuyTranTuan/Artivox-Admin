@@ -11,6 +11,8 @@ import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { articleService } from "@services/articleService";
 import Loading from "@components/Loading";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
@@ -87,8 +89,7 @@ const EditArticlePage = () => {
           setTranslations(newTranslations);
         }
       } catch (err) {
-        console.error("Failed to fetch article", err);
-        setError("Failed to load article");
+        toastTopRight("error", t("articles.loadError"));
       } finally {
         setIsLoading(false);
       }
@@ -104,7 +105,7 @@ const EditArticlePage = () => {
     setError("");
 
     if (!slug.trim()) {
-      setError(t("articles.slugRequired") || "Slug is required");
+      setError(t("articles.slugRequired"));
       return;
     }
 
@@ -112,10 +113,7 @@ const EditArticlePage = () => {
       (t) => t.title && t.title.trim() !== "",
     );
     if (validTranslations.length === 0) {
-      setError(
-        t("articles.translationRequired") ||
-          "At least one translation with a title is required",
-      );
+      setError(t("articles.translationRequired"));
       return;
     }
 
@@ -136,12 +134,7 @@ const EditArticlePage = () => {
       );
       navigate("/articles");
     } catch (err) {
-      console.error("Failed to update article", err);
-      setError("Failed to update article");
-      toastTopRight(
-        "error",
-        t("articles.updateError") || "Failed to update article",
-      );
+      toastTopRight("error", t("articles.updateError"));
     } finally {
       setIsSaving(false);
     }
@@ -171,42 +164,45 @@ const EditArticlePage = () => {
       <Card className="p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
+            <Button
               onClick={handleCancel}
-              className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 text-slate-600 dark:text-white transition hover:bg-amber-500 hover:text-white cursor-pointer"
+              variant="outline"
+              size="icon-sm"
+              className="h-8 w-8 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-            </button>
-            <h2 className="font-title text-xl font-bold text-slate-900 dark:text-white">
+            </Button>
+            <h2 className="font-title text-xl font-bold ">
               {t("catalog.edit")}
             </h2>
           </div>
           <Button
             onClick={handleSave}
-            className="gap-2"
+            variant="primary"
+            className="gap-2 px-4 py-2 rounded-xl"
             disabled={!canUpdate || isSaving}
           >
             <Save className="h-4 w-4" />
-            {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
+            {isSaving ? t("common.saving") : t("articles.save")}
           </Button>
         </div>
         {/* Slug / URL */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 block text-sm font-medium ">
             {t("articles.slug")}
           </label>
-          <input
+          <Input
             type="text"
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={t("articles.slugPlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-10 w-full rounded-xl border border-slate-300 outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
           />
         </div>
 
         {/* Cover Image */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 block text-sm font-medium ">
             {t("articles.coverImage")}
           </label>
           {currentCoverImage && !coverImage && (
@@ -218,45 +214,42 @@ const EditArticlePage = () => {
               />
             </div>
           )}
-          <input
+          <Input
             type="file"
             accept="image/*"
             onChange={(e) => setCoverImage(e.target.files[0])}
-            className="h-10 w-full rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="h-12 w-full rounded-xl border border-slate-300 outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
           />
-          <p className="mt-1 text-xs text-slate-500 dark:text-white">
-            {t("articles.coverImage") ||
-              "Upload a new image to replace the current one."}
-          </p>
+          <p className="mt-1 text-xs ">{t("articles.coverImage")}</p>
         </div>
 
         {/* Language Tabs */}
         <div>
-          <div className="flex items-center border-b border-slate-200 mb-4">
+          <div className="flex gap-2.5 items-center border-b border-slate-200 mb-4">
             {tabs.map((tab) => (
-              <button
+              <Button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
+                variant="outline"
+                className={`px-4 py-2.5 text-sm font-medium transition ${
                   activeTab === tab.value
-                    ? "border-amber-500 text-amber-600"
-                    : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
+                    ? "text-(--color-secondary) bg-(--color-primary)/80"
+                    : "border-transparent"
                 }`}
               >
                 {t(tab.labelKey)}
-              </button>
+              </Button>
             ))}
           </div>
 
           {/* Title */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium ">
               {t("articles.titleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
             </label>
-            <input
-              type="text"
+            <Input
               value={translations[activeTab]?.title || ""}
               onChange={(e) =>
                 handleTranslationChange(activeTab, "title", e.target.value)
@@ -264,34 +257,32 @@ const EditArticlePage = () => {
               placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
           {/* Summary */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium ">
               {t("articles.summaryWithLocale", {
                 locale: activeTab.toUpperCase(),
-              }) || `Summary (${activeTab.toUpperCase()})`}
+              })}
             </label>
-            <textarea
+            <Textarea
               value={translations[activeTab]?.summary || ""}
               onChange={(e) =>
                 handleTranslationChange(activeTab, "summary", e.target.value)
               }
-              placeholder={
-                t("articles.enterSummaryWithLocale", {
-                  locale: activeTab.toUpperCase(),
-                }) || "Enter summary"
-              }
-              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-900 dark:text-white outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              placeholder={t("articles.enterSummaryWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
+              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
           {/* Content - Rich Text Editor */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <label className="mb-1.5 block text-sm font-medium ">
               {t("articles.contentWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}

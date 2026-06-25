@@ -20,13 +20,17 @@ export const modelsService = {
 
   // Create a new model
   createModel: async (formData) => {
-    const response = await axiosClient.post(`/catalog/models`, formData);
+    const response = await axiosClient.post(`/catalog/models`, formData, {
+      timeout: 0, // no timeout for file uploads
+    });
     return response;
   },
 
   // Update a model by slug
   updateModel: async (slug, formData) => {
-    const response = await axiosClient.put(`/catalog/models/${slug}`, formData);
+    const response = await axiosClient.put(`/catalog/models/${slug}`, formData, {
+      timeout: 0, // no timeout for file uploads
+    });
     return response;
   },
 

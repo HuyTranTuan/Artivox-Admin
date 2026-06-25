@@ -9,6 +9,7 @@ import {
   GripVertical,
   ImageIcon,
   Loader2,
+  Trash,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -18,6 +19,7 @@ import { useTranslation } from "@hooks/useTranslation";
 import useToast from "@hooks/useToast";
 import { modelsService } from "@services/modelsService";
 import { collectionService } from "@services/collectionService";
+import { Label } from "@/components/ui/label";
 
 const CreateModelPage = () => {
   const { t } = useTranslation();
@@ -102,10 +104,10 @@ const CreateModelPage = () => {
   const handle3DFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 50 * 1024 * 1024) {
+    if (file.size > 100 * 1024 * 1024) {
       toastTopRight(
         "error",
-        t("catalog.fileTooLarge", "File exceeds 50MB limit"),
+        t("catalog.fileTooLarge", "File exceeds 100MB limit"),
       );
       e.target.value = "";
       return;
@@ -221,13 +223,14 @@ const CreateModelPage = () => {
           <p className="text-[10px] mt-0.5">{t("pngJpgWebp")}</p>
         </div>
         {value && (
-          <button
-            type="button"
+          <Button
+            variant="destructive"
             onClick={onClear}
-            className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
+            className="px-3 py-2 gap-2 cursor-pointer"
           >
+            <Trash className="h-4 w-4" />
             {t("catalog.remove")}
-          </button>
+          </Button>
         )}
       </div>
     </div>
@@ -251,7 +254,7 @@ const CreateModelPage = () => {
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className="gap-2 cursor-pointer"
+          className="gap-2 px-3 py-2 cursor-pointer"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -288,7 +291,7 @@ const CreateModelPage = () => {
           value={form.description}
           onChange={(e) => handleChange("description", e.target.value)}
           rows={3}
-          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none resize-none placeholder:text-gray-600 bg-slate-50 "
+          className="w-full border-slate-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none focus:outline-amber-400 resize-none"
           placeholder={t("catalog.productDescriptionPlaceholder")}
         />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -296,15 +299,23 @@ const CreateModelPage = () => {
             type="number"
             label={`${t("catalog.price")} (VND)`}
             value={form.basePrice}
-            onChange={(e) => handleChange("basePrice", e.target.value)}
-            placeholder="0"
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "" || parseFloat(v) >= 10000) handleChange("basePrice", v);
+            }}
+            min={10000}
+            placeholder="10000"
             className="placeholder:text-gray-600"
           />
           <FormField
             type="number"
             label={t("catalog.stock")}
             value={form.stock}
-            onChange={(e) => handleChange("stock", e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "" || parseInt(v, 10) >= 0) handleChange("stock", v);
+            }}
+            min={0}
             placeholder="0"
             className="placeholder:text-gray-600"
           />
@@ -344,41 +355,37 @@ const CreateModelPage = () => {
             className="placeholder:text-gray-600"
           />
           <div>
-            <label className="mb-1.5 block text-sm font-medium ">
+            <Label className="mb-1.5 block text-sm font-medium ">
               {t("catalog.sourceFile")} <span className="text-rose-500">*</span>
-              <span className="ml-1 text-xs font-normal ">(max 50MB)</span>
-            </label>
+              <span className="ml-1 text-xs font-normal ">(max 100MB)</span>
+            </Label>
             <div
               onClick={() => sourceFileRef.current?.click()}
               className="flex h-12 cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-slate-300 px-4 hover:border-orange-400 hover:bg-orange-50/50 transition"
             >
               <Upload className="h-4 w-4 shrink-0 " />
               <span className="flex-1 truncate text-sm">
-                {sourceFile
-                  ? sourceFile.name
-                  : t(
-                      "catalog.chooseFile",
-                      "Choose 3D file (glb, gltf, fbx, obj¦)",
-                    )}
+                {sourceFile ? sourceFile.name : t("catalog.chooseFile")}
               </span>
               {sourceFile && (
-                <button
-                  type="button"
+                <Button
                   onClick={(e) => {
                     e.stopPropagation();
                     setSourceFile(null);
                   }}
-                  className="text-rose-500 hover:text-rose-700"
+                  variant="destructive"
+                  size="icon"
+                  className="shrink-0 bg-transparent hover:bg-transparent hover:text-rose-500 cursor-pointer"
                 >
                   <X className="h-4 w-4" />
-                </button>
+                </Button>
               )}
             </div>
-            <input
+            <Input
               ref={sourceFileRef}
               type="file"
               accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.3ds,.dae"
-              className="hidden"
+              className="hidden outline-(--color-primary)"
               onChange={handle3DFileChange}
             />
           </div>
@@ -409,9 +416,9 @@ const CreateModelPage = () => {
         />
 
         <div>
-          <label className="text-xs font-semibold  mb-1.5 block">
+          <Label className="text-xs font-semibold  mb-1.5 block">
             {t("catalog.gallery")} ({galleryImages.length})
-          </label>
+          </Label>
           <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
             {galleryImages.length === 0 ? (
               <div className="text-center py-6 text-xs ">
@@ -422,9 +429,9 @@ const CreateModelPage = () => {
               galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-2 py-1.5"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5"
                 >
-                  <GripVertical className="h-4 w-4  shrink-0 cursor-grab" />
+                  <GripVertical className="h-5 w-5 shrink-0 cursor-grab" />
                   <img
                     src={img.preview}
                     srcSet={`${img.preview} 400w, ${img.preview} 800w, ${img.preview} 1200w`}
@@ -436,28 +443,29 @@ const CreateModelPage = () => {
                   <span className="flex-1 text-xs truncate">
                     {img.file.name}
                   </span>
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => removeGalleryImage(idx)}
-                    className="text-rose-500 hover:text-rose-700 shrink-0"
+                    variant="destructive"
+                    size="icon"
+                    className="shrink-0 bg-transparent hover:bg-transparent hover:text-rose-500 cursor-pointer"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
+                    <X className="h-5 w-5" />
+                  </Button>
                 </div>
               ))
             )}
           </div>
-          <input
+          <Input
             ref={galleryInputRef}
             type="file"
             accept="image/png,image/jpg,image/jpeg,image/webp"
             multiple
-            className="hidden"
+            className="hidden outline-(--color-primary)"
             onChange={handleGalleryAdd}
           />
           <Button
-            variant="outline"
-            className="mt-2 gap-1.5 text-xs cursor-pointer hover:bg-(--color-primary) border-(--color-secondary)!"
+            variant="primary"
+            className="mt-2 px-3 py-2 gap-1.5 text-xs cursor-pointer"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

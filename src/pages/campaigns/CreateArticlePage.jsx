@@ -1,14 +1,15 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@components/ui/button";
+
 import { Card } from "@components/ui/card";
-import { FormField } from "@components/forms/FormField";
-import RichTextEditor from "@/components/RichTextEditor";
+import { Button } from "@components/ui/button";
 import { useAuthStore } from "@store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
+import { FormField } from "@components/forms/FormField";
 import { articleService } from "@services/articleService";
 import useToast from "@hooks/useToast";
+import RichTextEditor from "@/components/RichTextEditor";
 
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
@@ -82,17 +83,11 @@ const CreateArticlePage = () => {
       }
 
       await articleService.createArticle(formData);
-      toastTopRight(
-        "success",
-        t("articles.createSuccess", "Article created successfully"),
-      );
+      toastTopRight("success", t("articles.createSuccess"));
       navigate("/articles");
     } catch (error) {
       console.error("Failed to create article", error);
-      toastTopRight(
-        "error",
-        t("articles.createError", "Failed to create article"),
-      );
+      toastTopRight("error", t("articles.createError"));
     } finally {
       setIsSaving(false);
     }

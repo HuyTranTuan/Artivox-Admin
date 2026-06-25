@@ -172,13 +172,10 @@ const PersonalSettingsPage = () => {
     try {
       await settingsService.removeAvatar();
       setProfile((prev) => ({ ...prev, avatar: null }));
-      showToast("success", t("settings.avatarRemoved", "Avatar removed"));
+      showToast("success", t("settings.avatarRemoved"));
       refreshUserAvatar(null || "");
     } catch {
-      showToast(
-        "error",
-        t("settings.avatarRemoveFailed", "Failed to remove avatar"),
-      );
+      showToast("error", t("settings.avatarRemoveFailed"));
     }
   };
 
@@ -189,24 +186,15 @@ const PersonalSettingsPage = () => {
 
     // Client-side validation
     if (!passwordForm.currentPassword) {
-      setPasswordError(
-        t("settings.currentPasswordRequired", "Current password is required"),
-      );
+      setPasswordError(t("settings.currentPasswordRequired"));
       return;
     }
     if (passwordForm.newPassword.length < 6) {
-      setPasswordError(
-        t(
-          "settings.newPasswordMinLength",
-          "New password must be at least 6 characters",
-        ),
-      );
+      setPasswordError(t("settings.newPasswordMinLength"));
       return;
     }
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setPasswordError(
-        t("settings.passwordsDoNotMatch", "Passwords do not match"),
-      );
+      setPasswordError(t("settings.passwordsDoNotMatch"));
       return;
     }
 
@@ -217,20 +205,17 @@ const PersonalSettingsPage = () => {
         newPassword: passwordForm.newPassword,
       });
       if (result.success) {
-        showToast("success", t("settings.passwordUpdated", "Password updated"));
+        showToast("success", t("settings.passwordUpdated"));
         setPasswordForm({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
         });
       } else {
-        setPasswordError(
-          result.error ||
-            t("settings.passwordUpdateFailed", "Failed to update password"),
-        );
+        setPasswordError(result.error || t("settings.passwordUpdateFailed"));
       }
     } catch {
-      setPasswordError(t("common.errorOccurred", "An error occurred"));
+      setPasswordError(t("common.errorOccurred"));
     } finally {
       setSaving(false);
     }
@@ -246,10 +231,8 @@ const PersonalSettingsPage = () => {
       "success",
       t("settings.notificationToggled", {
         key,
-        status: updated[key]
-          ? t("common.enabled", "enabled")
-          : t("common.disabled", "disabled"),
-        defaultValue: `Notification "${key}" ${updated[key] ? "enabled" : "disabled"}`,
+        status: updated[key] ? t("common.enabled") : t("common.disabled"),
+        defaultValue: `Notification "${key}" ${updated[key] ? t("common.enabled") : t("common.disabled")}`,
       }),
     );
   };
@@ -263,26 +246,19 @@ const PersonalSettingsPage = () => {
       showToast(
         "success",
         t("settings.twoFactorToggled", {
-          status: enabled
-            ? t("common.enabled", "enabled")
-            : t("common.disabled", "disabled"),
-          defaultValue: `Two-factor ${enabled ? "enabled" : "disabled"}`,
+          status: enabled ? t("common.enabled") : t("common.disabled"),
+          defaultValue: `Two-factor ${enabled ? t("common.enabled") : t("common.disabled")}`,
         }),
       );
     } catch {
-      showToast(
-        "error",
-        t("settings.twoFactorUpdateFailed", "Failed to update 2FA setting"),
-      );
+      showToast("error", t("settings.twoFactorUpdateFailed"));
     }
   };
 
-  // ---------------------------------- Loading --------------------------------
   if (loading) {
     return <Loading text={false} height={"20"} width={"20"} />;
   }
 
-  // ---------------------------------- Render --------------------------------
   const initial = profile.name?.charAt(0)?.toUpperCase() || "A";
 
   return (
@@ -301,7 +277,7 @@ const PersonalSettingsPage = () => {
           ) : (
             <X className="h-4 w-4" />
           )}
-          <span className="text-sm font-medium">{toast.message}</span>
+          <span className="font-medium">{toast.message}</span>
         </div>
       )}
 
@@ -317,21 +293,23 @@ const PersonalSettingsPage = () => {
             >
               {profile.avatar ? (
                 <img
-                  src={profile.avatar}
                   alt="Avatar"
                   className="h-full w-full object-cover"
+                  width={100}
+                  height={100}
+                  src={profile.avatar}
                 />
               ) : (
                 initial
               )}
             </div>
-            <label className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full  flex items-center justify-center shadow-md border border-slate-200 cursor-pointer hover:bg-slate-50 hover:text-rose-500 transition">
+            <label className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center bg-(--color-surface) border border-border-surface cursor-pointer hover:text-(--color-primary)/50 transition">
               {avatarUploading ? (
                 <Loader2 className="h-3.5 w-3.5  animate-spin" />
               ) : (
                 <Camera className="h-3.5 w-3.5 " />
               )}
-              <input
+              <Input
                 type="file"
                 accept="image/*"
                 className="sr-only"
@@ -363,8 +341,8 @@ const PersonalSettingsPage = () => {
             </p>
           </div>
           <div className="ml-auto">
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 p-2 rounded-md text-xl pointer-events-none">
-              {profile.role}
+            <Badge className="bg-emerald-200 text-emerald-800 border-emerald-400 p-2 rounded-md text-xl pointer-events-none">
+              {profile.role === "STAFF" ? t("auth.staff") : t("auth.admin")}
             </Badge>
           </div>
         </div>
@@ -424,9 +402,9 @@ const PersonalSettingsPage = () => {
 
               {/* Phone */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
+                <Label className="block text-sm font-medium  mb-1.5">
                   {t("settings.phoneNumber", "Phone Number")}
-                </label>
+                </Label>
                 <Input
                   value={profile.phone}
                   onChange={(e) => handleProfileChange("phone", e.target.value)}
@@ -436,9 +414,9 @@ const PersonalSettingsPage = () => {
 
               {/* Bio */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
+                <Label className="block text-sm font-medium  mb-1.5">
                   {t("settings.bio", "Bio")}
-                </label>
+                </Label>
                 <textarea
                   rows={3}
                   value={profile.bio}
@@ -454,9 +432,9 @@ const PersonalSettingsPage = () => {
               {/* Language & Timezone */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium  mb-1.5">
+                  <Label className="block text-sm font-medium  mb-1.5">
                     {t("settings.language", "Language")}
-                  </label>
+                  </Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                     <select
@@ -473,9 +451,9 @@ const PersonalSettingsPage = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium  mb-1.5">
+                  <Label className="block text-sm font-medium  mb-1.5">
                     {t("settings.timezone", "Timezone")}
-                  </label>
+                  </Label>
                   <div className="relative">
                     <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                     <select
@@ -495,7 +473,11 @@ const PersonalSettingsPage = () => {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="submit" className="gap-2" disabled={saving}>
+                <Button
+                  type="submit"
+                  className="px-4 py-2 gap-2"
+                  disabled={saving}
+                >
                   {saving ? (
                     <Loading text={false} width={"4"} height={"4"} />
                   ) : (
@@ -517,32 +499,21 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold ">
-                  {t("settings.twoFactorAuth", "Two-Factor Authentication")}
+                  {t("settings.twoFactorAuth")}
                 </h2>
-                <p className="text-xs ">
-                  {t(
-                    "settings.twoFactorSubtitle",
-                    "Add an extra layer of security to your account",
-                  )}
-                </p>
+                <p className="text-xs ">{t("settings.twoFactorSubtitle")}</p>
               </div>
             </div>
 
             <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
               <div>
                 <div className="text-sm font-medium ">
-                  {t("settings.twoFactorAuthShort", "Two-Factor Auth")}
+                  {t("settings.twoFactorAuthShort")}
                 </div>
                 <div className="text-xs  mt-0.5">
                   {profile.twoFactorEnabled
-                    ? t(
-                        "settings.2faProtected",
-                        "Your account is protected by 2FA",
-                      )
-                    : t(
-                        "settings.2faEnable",
-                        "Enable 2FA for additional security",
-                      )}
+                    ? t("settings.2faProtected")
+                    : t("settings.2faEnable")}
                 </div>
               </div>
               <div className="relative">
@@ -553,20 +524,18 @@ const PersonalSettingsPage = () => {
                   className="sr-only"
                   id="toggle-2fa"
                 />
-                <label
+                <Label
                   htmlFor="toggle-2fa"
-                  className={`block h-6 w-11 rounded-full transition cursor-pointer ${
-                    profile.twoFactorEnabled ? "bg-slate-950" : "bg-slate-300"
-                  }`}
+                  className="block h-6 w-11 rounded-full transition cursor-pointer bg-(--color-secondary)/20"
                 >
                   <span
                     className={`block h-5 w-5 rounded-full  shadow-sm transition transform translate-y-[2px] ${
                       profile.twoFactorEnabled
-                        ? "translate-x-[22px]"
-                        : "translate-x-[2px]"
+                        ? "translate-x-[22px] bg-(--color-primary)"
+                        : "translate-x-[2px] bg-(--color-primary)"
                     }`}
                   />
-                </label>
+                </Label>
               </div>
             </div>
           </Card>
@@ -579,21 +548,16 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold ">
-                  {t("settings.avatar", "Avatar")}
+                  {t("settings.avatar")}
                 </h2>
-                <p className="text-xs ">
-                  {t(
-                    "settings.uploadRemoveAvatar",
-                    "Upload or remove your profile picture",
-                  )}
-                </p>
+                <p className="text-xs ">{t("settings.uploadRemoveAvatar")}</p>
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <label className="cursor-pointer">
+              <Label className="cursor-pointer">
                 <div className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-sm  hover:bg-slate-50 dark:hover:bg-neutral-800\/50 transition">
                   <Camera className="h-4 w-4" />
-                  {t("settings.chooseImage", "Choose image")}
+                  {t("settings.chooseImage")}
                 </div>
                 <input
                   type="file"
@@ -602,15 +566,15 @@ const PersonalSettingsPage = () => {
                   onChange={handleAvatarUpload}
                   disabled={avatarUploading}
                 />
-              </label>
+              </Label>
               {profile.avatar && (
                 <Button
                   variant="secondary"
-                  className="gap-2"
+                  className="gap-2 px-3 py-2"
                   onClick={handleRemoveAvatar}
                 >
                   <Trash2 className="h-4 w-4" />
-                  {t("common.remove", "Remove")}
+                  {t("common.remove")}
                 </Button>
               )}
             </div>
@@ -627,30 +591,22 @@ const PersonalSettingsPage = () => {
               </div>
               <div>
                 <h2 className="font-title text-lg font-semibold ">
-                  {t("settings.security", "Security")}
+                  {t("settings.security")}
                 </h2>
-                <p className="text-xs ">
-                  {t(
-                    "settings.securitySubtitle",
-                    "Update your password and security settings",
-                  )}
-                </p>
+                <p className="text-xs ">{t("settings.securitySubtitle")}</p>
               </div>
             </div>
 
             <form onSubmit={handleUpdatePassword} className="space-y-4">
               {/* Current Password */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
-                  {t("settings.currentPassword", "Current Password")}
-                </label>
+                <Label className="block text-sm font-medium  mb-1.5">
+                  {t("settings.currentPassword")}
+                </Label>
                 <div className="relative">
                   <Input
                     type={showPw.current ? "text" : "password"}
-                    placeholder={t(
-                      "settings.enterCurrentPassword",
-                      "Enter current password",
-                    )}
+                    placeholder={t("settings.enterCurrentPassword")}
                     className="pr-10 w-full"
                     value={passwordForm.currentPassword}
                     onChange={(e) =>
@@ -660,34 +616,31 @@ const PersonalSettingsPage = () => {
                       }))
                     }
                   />
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
                     onClick={() =>
                       setShowPw((prev) => ({ ...prev, current: !prev.current }))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2  hover: transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
                   >
                     {showPw.current ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* New Password */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
-                  {t("settings.newPassword", "New Password")}
-                </label>
+                <Label className="block text-sm font-medium  mb-1.5">
+                  {t("settings.newPassword")}
+                </Label>
                 <div className="relative">
                   <Input
                     type={showPw.new ? "text" : "password"}
-                    placeholder={t(
-                      "settings.enterNewPassword",
-                      "Enter new password (min 6 chars)",
-                    )}
+                    placeholder={t("settings.enterNewPassword")}
                     className="pr-10 w-full"
                     value={passwordForm.newPassword}
                     onChange={(e) =>
@@ -697,27 +650,28 @@ const PersonalSettingsPage = () => {
                       }))
                     }
                   />
-                  <button
-                    type="button"
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() =>
                       setShowPw((prev) => ({ ...prev, new: !prev.new }))
                     }
-                    className="absolute right-3 top-1/2 -translate-y-1/2  hover: transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 "
                   >
                     {showPw.new ? (
                       <EyeOff className="h-4 w-4" />
                     ) : (
                       <Eye className="h-4 w-4" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* Confirm Password */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
+                <Label className="block text-sm font-medium  mb-1.5">
                   {t("settings.confirmNewPassword", "Confirm New Password")}
-                </label>
+                </Label>
                 <div className="relative">
                   <Input
                     type={showPw.confirm ? "text" : "password"}
@@ -734,8 +688,8 @@ const PersonalSettingsPage = () => {
                       }))
                     }
                   />
-                  <button
-                    type="button"
+                  <Button
+                    variant="outline"
                     onClick={() =>
                       setShowPw((prev) => ({
                         ...prev,
@@ -749,7 +703,7 @@ const PersonalSettingsPage = () => {
                     ) : (
                       <Eye className="h-4 w-4" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -773,10 +727,15 @@ const PersonalSettingsPage = () => {
                     });
                     setPasswordError("");
                   }}
+                  className="px-3 py-2.5 rounded-xl"
                 >
                   {t("common.cancel", "Cancel")}
                 </Button>
-                <Button type="submit" className="gap-2" disabled={saving}>
+                <Button
+                  type="submit"
+                  className="gap-2 px-3 py-2.5 rounded-xl"
+                  disabled={saving}
+                >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
@@ -813,49 +772,31 @@ const PersonalSettingsPage = () => {
               {[
                 {
                   key: "email",
-                  label: t(
-                    "settings.emailNotifications",
-                    "Email notifications",
-                  ),
-                  desc: t(
-                    "settings.emailNotificationsDesc",
-                    "Receive notifications via email",
-                  ),
+                  label: t("settings.emailNotifications"),
+                  desc: t("settings.emailNotificationsDesc"),
                 },
                 {
                   key: "push",
-                  label: t("settings.pushNotifications", "Push notifications"),
-                  desc: t(
-                    "settings.pushNotificationsDesc",
-                    "Receive notifications in browser",
-                  ),
+                  label: t("settings.pushNotifications"),
+                  desc: t("settings.pushNotificationsDesc"),
                 },
                 {
                   key: "orderUpdates",
-                  label: t("settings.orderUpdates", "Order updates"),
-                  desc: t(
-                    "settings.orderUpdatesDesc",
-                    "New orders, cancellations, and status changes",
-                  ),
+                  label: t("settings.orderUpdates"),
+                  desc: t("settings.orderUpdatesDesc"),
                 },
                 {
                   key: "campaignAlerts",
-                  label: t("settings.campaignAlerts", "Campaign alerts"),
-                  desc: t(
-                    "settings.campaignAlertsDesc",
-                    "Campaign performance and expiry warnings",
-                  ),
+                  label: t("settings.campaignAlerts"),
+                  desc: t("settings.campaignAlertsDesc"),
                 },
                 {
                   key: "weeklyDigest",
-                  label: t("settings.weeklyDigest", "Weekly digest"),
-                  desc: t(
-                    "settings.weeklyDigestDesc",
-                    "Summary of weekly platform activity",
-                  ),
+                  label: t("settings.weeklyDigest"),
+                  desc: t("settings.weeklyDigestDesc"),
                 },
               ].map((item) => (
-                <label
+                <Label
                   key={item.key}
                   className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 dark:hover:bg-neutral-800\/50 transition cursor-pointer"
                 >
@@ -871,24 +812,20 @@ const PersonalSettingsPage = () => {
                       className="sr-only"
                       id={`notif-${item.key}`}
                     />
-                    <label
+                    <Label
                       htmlFor={`notif-${item.key}`}
-                      className={`block h-6 w-11 rounded-full transition cursor-pointer ${
-                        notifications[item.key]
-                          ? "bg-slate-950"
-                          : "bg-slate-300"
-                      }`}
+                      className="block h-6 w-11 rounded-full transition cursor-pointer bg-(--color-secondary)/20"
                     >
                       <span
                         className={`block h-5 w-5 rounded-full  shadow-sm transition transform translate-y-[2px] ${
                           notifications[item.key]
-                            ? "translate-x-[22px]"
-                            : "translate-x-[2px]"
+                            ? "translate-x-[22px] bg-(--color-primary)"
+                            : "translate-x-[2px] bg-(--color-primary)"
                         }`}
                       />
-                    </label>
+                    </Label>
                   </div>
-                </label>
+                </Label>
               ))}
             </div>
           </Card>

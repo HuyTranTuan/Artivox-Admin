@@ -9,6 +9,7 @@ import {
   ImageIcon,
   GripVertical,
   Loader2,
+  Upload,
 } from "lucide-react";
 
 import { Button } from "@components/ui/button";
@@ -77,6 +78,8 @@ const ModelsPage = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const [collections, setCollections] = useState([]);
+  const [sourceFile, setSourceFile] = useState(null);
+  const sourceFileRef = useRef(null);
 
   useEffect(() => {
     collectionService
@@ -253,6 +256,7 @@ const ModelsPage = () => {
         file: null,
       })),
     );
+    setSourceFile(null); // reset file pick on open
   };
 
   const [saving, setSaving] = useState(false);
@@ -319,6 +323,9 @@ const ModelsPage = () => {
           }
         });
 
+        if (sourceFile)
+          formData.append("source_file", sourceFile, sourceFile.name);
+
         await modelsService.updateModel(selectedItem.slug, formData);
         toastTopRight(
           "success",
@@ -340,6 +347,18 @@ const ModelsPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     setter({ file, preview: URL.createObjectURL(file), isExisting: false });
+    e.target.value = "";
+  };
+
+  const handle3DFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) {
+      toastTopRight("error", t("catalog.fileTooLarge", "File exceeds 100MB limit"));
+      e.target.value = "";
+      return;
+    }
+    setSourceFile(file);
     e.target.value = "";
   };
 
@@ -445,17 +464,25 @@ const ModelsPage = () => {
                 label={`${t("catalog.price")} (VND)`}
                 type="number"
                 value={form.basePrice}
-                onChange={(e) =>
-                  setForm({ ...form, basePrice: e.target.value })
-                }
-                placeholder={t("catalog.price")}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || parseFloat(v) >= 10000)
+                    setForm({ ...form, basePrice: v });
+                }}
+                min={10000}
+                placeholder="10000"
               />
               <FormField
                 label={t("catalog.stock")}
                 type="number"
                 value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: e.target.value })}
-                placeholder={t("catalog.stock")}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "" || parseInt(v, 10) >= 0)
+                    setForm({ ...form, stock: v });
+                }}
+                min={0}
+                placeholder="0"
               />
             </div>
             <FormField
@@ -494,14 +521,59 @@ const ModelsPage = () => {
               }
               placeholder={t("catalog.previewFileUrl")}
             />
-            <FormField
-              label={t("catalog.sourceFileUrl")}
-              value={form.sourceFileUrl}
-              onChange={(e) =>
-                setForm({ ...form, sourceFileUrl: e.target.value })
-              }
-              placeholder={t("catalog.sourceFileUrl")}
-            />
+            {/* Source file – show current URL + allow replacing with a new file */}
+            <div>
+              <label className="text-xs font-semibold mb-1.5 block">
+                {t("catalog.sourceFile")}
+                <span className="ml-1 text-xs font-normal">(max 100MB)</span>
+              </label>
+              {/* Current saved URL */}
+              {form.sourceFileUrl && !sourceFile && (
+                <div className="flex items-center gap-2 mb-2 rounded-xl border border-slate-200 px-3 py-2 text-xs">
+                  <span className="flex-1 truncate text-muted">{form.sourceFileUrl}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 hover:text-rose-500"
+                    onClick={() => setForm({ ...form, sourceFileUrl: "" })}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              {/* New file picked */}
+              {sourceFile && (
+                <div className="flex items-center gap-2 mb-2 rounded-xl border border-emerald-300 bg-emerald-50/50 px-3 py-2 text-xs">
+                  <span className="flex-1 truncate">{sourceFile.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0 hover:text-rose-500"
+                    onClick={() => setSourceFile(null)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              <div
+                onClick={() => sourceFileRef.current?.click()}
+                className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-3 hover:border-orange-400 hover:bg-orange-50/50 transition"
+              >
+                <Upload className="h-4 w-4 shrink-0" />
+                <span className="text-xs">
+                  {sourceFile
+                    ? t("catalog.chooseAnotherFile", "Choose another file")
+                    : t("catalog.chooseFile", "Choose 3D model file")}
+                </span>
+              </div>
+              <Input
+                ref={sourceFileRef}
+                type="file"
+                accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.3ds,.dae"
+                className="hidden"
+                onChange={handle3DFileChange}
+              />
+            </div>
           </div>
 
           <div className="space-y-4">

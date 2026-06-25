@@ -132,6 +132,7 @@ const OrderDetailPage = () => {
             : null,
           address: data.shippingAddress || "Unknown",
           paymentMethod: data.paymentMethod || "Unknown",
+          paymentStatus: data.paymentStatus || "UNKNOWN",
           note: data.note || "Unknown",
           items:
             data.items?.map((item) => ({
@@ -176,6 +177,26 @@ const OrderDetailPage = () => {
       toastTopRight(
         "error",
         t("catalog.updateError", "Failed to update order status"),
+      );
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleMarkAsPaid = async () => {
+    try {
+      setUpdating(true);
+      await orderService.updateOrderPaymentStatus(orderNumber, "PAID");
+      setOrder((prev) => ({ ...prev, paymentStatus: "PAID" }));
+      toastTopRight(
+        "success",
+        t("paymentMarkedPaid", "Payment marked as paid"),
+      );
+    } catch (e) {
+      console.error(e);
+      toastTopRight(
+        "error",
+        t("paymentUpdateError", "Failed to update payment status"),
       );
     } finally {
       setUpdating(false);
@@ -353,9 +374,9 @@ const OrderDetailPage = () => {
       </Card>
 
       {/* Customer Info + Order Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Customer Info */}
-        <Card className="p-6">
+        <Card className="p-6 lg:col-span-1">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600">
               <User className="h-5 w-5" />
@@ -413,7 +434,7 @@ const OrderDetailPage = () => {
         </Card>
 
         {/* Order Details */}
-        <Card className="p-6">
+        <Card className="p-6 lg:col-span-2">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
               <ShoppingBag className="h-5 w-5" />
@@ -439,9 +460,32 @@ const OrderDetailPage = () => {
                 <div className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
                   {t("paymentMethod")}
                 </div>
-                <Badge variant="secondary" className="text-xs">
-                  {order.paymentMethod}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    {order.paymentMethod}
+                  </Badge>
+                  {order.paymentMethod === "COD" &&
+                    order.paymentStatus !== "PAID" && (
+                      <Button
+                        size="sm"
+                        onClick={handleMarkAsPaid}
+                        disabled={updating}
+                        className="h-6 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        {updating ? (
+                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        ) : (
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                        )}
+                        {t("markAsPaid", "Mark as Paid")}
+                      </Button>
+                    )}
+                  {order.paymentStatus === "PAID" && (
+                    <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-emerald-300 text-xs">
+                      {t("paid", "Paid")}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
 

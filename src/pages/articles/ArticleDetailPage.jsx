@@ -104,7 +104,7 @@ const ArticleDetailPage = () => {
           </div>
           <div className="flex items-center gap-1.5">
             <Eye className="h-4 w-4" />
-            <span>{article.views || 0} views</span>
+            <span>{article.viewCount || 0}</span>
           </div>
           <Badge>
             {article.status || (article?.isPublished ? "Published" : "Draft")}
