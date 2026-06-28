@@ -1,15 +1,7 @@
 import useTranslation from "@/hooks/useTranslation";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  ArrowLeft,
-  Calendar,
-  User,
-  Globe,
-  Eye,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { ArrowLeft, Calendar, User, Globe, Eye, CheckCircle, XCircle } from "lucide-react";
 import { articleService } from "@services/articleService";
 import { Card } from "@components/ui/card";
 import { Button } from "@components/ui/button";
@@ -51,25 +43,17 @@ const ArticleDetailPage = () => {
     return (
       <section className="space-y-6">
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/articles")}
-            className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100"
-          >
+          <Button onClick={() => navigate("/articles")} className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100">
             <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h1 className="font-title text-xl font-bold">
-            {t("articleNotFound")}
-          </h1>
+          </Button>
+          <h1 className="font-title text-xl font-bold">{t("articleNotFound")}</h1>
         </div>
-        <p className="text-sm">
-          {t("theArticleYoureLookingForDoesntExistOrHasBeenRemoved")}
-        </p>
+        <p className="text-sm">{t("theArticleYoureLookingForDoesntExistOrHasBeenRemoved")}</p>
       </section>
     );
   }
 
-  const authorName =
-    article.author?.fullName || article.authorName || "Unknown";
+  const authorName = article.author?.fullName || article.authorName || "Unknown";
   const translation = article.translations?.[0] || {};
 
   return (
@@ -82,9 +66,7 @@ const ArticleDetailPage = () => {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="font-title text-xl font-bold">
-          {translation.title || article.title || "Untitled"}
-        </h1>
+        <h1 className="font-title text-xl font-bold">{translation.title || article.title || "Untitled"}</h1>
       </div>
 
       <Card className="p-6 space-y-6">
@@ -106,9 +88,7 @@ const ArticleDetailPage = () => {
             <Eye className="h-4 w-4" />
             <span>{article.viewCount || 0}</span>
           </div>
-          <Badge>
-            {article.status || (article?.isPublished ? "Published" : "Draft")}
-          </Badge>
+          <Badge>{article.status || (article?.isPublished ? "Published" : "Draft")}</Badge>
         </div>
 
         {/* Content */}
@@ -116,10 +96,7 @@ const ArticleDetailPage = () => {
           <div
             className="text-base text-slate-700 leading-relaxed"
             dangerouslySetInnerHTML={{
-              __html:
-                translation.content ||
-                article.content ||
-                "No content available.",
+              __html: translation.content || article.content || "No content available.",
             }}
           />
         </div>

@@ -1,21 +1,11 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import {
-  Eye,
-  Edit,
-  Trash2,
-  X,
-  Plus,
-  ImageIcon,
-  Loader2,
-  GripVertical,
-} from "lucide-react";
+import { Eye, Edit, Trash2, X, Plus, ImageIcon, Loader2, GripVertical } from "lucide-react";
 
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-import { Input } from "@components/ui/input";
 import { FormField } from "@components/forms/FormField";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
@@ -29,12 +19,7 @@ import { useRBAC } from "@hooks/useRBAC";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
-import {
-  DataTable,
-  TableToolbar,
-  TablePagination,
-  useDataTable,
-} from "@components/DataTable";
+import { DataTable, TableToolbar, TablePagination, useDataTable } from "@components/DataTable";
 import ThumbnailPreview from "@components/ThumbnailPreview";
 
 const ToolsPage = () => {
@@ -44,10 +29,7 @@ const ToolsPage = () => {
   const { user } = useAuthStore();
 
   const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
+  const validJsonString = user?.permission?.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"');
   const permission = validJsonString ? JSON.parse(validJsonString) : {};
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
@@ -81,9 +63,7 @@ const ToolsPage = () => {
   useEffect(() => {
     collectionService
       .getCollections({ limit: 100, isActive: true })
-      .then((res) =>
-        setCollections(res.data?.items || res.items || res.data || []),
-      )
+      .then((res) => setCollections(res.data?.items || res.items || res.data || []))
       .catch(console.error);
   }, []);
   const search = useExpandableSearch();
@@ -107,12 +87,7 @@ const ToolsPage = () => {
       toolsService.getTools({
         ...params,
         search: debouncedSearch,
-        isActive:
-          selectedFilters.status === "Active"
-            ? true
-            : selectedFilters.status === "Inactive"
-              ? false
-              : undefined,
+        isActive: selectedFilters.status === "Active" ? true : selectedFilters.status === "Inactive" ? false : undefined,
       }),
     {
       defaultLimit: 20,
@@ -169,9 +144,7 @@ const ToolsPage = () => {
       key: "name",
       label: t("catalog.name"),
       width: "2fr",
-      render: (item) => (
-        <div className="font-title text-base font-semibold ">{item.name}</div>
-      ),
+      render: (item) => <div className="font-title text-base font-semibold ">{item.name}</div>,
     },
     {
       key: "basePrice",
@@ -183,19 +156,13 @@ const ToolsPage = () => {
       key: "isActive",
       label: t("catalog.status"),
       width: "1fr",
-      render: (item) => (
-        <Badge>
-          {item.isActive ? t("catalog.active") : t("catalog.inactive")}
-        </Badge>
-      ),
+      render: (item) => <Badge>{item.isActive ? t("catalog.active") : t("catalog.inactive")}</Badge>,
     },
     {
       key: "createdAt",
       label: t("catalog.createdAt"),
       width: "1fr",
-      render: (item) => (
-        <div className="text-xs ">{formatDate(item.createdAt)}</div>
-      ),
+      render: (item) => <div className="text-xs ">{formatDate(item.createdAt)}</div>,
     },
     {
       key: "stock",
@@ -226,24 +193,12 @@ const ToolsPage = () => {
       collectionId: item.collectionId?.toString() || "",
     });
 
-    const thumbBefore = item.images?.find(
-      (img) => img.role === "THUMBNAIL_BEFORE",
-    );
-    const thumbAfter = item.images?.find(
-      (img) => img.role === "THUMBNAIL_AFTER",
-    );
+    const thumbBefore = item.images?.find((img) => img.role === "THUMBNAIL_BEFORE");
+    const thumbAfter = item.images?.find((img) => img.role === "THUMBNAIL_AFTER");
     const gallery = item.images?.filter((img) => img.role === "GALLERY") || [];
 
-    setThumbnailBefore(
-      thumbBefore
-        ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true }
-        : null,
-    );
-    setThumbnailAfter(
-      thumbAfter
-        ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
-        : null,
-    );
+    setThumbnailBefore(thumbBefore ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true } : null);
+    setThumbnailAfter(thumbAfter ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true } : null);
     setFormGalleryImages(
       gallery.map((img) => ({
         preview: img.url,
@@ -262,10 +217,7 @@ const ToolsPage = () => {
       setDeleting(true);
       try {
         await toolsService.deleteTool(selectedItem.slug);
-        toastTopRight(
-          "success",
-          t("catalog.deleteSuccess", "Deleted successfully"),
-        );
+        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -297,19 +249,11 @@ const ToolsPage = () => {
 
         if (thumbnailBefore?.file) {
           const ext = thumbnailBefore.file.name.split(".").pop();
-          formData.append(
-            "thumbnail_before",
-            thumbnailBefore.file,
-            `thumbnail_before.${ext}`,
-          );
+          formData.append("thumbnail_before", thumbnailBefore.file, `thumbnail_before.${ext}`);
         }
         if (thumbnailAfter?.file) {
           const ext = thumbnailAfter.file.name.split(".").pop();
-          formData.append(
-            "thumbnail_after",
-            thumbnailAfter.file,
-            `thumbnail_after.${ext}`,
-          );
+          formData.append("thumbnail_after", thumbnailAfter.file, `thumbnail_after.${ext}`);
         }
 
         formGalleryImages.forEach((img) => {
@@ -319,10 +263,7 @@ const ToolsPage = () => {
         });
 
         await toolsService.updateTool(selectedItem.slug, formData);
-        toastTopRight(
-          "success",
-          t("catalog.updateSuccess", "Updated successfully"),
-        );
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -405,65 +346,31 @@ const ToolsPage = () => {
 
   const renderFormModal = () => (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div
-        ref={dialogRef}
-        className="rounded-2xl bg-(--color-background) shadow-xl p-6 max-w-4xl w-full mx-4 my-8 max-h-[calc(100vh-100px)] overflow-y-auto"
-      >
-        <h2 className="font-title text-xl font-bold  mb-6">
-          {openDialog === "create"
-            ? t("catalog.addNewTool")
-            : t("catalog.editTool")}
-        </h2>
+      <div ref={dialogRef} className="rounded-2xl bg-(--color-background) shadow-xl p-6 max-w-4xl w-full mx-4 my-8 max-h-[calc(100vh-100px)] overflow-y-auto">
+        <h2 className="font-title text-xl font-bold  mb-6">{openDialog === "create" ? t("catalog.addNewTool") : t("catalog.editTool")}</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold  border-b border-slate-100 pb-2">
-              {t("catalog.information")}
-            </h3>
-            <FormField
-              label={t("catalog.name")}
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-            <FormField
-              label={`${t("catalog.slug")} (${t("catalog.readOnly")})`}
-              value={form.slug}
-              readOnly
-              className="cursor-not-allowed"
-            />
+            <h3 className="font-title text-sm font-semibold  border-b border-slate-100 pb-2">{t("catalog.information")}</h3>
+            <FormField label={t("catalog.name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <FormField label={`${t("catalog.slug")} (${t("catalog.readOnly")})`} value={form.slug} readOnly className="cursor-not-allowed" />
             <FormField
               type="textarea"
               label={t("catalog.description")}
               value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
               rows={3}
               className="w-full resize-none  placeholder-gray-500 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
             <div className="grid grid-cols-2 gap-3">
-              <FormField
-                type="number"
-                label={`${t("catalog.price")} (VND)`}
-                value={form.basePrice}
-                onChange={(e) =>
-                  setForm({ ...form, basePrice: e.target.value })
-                }
-              />
-              <FormField
-                type="number"
-                label={t("catalog.stock")}
-                value={form.stock}
-                onChange={(e) => setForm({ ...form, stock: e.target.value })}
-              />
+              <FormField type="number" label={`${t("catalog.price")} (VND)`} value={form.basePrice} onChange={(e) => setForm({ ...form, basePrice: e.target.value })} />
+              <FormField type="number" label={t("catalog.stock")} value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} />
             </div>
             <FormField
               type="select"
               label={t("catalog.status")}
               value={form.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                setForm({ ...form, isActive: e.target.value === "active" })
-              }
+              onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
               options={[
                 { value: "active", label: t("catalog.active") },
                 { value: "inactive", label: t("catalog.inactive") },
@@ -473,19 +380,12 @@ const ToolsPage = () => {
               type="select"
               label={t("collection")}
               value={form.collectionId || ""}
-              onChange={(e) =>
-                setForm({ ...form, collectionId: e.target.value })
-              }
-              options={[
-                { value: "", label: t("selectCollection") },
-                ...collections.map((c) => ({ value: c.id, label: c.name })),
-              ]}
+              onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+              options={[{ value: "", label: t("selectCollection") }, ...collections.map((c) => ({ value: c.id, label: c.name }))]}
             />
           </div>
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold  border-b border-slate-100 pb-2">
-              {t("catalog.images")}
-            </h3>
+            <h3 className="font-title text-sm font-semibold  border-b border-slate-100 pb-2">{t("catalog.images")}</h3>
             <ImageUploadBox
               label={t("catalog.thumbnailBefore")}
               value={thumbnailBefore}
@@ -510,46 +410,21 @@ const ToolsPage = () => {
               </label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-xl p-2">
                 {formGalleryImages.length === 0 ? (
-                  <div className="text-center py-4 text-xs ">
-                    {t("catalog.noImages")}
-                  </div>
+                  <div className="text-center py-4 text-xs ">{t("catalog.noImages")}</div>
                 ) : (
                   formGalleryImages.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2 rounded-xl px-2 py-1.5 border border-slate-100 shadow-sm"
-                    >
+                    <div key={idx} className="flex items-center gap-2 rounded-xl px-2 py-1.5 border border-slate-100 shadow-sm">
                       <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
-                      <img
-                        src={img.preview}
-                        alt={img.alt || `Gallery ${idx + 1}`}
-                        className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
-                      <span className="flex-1 text-xs truncate">
-                        {img.file?.name ||
-                          img.alt ||
-                          `${t("catalog.image")} ${idx + 1}`}
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="rounded-full cursor-pointer text-red-500"
-                        onClick={() => removeGalleryImage(idx)}
-                      >
+                      <img src={img.preview} alt={img.alt || `Gallery ${idx + 1}`} className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0" />
+                      <span className="flex-1 text-xs truncate">{img.file?.name || img.alt || `${t("catalog.image")} ${idx + 1}`}</span>
+                      <Button variant="outline" size="icon" className="rounded-full cursor-pointer text-red-500" onClick={() => removeGalleryImage(idx)}>
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   ))
                 )}
               </div>
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleGalleryAdd}
-              />
+              <input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryAdd} />
               <Button
                 type="button"
                 variant="outline"
@@ -561,16 +436,12 @@ const ToolsPage = () => {
                 {t("catalog.addImages")}
               </Button>
             </div>
-            <h3 className="font-title border-b border-slate-100 pb-2 pt-4 text-sm font-semibold ">
-              {t("catalog.toolSpecifics")}
-            </h3>
+            <h3 className="font-title border-b border-slate-100 pb-2 pt-4 text-sm font-semibold ">{t("catalog.toolSpecifics")}</h3>
             <FormField
               type="textarea"
               label={t("catalog.specifications")}
               value={form.specifications}
-              onChange={(e) =>
-                setForm({ ...form, specifications: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, specifications: e.target.value })}
               rows={3}
               placeholder={t("dimensionsWeightMaterial")}
               className="w-full resize-none placeholder-gray-500 outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
@@ -579,20 +450,10 @@ const ToolsPage = () => {
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-slate-100">
-          <Button
-            variant="destructive"
-            className="flex-1 cursor-pointer"
-            onClick={() => setOpenDialog(null)}
-            disabled={saving}
-          >
+          <Button variant="destructive" className="flex-1 cursor-pointer" onClick={() => setOpenDialog(null)} disabled={saving}>
             {t("catalog.cancel")}
           </Button>
-          <Button
-            className="flex-1 gap-2 cursor-pointer"
-            onClick={handleSubmit}
-            disabled={saving}
-            variant="primary"
-          >
+          <Button className="flex-1 gap-2 cursor-pointer" onClick={handleSubmit} disabled={saving} variant="primary">
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {openDialog === "create" ? t("catalog.create") : t("catalog.save")}
           </Button>
@@ -606,9 +467,7 @@ const ToolsPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-center py-8">
-            <div className="text-rose-500 font-semibold mb-2">
-              {t("catalog.errorLoading")}
-            </div>
+            <div className="text-rose-500 font-semibold mb-2">{t("catalog.errorLoading")}</div>
             <div className="text-sm  mb-4">{error}</div>
             <Button onClick={refetch} className="cursor-pointer">
               {t("catalog.retry")}
@@ -637,9 +496,7 @@ const ToolsPage = () => {
             },
           ]}
           activeFilters={selectedFilters}
-          onFilterChange={(key, val) =>
-            setSelectedFilters((p) => ({ ...p, [key]: val }))
-          }
+          onFilterChange={(key, val) => setSelectedFilters((p) => ({ ...p, [key]: val }))}
           viewMode={dt.viewMode}
           onViewChange={dt.setViewMode}
         />
@@ -667,9 +524,7 @@ const ToolsPage = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-(--color-primary)" />
               </div>
             ) : dt.paginated.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-sm ">
-                {t("catalog.noTools")}
-              </div>
+              <div className="col-span-full text-center py-8 text-sm ">{t("catalog.noTools")}</div>
             ) : (
               dt.paginated.map((item) => (
                 <div
@@ -705,69 +560,39 @@ const ToolsPage = () => {
                       <div className="h-full w-full flex items-center justify-center ">
                         <div className="text-center">
                           <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                          <span className="text-xs">
-                            {t("catalog.noImages")}
-                          </span>
+                          <span className="text-xs">{t("catalog.noImages")}</span>
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="p-4">
-                    <div className="font-title text-base font-semibold  mb-1">
-                      {item.name}
-                    </div>
+                    <div className="font-title text-base font-semibold  mb-1">{item.name}</div>
                     <div className="text-xs  mb-3">
-                      {item.category} ¢ {t("catalog.createdAt")}{" "}
-                      {formatDate(item.createdAt)}
+                      {item.category} ¢ {t("catalog.createdAt")} {formatDate(item.createdAt)}
                     </div>
                     <Badge className="mb-3">{item.status}</Badge>
-                    <div className="flex gap-2 mt-2">
-                      {renderActionButtons(item)}
-                    </div>
+                    <div className="flex gap-2 mt-2">{renderActionButtons(item)}</div>
                   </div>
                 </div>
               ))
             )}
           </div>
         )}
-        <TablePagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={total}
-          pageSize={20}
-          onPage={setPage}
-        />
+        <TablePagination currentPage={currentPage} totalPages={totalPages} totalItems={total} pageSize={20} onPage={setPage} />
       </Card>
 
       {(openDialog === "create" || openDialog === "edit") && renderFormModal()}
 
       {openDialog === "delete" && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            ref={dialogRef}
-            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-          >
-            <h2 className="font-title text-xl font-bold  mb-4">
-              {t("catalog.deleteTitle")}
-            </h2>
-            <p className="text-sm mb-4">
-              {t("catalog.deleteConfirm", { name: selectedItem.name })}
-            </p>
+          <div ref={dialogRef} className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold  mb-4">{t("catalog.deleteTitle")}</h2>
+            <p className="text-sm mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1 cursor-pointer"
-                onClick={() => setOpenDialog(null)}
-                disabled={deleting}
-              >
+              <Button variant="outline" className="flex-1 cursor-pointer" onClick={() => setOpenDialog(null)} disabled={deleting}>
                 {t("catalog.cancel")}
               </Button>
-              <Button
-                variant="destructive"
-                className="flex-1 cursor-pointer"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
+              <Button variant="destructive" className="flex-1 cursor-pointer" onClick={handleDelete} disabled={deleting}>
                 {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {t("catalog.delete")}
               </Button>
@@ -776,13 +601,7 @@ const ToolsPage = () => {
         </div>
       )}
 
-      {galleryOpen && (
-        <ImageGalleryModal
-          images={galleryImages}
-          initialIndex={galleryIndex}
-          onClose={() => setGalleryOpen(false)}
-        />
-      )}
+      {galleryOpen && <ImageGalleryModal images={galleryImages} initialIndex={galleryIndex} onClose={() => setGalleryOpen(false)} />}
     </section>
   );
 };

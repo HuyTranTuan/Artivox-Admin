@@ -1,28 +1,3 @@
-/**
- * ChatPanel ” reusable chat interface component.
- *
- * Props:
- *   rooms          Room[]  ” sidebar room list
- *   activeRoomId   string | null
- *   onSelectRoom   fn(roomId)
- *   messages       Message[]  ” messages for active room
- *   onSendText     fn(text) => Promise
- *   onSendFile     fn(file, base64, mimeType) => Promise
- *   connectionStatus "connected" | "connecting" | "disconnected" | "error"
- *   loadingRooms   bool
- *   sidebarOpen    bool
- *   onToggleSidebar fn()
- *   currentUserId  string | number
- *   senderType     "STAFF" | "ADMIN" | "AI"  (to identify own messages)
- *   roomLabel      fn(room) => string  (optional, for room list label)
- *   roomSubLabel   fn(room) => string  (optional)
- *   headerActions  ReactNode  (extra buttons in chat header)
- *   emptyRoomsText string
- *   inputPlaceholder string
- *   maxFileSize    number (bytes, default 15MB)
- *   className      string
- */
-
 import { useRef, useState, useEffect } from "react";
 import {
   Download,
@@ -35,6 +10,7 @@ import {
   SendHorizontal,
   X,
 } from "lucide-react";
+
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
 import ImageViewer from "@/components/ImageViewer";

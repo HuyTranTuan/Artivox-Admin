@@ -1,27 +1,12 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Eye,
-  Edit,
-  Trash2,
-  X,
-  Plus,
-  ImageIcon,
-  GripVertical,
-  Loader2,
-  Upload,
-} from "lucide-react";
+import { Eye, Edit, Trash2, X, Plus, ImageIcon, GripVertical, Loader2, Upload } from "lucide-react";
 
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
 import { FormField } from "@components/forms/FormField";
-import {
-  DataTable,
-  TableToolbar,
-  TablePagination,
-  useDataTable,
-} from "@components/DataTable";
+import { DataTable, TableToolbar, TablePagination, useDataTable } from "@components/DataTable";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
@@ -37,6 +22,7 @@ import { collectionService } from "@services/collectionService";
 import useToast from "@hooks/useToast";
 import ThumbnailPreview from "@components/ThumbnailPreview";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const ModelsPage = () => {
   const navigate = useNavigate();
@@ -45,10 +31,7 @@ const ModelsPage = () => {
 
   const user = useAuthStore((state) => state.user);
   const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
+  const validJsonString = user?.permission?.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"');
   const permission = validJsonString ? JSON.parse(validJsonString) : {};
   const canCreate = isAdmin || permission.create;
   const canUpdate = isAdmin || permission.update;
@@ -84,9 +67,7 @@ const ModelsPage = () => {
   useEffect(() => {
     collectionService
       .getCollections({ limit: 100, isActive: true })
-      .then((res) =>
-        setCollections(res.data?.items || res.items || res.data || []),
-      )
+      .then((res) => setCollections(res.data?.items || res.items || res.data || []))
       .catch(console.error);
   }, []);
 
@@ -103,12 +84,7 @@ const ModelsPage = () => {
       modelsService.getModels({
         ...params,
         search: debouncedSearch || undefined,
-        isActive:
-          activeFilters.status === "Active"
-            ? true
-            : activeFilters.status === "Inactive"
-              ? false
-              : undefined,
+        isActive: activeFilters.status === "Active" ? true : activeFilters.status === "Inactive" ? false : undefined,
       }),
     [debouncedSearch, activeFilters.status],
   );
@@ -173,9 +149,7 @@ const ModelsPage = () => {
       key: "name",
       label: t("catalog.name"),
       width: "2fr",
-      render: (item) => (
-        <div className="font-title text-base font-semibold">{item.name}</div>
-      ),
+      render: (item) => <div className="font-title text-base font-semibold">{item.name}</div>,
     },
     {
       key: "basePrice",
@@ -187,11 +161,7 @@ const ModelsPage = () => {
       key: "isActive",
       label: t("catalog.status"),
       width: "1fr",
-      render: (item) => (
-        <Badge>
-          {item.isActive ? t("catalog.active") : t("catalog.inactive")}
-        </Badge>
-      ),
+      render: (item) => <Badge>{item.isActive ? t("catalog.active") : t("catalog.inactive")}</Badge>,
     },
     {
       key: "createdAt",
@@ -229,24 +199,12 @@ const ModelsPage = () => {
       collectionId: item.collectionId?.toString() || "",
     });
 
-    const thumbBefore = item.images?.find(
-      (img) => img.role === "THUMBNAIL_BEFORE",
-    );
-    const thumbAfter = item.images?.find(
-      (img) => img.role === "THUMBNAIL_AFTER",
-    );
+    const thumbBefore = item.images?.find((img) => img.role === "THUMBNAIL_BEFORE");
+    const thumbAfter = item.images?.find((img) => img.role === "THUMBNAIL_AFTER");
     const gallery = item.images?.filter((img) => img.role === "GALLERY") || [];
 
-    setThumbnailBefore(
-      thumbBefore
-        ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true }
-        : null,
-    );
-    setThumbnailAfter(
-      thumbAfter
-        ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
-        : null,
-    );
+    setThumbnailBefore(thumbBefore ? { preview: thumbBefore.url, id: thumbBefore.id, isExisting: true } : null);
+    setThumbnailAfter(thumbAfter ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true } : null);
     setFormGalleryImages(
       gallery.map((img) => ({
         preview: img.url,
@@ -267,10 +225,7 @@ const ModelsPage = () => {
       setDeleting(true);
       try {
         await modelsService.deleteModel(selectedItem.slug);
-        toastTopRight(
-          "success",
-          t("catalog.deleteSuccess", "Deleted successfully"),
-        );
+        toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -303,19 +258,11 @@ const ModelsPage = () => {
 
         if (thumbnailBefore?.file) {
           const ext = thumbnailBefore.file.name.split(".").pop();
-          formData.append(
-            "thumbnail_before",
-            thumbnailBefore.file,
-            `thumbnail_before.${ext}`,
-          );
+          formData.append("thumbnail_before", thumbnailBefore.file, `thumbnail_before.${ext}`);
         }
         if (thumbnailAfter?.file) {
           const ext = thumbnailAfter.file.name.split(".").pop();
-          formData.append(
-            "thumbnail_after",
-            thumbnailAfter.file,
-            `thumbnail_after.${ext}`,
-          );
+          formData.append("thumbnail_after", thumbnailAfter.file, `thumbnail_after.${ext}`);
         }
         formGalleryImages.forEach((img) => {
           if (img.file) {
@@ -323,14 +270,10 @@ const ModelsPage = () => {
           }
         });
 
-        if (sourceFile)
-          formData.append("source_file", sourceFile, sourceFile.name);
+        if (sourceFile) formData.append("source_file", sourceFile, sourceFile.name);
 
         await modelsService.updateModel(selectedItem.slug, formData);
-        toastTopRight(
-          "success",
-          t("catalog.updateSuccess", "Updated successfully"),
-        );
+        toastTopRight("success", t("catalog.updateSuccess", "Updated successfully"));
         setOpenDialog(null);
         refetch();
       } catch (err) {
@@ -414,7 +357,7 @@ const ModelsPage = () => {
             setSelectedItem(item);
             setOpenDialog("delete");
           }}
-          className="h-8 w-8 p-0! flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+          className="h-8 w-8 p-0! flex items-center justify-center rounded-xl border border-slate-200 bg-transparent text-(--color-error) hover:bg-(--color-error)/10! transition"
         >
           <Trash2 style={{ width: 18, height: 18 }} />
         </Button>
@@ -423,39 +366,19 @@ const ModelsPage = () => {
   );
   const renderFormModal = () => (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div
-        ref={dialogRef}
-        className="bg-(--color-background) rounded-2xl shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-      >
-        <h2 className="font-title text-xl font-bold dark:mb-6">
-          {t("catalog.editModel")}
-        </h2>
+      <div ref={dialogRef} className="bg-(--color-background) rounded-2xl shadow-xl p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <h2 className="font-title text-xl font-bold dark:mb-6">{t("catalog.editModel")}</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold0 dark:border-b border-slate-100 pb-2">
-              {t("catalog.info")}
-            </h3>
-            <FormField
-              label={t("catalog.name")}
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder={t("catalog.name")}
-            />
-            <FormField
-              label={t("catalog.slugReadOnly")}
-              value={form.slug}
-              readOnly
-              placeholder={t("catalog.slug")}
-              className="cursor-not-allowed border-slate-200"
-            />
+            <h3 className="font-title text-sm font-semibold0 dark:border-b border-slate-100 pb-2">{t("catalog.info")}</h3>
+            <FormField label={t("catalog.name")} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("catalog.name")} />
+            <FormField label={t("catalog.slugReadOnly")} value={form.slug} readOnly placeholder={t("catalog.slug")} className="cursor-not-allowed border-slate-200" />
             <FormField
               label={t("catalog.description")}
               type="textarea"
               value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder={t("catalog.description")}
               rows={3}
             />
@@ -466,8 +389,7 @@ const ModelsPage = () => {
                 value={form.basePrice}
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (v === "" || parseFloat(v) >= 10000)
-                    setForm({ ...form, basePrice: v });
+                  if (v === "" || parseFloat(v) >= 10000) setForm({ ...form, basePrice: v });
                 }}
                 min={10000}
                 placeholder="10000"
@@ -478,8 +400,7 @@ const ModelsPage = () => {
                 value={form.stock}
                 onChange={(e) => {
                   const v = e.target.value;
-                  if (v === "" || parseInt(v, 10) >= 0)
-                    setForm({ ...form, stock: v });
+                  if (v === "" || parseInt(v, 10) >= 0) setForm({ ...form, stock: v });
                 }}
                 min={0}
                 placeholder="0"
@@ -489,9 +410,7 @@ const ModelsPage = () => {
               label={t("catalog.status")}
               type="select"
               value={form.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                setForm({ ...form, isActive: e.target.value === "active" })
-              }
+              onChange={(e) => setForm({ ...form, isActive: e.target.value === "active" })}
               options={[
                 { value: "active", label: t("catalog.active") },
                 { value: "inactive", label: t("catalog.inactive") },
@@ -501,42 +420,28 @@ const ModelsPage = () => {
               label={t("collection")}
               type="select"
               value={form.collectionId || ""}
-              onChange={(e) =>
-                setForm({ ...form, collectionId: e.target.value })
-              }
-              options={[
-                { value: "", label: t("selectCollection") },
-                ...collections.map((c) => ({ value: c.id, label: c.name })),
-              ]}
+              onChange={(e) => setForm({ ...form, collectionId: e.target.value })}
+              options={[{ value: "", label: t("selectCollection") }, ...collections.map((c) => ({ value: c.id, label: c.name }))]}
             />
 
-            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2 pt-4">
-              {t("catalog.3dModelFiles")}
-            </h3>
+            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2 pt-4">{t("catalog.3dModelFiles")}</h3>
             <FormField
               label={t("catalog.previewFileUrl")}
               value={form.previewFileUrl}
-              onChange={(e) =>
-                setForm({ ...form, previewFileUrl: e.target.value })
-              }
+              onChange={(e) => setForm({ ...form, previewFileUrl: e.target.value })}
               placeholder={t("catalog.previewFileUrl")}
             />
             {/* Source file – show current URL + allow replacing with a new file */}
             <div>
-              <label className="text-xs font-semibold mb-1.5 block">
+              <Label className="text-xs font-semibold mb-1.5 block">
                 {t("catalog.sourceFile")}
                 <span className="ml-1 text-xs font-normal">(max 100MB)</span>
-              </label>
+              </Label>
               {/* Current saved URL */}
               {form.sourceFileUrl && !sourceFile && (
                 <div className="flex items-center gap-2 mb-2 rounded-xl border border-slate-200 px-3 py-2 text-xs">
                   <span className="flex-1 truncate text-muted">{form.sourceFileUrl}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 hover:text-rose-500"
-                    onClick={() => setForm({ ...form, sourceFileUrl: "" })}
-                  >
+                  <Button variant="ghost" size="icon" className="shrink-0 hover:text-rose-500" onClick={() => setForm({ ...form, sourceFileUrl: "" })}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -545,12 +450,7 @@ const ModelsPage = () => {
               {sourceFile && (
                 <div className="flex items-center gap-2 mb-2 rounded-xl border border-emerald-300 bg-emerald-50/50 px-3 py-2 text-xs">
                   <span className="flex-1 truncate">{sourceFile.name}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 hover:text-rose-500"
-                    onClick={() => setSourceFile(null)}
-                  >
+                  <Button variant="ghost" size="icon" className="shrink-0 hover:text-rose-500" onClick={() => setSourceFile(null)}>
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
@@ -560,26 +460,14 @@ const ModelsPage = () => {
                 className="flex h-10 cursor-pointer items-center gap-2 rounded-xl border-2 border-dashed border-slate-300 px-3 hover:border-orange-400 hover:bg-orange-50/50 transition"
               >
                 <Upload className="h-4 w-4 shrink-0" />
-                <span className="text-xs">
-                  {sourceFile
-                    ? t("catalog.chooseAnotherFile", "Choose another file")
-                    : t("catalog.chooseFile", "Choose 3D model file")}
-                </span>
+                <span className="text-xs">{sourceFile ? t("catalog.chooseAnotherFile", "Choose another file") : t("catalog.chooseFile", "Choose 3D model file")}</span>
               </div>
-              <Input
-                ref={sourceFileRef}
-                type="file"
-                accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.3ds,.dae"
-                className="hidden"
-                onChange={handle3DFileChange}
-              />
+              <Input ref={sourceFileRef} type="file" accept=".glb,.gltf,.fbx,.obj,.stl,.ply,.3ds,.dae" className="hidden" onChange={handle3DFileChange} />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2">
-              {t("catalog.images")}
-            </h3>
+            <h3 className="font-title text-sm font-semibold dark:border-b border-slate-100 pb-2">{t("catalog.images")}</h3>
             <ImageUploadBox
               label={t("catalog.thumbnailBefore")}
               value={thumbnailBefore}
@@ -604,44 +492,21 @@ const ModelsPage = () => {
               </label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-xl p-2">
                 {formGalleryImages.length === 0 ? (
-                  <div className="text-center py-4 text-xs">
-                    {t("catalog.noImages")}
-                  </div>
+                  <div className="text-center py-4 text-xs">{t("catalog.noImages")}</div>
                 ) : (
                   formGalleryImages.map((img, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2  rounded-xl px-2 py-1.5 border border-slate-100 shadow-sm"
-                    >
+                    <div key={idx} className="flex items-center gap-2  rounded-xl px-2 py-1.5 border border-slate-100 shadow-sm">
                       <GripVertical className="h-4 w-4 shrink-0 cursor-grab" />
-                      <img
-                        src={img.preview}
-                        alt={img.alt || `Gallery ${idx + 1}`}
-                        className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0"
-                      />
-                      <span className="flex-1 text-xs dark:truncate">
-                        {img.file?.name || img.alt || `Image ${idx + 1}`}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-rose-500 hover:text-rose-700 shrink-0"
-                        onClick={() => removeGalleryImage(idx)}
-                      >
+                      <img src={img.preview} alt={img.alt || `Gallery ${idx + 1}`} className="h-10 w-10 rounded-xl object-cover border border-slate-200 shrink-0" />
+                      <span className="flex-1 text-xs dark:truncate">{img.file?.name || img.alt || `Image ${idx + 1}`}</span>
+                      <Button variant="ghost" size="sm" className="text-rose-500 hover:text-rose-700 shrink-0" onClick={() => removeGalleryImage(idx)}>
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   ))
                 )}
               </div>
-              <Input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={handleGalleryAdd}
-              />
+              <Input ref={galleryInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleGalleryAdd} />
               <Button
                 variant="outline"
                 size="sm"
@@ -656,19 +521,10 @@ const ModelsPage = () => {
         </div>
 
         <div className="flex gap-3 pt-4 border-t border-slate-100">
-          <Button
-            variant="destructive"
-            className="flex-1 cursor-pointer h-12"
-            onClick={() => setOpenDialog(null)}
-            disabled={saving}
-          >
+          <Button variant="destructive" className="flex-1 cursor-pointer h-12" onClick={() => setOpenDialog(null)} disabled={saving}>
             {t("catalog.cancel")}
           </Button>
-          <Button
-            className="flex-1 gap-2 cursor-pointer h-12"
-            onClick={handleSubmit}
-            disabled={saving}
-          >
+          <Button className="flex-1 gap-2 cursor-pointer h-12" onClick={handleSubmit} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             {t("catalog.save")}
           </Button>
@@ -682,9 +538,7 @@ const ModelsPage = () => {
       <section className="space-y-6">
         <Card className="p-6">
           <div className="text-center py-8">
-            <div className="text-rose-500 font-semibold mb-2">
-              {t("catalog.errorLoading")}
-            </div>
+            <div className="text-rose-500 font-semibold mb-2">{t("catalog.errorLoading")}</div>
             <div className="text-sm mb-4">{error}</div>
             <Button onClick={refetch} className="h-12">
               {t("catalog.retry")}
@@ -713,9 +567,7 @@ const ModelsPage = () => {
             },
           ]}
           activeFilters={activeFilters}
-          onFilterChange={(key, val) =>
-            setActiveFilters((p) => ({ ...p, [key]: val }))
-          }
+          onFilterChange={(key, val) => setActiveFilters((p) => ({ ...p, [key]: val }))}
           viewMode={dt.viewMode}
           onViewChange={dt.setViewMode}
         />
@@ -743,9 +595,7 @@ const ModelsPage = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
               </div>
             ) : dt.paginated.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-sm">
-                {t("catalog.noModels")}
-              </div>
+              <div className="col-span-full text-center py-8 text-sm">{t("catalog.noModels")}</div>
             ) : (
               dt.paginated.map((item) => (
                 <div
@@ -772,17 +622,13 @@ const ModelsPage = () => {
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
                           <div className="opacity-0 group-hover:opacity-100 transition flex items-center gap-2 /90 rounded-full px-4 py-2 text-sm font-semibold">
-                            <ImageIcon className="h-4 w-4" />{" "}
-                            {t("catalog.viewGallery")} ({item.images.length})
+                            <ImageIcon className="h-4 w-4" /> {t("catalog.viewGallery")} ({item.images.length})
                           </div>
                         </div>
                         {item.images.length > 1 && (
                           <div className="absolute top-2 right-2 flex gap-1">
                             {item.images.slice(0, 3).map((_, idx) => (
-                              <div
-                                key={idx}
-                                className="h-2 w-2 rounded-full /80"
-                              />
+                              <div key={idx} className="h-2 w-2 rounded-full /80" />
                             ))}
                           </div>
                         )}
@@ -791,30 +637,19 @@ const ModelsPage = () => {
                       <div className="h-full w-full flex items-center justify-center">
                         <div className="text-center">
                           <ImageIcon className="h-10 w-10 mx-auto mb-2" />
-                          <span className="text-xs">
-                            {t("catalog.noImages")}
-                          </span>
+                          <span className="text-xs">{t("catalog.noImages")}</span>
                         </div>
                       </div>
                     )}
                   </div>
                   <div className="p-4">
-                    <div className="font-title text-base font-semibold dark:mb-1">
-                      {item.name}
-                    </div>
+                    <div className="font-title text-base font-semibold dark:mb-1">{item.name}</div>
                     <div className="text-xs mb-3">
-                      {item.basePrice?.toLocaleString()} VND ¢{" "}
-                      {t("catalog.createdAt")} {formatDate(item.createdAt)}
+                      {item.basePrice?.toLocaleString()} VND ¢ {t("catalog.createdAt")} {formatDate(item.createdAt)}
                     </div>
                     <div className="flex items-center justify-between">
-                      <Badge className="mb-0">
-                        {item.isActive
-                          ? t("catalog.active")
-                          : t("catalog.inactive")}
-                      </Badge>
-                      <div className="flex gap-1">
-                        {renderActionButtons(item)}
-                      </div>
+                      <Badge className="mb-0">{item.isActive ? t("catalog.active") : t("catalog.inactive")}</Badge>
+                      <div className="flex gap-1">{renderActionButtons(item)}</div>
                     </div>
                   </div>
                 </div>
@@ -823,46 +658,21 @@ const ModelsPage = () => {
           </div>
         )}
 
-        <TablePagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={total}
-          pageSize={20}
-          onPage={setPage}
-        />
+        <TablePagination currentPage={currentPage} totalPages={totalPages} totalItems={total} pageSize={20} onPage={setPage} />
       </Card>
 
-      {openDialog === "create" || openDialog === "edit"
-        ? renderFormModal()
-        : null}
+      {openDialog === "create" || openDialog === "edit" ? renderFormModal() : null}
 
       {openDialog === "delete" && selectedItem && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div
-            ref={dialogRef}
-            className=" rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-          >
-            <h2 className="font-title text-xl font-bold dark:mb-4">
-              {t("catalog.deleteTitle")}
-            </h2>
-            <p className="text-sm dark:mb-4">
-              {t("catalog.deleteConfirm", { name: selectedItem.name })}
-            </p>
+          <div ref={dialogRef} className=" rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold dark:mb-4">{t("catalog.deleteTitle")}</h2>
+            <p className="text-sm dark:mb-4">{t("catalog.deleteConfirm", { name: selectedItem.name })}</p>
             <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1 cursor-pointer"
-                onClick={() => setOpenDialog(null)}
-                disabled={deleting}
-              >
+              <Button variant="secondary" className="flex-1 cursor-pointer" onClick={() => setOpenDialog(null)} disabled={deleting}>
                 {t("catalog.cancel")}
               </Button>
-              <Button
-                variant="destructive"
-                className="flex-1 cursor-pointer"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
+              <Button variant="destructive" className="flex-1 cursor-pointer" onClick={handleDelete} disabled={deleting}>
                 {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
                 {t("catalog.delete")}
               </Button>
@@ -871,13 +681,7 @@ const ModelsPage = () => {
         </div>
       )}
 
-      {galleryOpen && (
-        <ImageGalleryModal
-          images={galleryImages}
-          initialIndex={galleryIndex}
-          onClose={() => setGalleryOpen(false)}
-        />
-      )}
+      {galleryOpen && <ImageGalleryModal images={galleryImages} initialIndex={galleryIndex} onClose={() => setGalleryOpen(false)} />}
     </section>
   );
 };

@@ -12,6 +12,8 @@
   --color-text: #334155;
   --color-muted: #94a3b8;
   --color-success: #16a34a;
+  --color-error: #f71414;
+  --color-processing: #105cf4;
   --shadow-card: 0 14px 40px rgba(15, 23, 42, 0.08);
   --radius-card: 12px;
 }
@@ -27,7 +29,10 @@
   --color-text: #cbd5e1;
   --color-muted: #64748b;
   --color-success: #22c55e;
+  --color-error: #f71414;
+  --color-processing: #105cf4;
   --shadow-card: none;
+  --radius-card: 12px;
 }
 
 * {

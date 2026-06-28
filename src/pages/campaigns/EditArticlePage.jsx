@@ -13,6 +13,7 @@ import { articleService } from "@services/articleService";
 import Loading from "@components/Loading";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
@@ -22,10 +23,8 @@ const tabs = [
 const EditArticlePage = () => {
   const { slug: articleSlug } = useParams();
   const navigate = useNavigate();
-  const { currentLanguage: lang } = useUiStore();
   const [activeTab, setActiveTab] = useState("vi");
 
-  const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [coverImage, setCoverImage] = useState(null);
   const [currentCoverImage, setCurrentCoverImage] = useState("");
@@ -48,10 +47,7 @@ const EditArticlePage = () => {
     if (!user?.permission) return {};
     if (typeof user.permission === "object") return user.permission;
     try {
-      const validJsonString = user.permission.replace(
-        /([a-zA-Z0-9_]+)(?=\s*:)/g,
-        '"$1"',
-      );
+      const validJsonString = user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"');
       return JSON.parse(validJsonString);
     } catch (e) {
       console.error("Failed to parse permission string", e);
@@ -109,9 +105,7 @@ const EditArticlePage = () => {
       return;
     }
 
-    const validTranslations = [translations.vi, translations.en].filter(
-      (t) => t.title && t.title.trim() !== "",
-    );
+    const validTranslations = [translations.vi, translations.en].filter((t) => t.title && t.title.trim() !== "");
     if (validTranslations.length === 0) {
       setError(t("articles.translationRequired"));
       return;
@@ -128,10 +122,7 @@ const EditArticlePage = () => {
       }
 
       await articleService.updateArticle(articleSlug, formData);
-      toastTopRight(
-        "success",
-        t("articles.updateSuccess") || "Article updated successfully",
-      );
+      toastTopRight("success", t("articles.updateSuccess") || "Article updated successfully");
       navigate("/articles");
     } catch (err) {
       toastTopRight("error", t("articles.updateError"));
@@ -155,42 +146,24 @@ const EditArticlePage = () => {
 
   return (
     <section className="space-y-6">
-      {error && (
-        <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>}
 
       <Card className="p-6 space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button
-              onClick={handleCancel}
-              variant="outline"
-              size="icon-sm"
-              className="h-8 w-8 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors"
-            >
+            <Button onClick={handleCancel} variant="outline" size="icon-sm" className="h-8 w-8 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors">
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h2 className="font-title text-xl font-bold ">
-              {t("catalog.edit")}
-            </h2>
+            <h2 className="font-title text-xl font-bold ">{t("catalog.edit")}</h2>
           </div>
-          <Button
-            onClick={handleSave}
-            variant="primary"
-            className="gap-2 px-4 py-2 rounded-xl"
-            disabled={!canUpdate || isSaving}
-          >
+          <Button onClick={handleSave} variant="primary" className="gap-2 px-4 py-2 rounded-xl" disabled={!canUpdate || isSaving}>
             <Save className="h-4 w-4" />
             {isSaving ? t("common.saving") : t("articles.save")}
           </Button>
         </div>
         {/* Slug / URL */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium ">
-            {t("articles.slug")}
-          </label>
+          <Label className="mb-1.5 block text-sm font-medium ">{t("articles.slug")}</Label>
           <Input
             type="text"
             value={slug}
@@ -202,16 +175,10 @@ const EditArticlePage = () => {
 
         {/* Cover Image */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium ">
-            {t("articles.coverImage")}
-          </label>
+          <Label className="mb-1.5 block text-sm font-medium ">{t("articles.coverImage")}</Label>
           {currentCoverImage && !coverImage && (
             <div className="mb-3">
-              <img
-                src={currentCoverImage}
-                alt="Current cover"
-                className="h-32 w-auto object-cover rounded-xl border border-slate-200"
-              />
+              <img src={currentCoverImage} alt="Current cover" className="h-32 w-auto object-cover rounded-xl border border-slate-200" />
             </div>
           )}
           <Input
@@ -231,11 +198,7 @@ const EditArticlePage = () => {
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
                 variant="outline"
-                className={`px-4 py-2.5 text-sm font-medium transition ${
-                  activeTab === tab.value
-                    ? "text-(--color-secondary) bg-(--color-primary)/80"
-                    : "border-transparent"
-                }`}
+                className={`px-4 py-2.5 text-sm font-medium transition ${activeTab === tab.value ? "text-(--color-secondary) bg-(--color-primary)/80" : "border-transparent"}`}
               >
                 {t(tab.labelKey)}
               </Button>
@@ -251,9 +214,7 @@ const EditArticlePage = () => {
             </label>
             <Input
               value={translations[activeTab]?.title || ""}
-              onChange={(e) =>
-                handleTranslationChange(activeTab, "title", e.target.value)
-              }
+              onChange={(e) => handleTranslationChange(activeTab, "title", e.target.value)}
               placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
@@ -263,36 +224,32 @@ const EditArticlePage = () => {
 
           {/* Summary */}
           <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium ">
+            <Label className="mb-1.5 block text-sm font-medium ">
               {t("articles.summaryWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-            </label>
+            </Label>
             <Textarea
               value={translations[activeTab]?.summary || ""}
-              onChange={(e) =>
-                handleTranslationChange(activeTab, "summary", e.target.value)
-              }
+              onChange={(e) => handleTranslationChange(activeTab, "summary", e.target.value)}
               placeholder={t("articles.enterSummaryWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="min-h-[80px] w-full rounded-xl border border-slate-300 p-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="min-h-20 w-full rounded-xl border border-slate-300 p-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             />
           </div>
 
           {/* Content - Rich Text Editor */}
           <div>
-            <label className="mb-1.5 block text-sm font-medium ">
+            <Label className="mb-1.5 block text-sm font-medium ">
               {t("articles.contentWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-            </label>
+            </Label>
             <RichTextEditor
               key={activeTab}
               value={translations[activeTab]?.content || ""}
-              onChange={(value) =>
-                handleTranslationChange(activeTab, "content", value)
-              }
+              onChange={(value) => handleTranslationChange(activeTab, "content", value)}
               placeholder={t("articles.writeContentWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}

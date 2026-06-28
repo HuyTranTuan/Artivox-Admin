@@ -4,12 +4,7 @@ import { Eye, Edit, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Badge } from "@components/ui/badge";
-import {
-  DataTable,
-  TableToolbar,
-  TablePagination,
-  useDataTable,
-} from "@components/DataTable";
+import { DataTable, TableToolbar, TablePagination, useDataTable } from "@components/DataTable";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import { useTranslation } from "@hooks/useTranslation";
@@ -31,9 +26,7 @@ const CollectionsPage = () => {
   const isAdmin = user?.role === "ADMIN";
   const permission = (() => {
     try {
-      return JSON.parse(
-        (user?.permission || "{}").replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'),
-      );
+      return JSON.parse((user?.permission || "{}").replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'));
     } catch {
       return {};
     }
@@ -63,12 +56,7 @@ const CollectionsPage = () => {
       collectionService.getCollections({
         ...params,
         search: debouncedSearch,
-        isActive:
-          activeFilters.status === "Active"
-            ? true
-            : activeFilters.status === "Inactive"
-              ? false
-              : undefined,
+        isActive: activeFilters.status === "Active" ? true : activeFilters.status === "Inactive" ? false : undefined,
       }),
     {
       defaultLimit: 20,
@@ -86,10 +74,7 @@ const CollectionsPage = () => {
     setDeleting(true);
     try {
       await collectionService.deleteCollection(selectedItem.slug);
-      toastTopRight(
-        "success",
-        t("catalog.deleteSuccess", "Deleted successfully"),
-      );
+      toastTopRight("success", t("catalog.deleteSuccess", "Deleted successfully"));
       setOpenDialog(null);
       refetch();
     } catch (e) {
@@ -125,15 +110,7 @@ const CollectionsPage = () => {
       sortable: false,
       render: (item) => (
         <div className="h-12 w-12 rounded-xl overflow-hidden flex items-center justify-center bg-amber-300">
-          {item.image ? (
-            <img
-              src={item.image}
-              alt={item.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <ImageIcon className="h-5 w-5" />
-          )}
+          {item.image ? <img src={item.image} alt={item.name} className="h-full w-full object-cover" /> : <ImageIcon className="h-5 w-5" />}
         </div>
       ),
     },
@@ -162,22 +139,14 @@ const CollectionsPage = () => {
       key: "itemCount",
       label: t("catalog.items"),
       width: "1fr",
-      render: (r) => (
-        <span className="text-sm font-medium">{r.itemCount || 0}</span>
-      ),
+      render: (r) => <span className="text-sm font-medium">{r.itemCount || 0}</span>,
     },
     {
       key: "status",
       label: t("catalog.status"),
       width: "1fr",
       render: (r) => (
-        <span
-          className={`px-2 py-1 rounded text-xs font-semibold ${
-            r.isActive
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-slate-100 text-slate-700"
-          }`}
-        >
+        <span className={`px-2 py-1 rounded text-xs font-semibold ${r.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}>
           {r.isActive ? t("catalog.active") : t("catalog.inactive")}
         </span>
       ),
@@ -201,28 +170,27 @@ const CollectionsPage = () => {
       width: "110px",
       render: (row) => (
         <div className="flex gap-1.5">
-          <button
-            onClick={() =>
-              navigate(`/catalog/collections/${row.slug || row.id}`)
-            }
+          <Button
+            variant="outline"
+            onClick={() => navigate(`/catalog/collections/${row.slug || row.id}`)}
             className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
             style={{ padding: 5 }}
           >
             <Eye style={{ width: 16, height: 16 }} />
-          </button>
+          </Button>
           {canUpdate && (
-            <button
-              onClick={() =>
-                navigate(`/catalog/collections/edit/${row.slug || row.id}`)
-              }
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/catalog/collections/edit/${row.slug || row.id}`)}
               className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
               style={{ padding: 5 }}
             >
               <Edit style={{ width: 16, height: 16 }} />
-            </button>
+            </Button>
           )}
           {canDelete && (
-            <button
+            <Button
+              variant="outline"
               onClick={() => {
                 setSelectedItem(row);
                 setOpenDialog("delete");
@@ -231,7 +199,7 @@ const CollectionsPage = () => {
               style={{ padding: 5 }}
             >
               <Trash2 style={{ width: 16, height: 16 }} />
-            </button>
+            </Button>
           )}
         </div>
       ),
@@ -243,9 +211,7 @@ const CollectionsPage = () => {
       <Card className="p-6">
         <TableToolbar
           title={t("catalog.collections")}
-          onAddNew={
-            canCreate ? () => navigate("/catalog/collections/create") : null
-          }
+          onAddNew={canCreate ? () => navigate("/catalog/collections/create") : null}
           onRefresh={refetch}
           onExportCsv={dt.handleExport}
           search={search}
@@ -258,9 +224,7 @@ const CollectionsPage = () => {
             },
           ]}
           activeFilters={activeFilters}
-          onFilterChange={(key, val) =>
-            setActiveFilters((p) => ({ ...p, [key]: val }))
-          }
+          onFilterChange={(key, val) => setActiveFilters((p) => ({ ...p, [key]: val }))}
           viewMode={dt.viewMode}
           onViewChange={dt.setViewMode}
         />
@@ -287,9 +251,7 @@ const CollectionsPage = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
               </div>
             ) : dt.paginated.length === 0 ? (
-              <div className="col-span-full text-center py-8 text-sm">
-                {t("catalog.noCollections")}
-              </div>
+              <div className="col-span-full text-center py-8 text-sm">{t("catalog.noCollections")}</div>
             ) : (
               dt.paginated.map((item) => (
                 <div
@@ -297,18 +259,13 @@ const CollectionsPage = () => {
                   className="border border-slate-200 rounded-2xl p-4 hover:shadow-lg transition cursor-pointer"
                   onClick={() => navigate(`/catalog/collections/${item.slug}`)}
                 >
-                  <div className="font-title text-base font-semibold mb-1">
-                    {item.name}
-                  </div>
+                  <div className="font-title text-base font-semibold mb-1">{item.name}</div>
                   <div className="text-xs mb-3 font-mono">{item.slug}</div>
                   <div className="flex items-center justify-between">
-                    <Badge className="mb-0">
-                      {item.isActive
-                        ? t("catalog.active")
-                        : t("catalog.inactive")}
-                    </Badge>
+                    <Badge className="mb-0">{item.isActive ? t("catalog.active") : t("catalog.inactive")}</Badge>
                     <div className="flex gap-1">
-                      <button
+                      <Button
+                        variant="outline"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/catalog/collections/${item.slug}`);
@@ -316,22 +273,22 @@ const CollectionsPage = () => {
                         className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
                       >
                         <Eye style={{ width: 16, height: 16 }} />
-                      </button>
+                      </Button>
                       {canUpdate && (
-                        <button
+                        <Button
+                          variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(
-                              `/catalog/collections/edit/${item.slug || item.id}`,
-                            );
+                            navigate(`/catalog/collections/edit/${item.slug || item.id}`);
                           }}
                           className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
                         >
                           <Edit style={{ width: 16, height: 16 }} />
-                        </button>
+                        </Button>
                       )}
                       {canDelete && (
-                        <button
+                        <Button
+                          variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedItem(item);
@@ -340,7 +297,7 @@ const CollectionsPage = () => {
                           className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
                         >
                           <Trash2 style={{ width: 16, height: 16 }} />
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -349,47 +306,20 @@ const CollectionsPage = () => {
             )}
           </div>
         )}
-        <TablePagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          pageSize={20}
-          onPage={setPage}
-        />
+        <TablePagination currentPage={currentPage} totalPages={totalPages} totalItems={totalItems} pageSize={20} onPage={setPage} />
       </Card>
 
       {openDialog === "delete" && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div
-            ref={dialogRef}
-            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
-          >
-            <h2 className="font-title text-xl font-bold mb-3">
-              {t("catalog.confirmDelete")}
-            </h2>
-            <p className="text-sm mb-5">
-              {t("catalog.deleteConfirmMsg", { name: selectedItem?.name })}
-            </p>
+          <div ref={dialogRef} className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4">
+            <h2 className="font-title text-xl font-bold mb-3">{t("catalog.confirmDelete")}</h2>
+            <p className="text-sm mb-5">{t("catalog.deleteConfirmMsg", { name: selectedItem?.name })}</p>
             <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                className="flex-1"
-                onClick={() => setOpenDialog(null)}
-                disabled={deleting}
-              >
+              <Button variant="secondary" className="flex-1" onClick={() => setOpenDialog(null)} disabled={deleting}>
                 {t("catalog.cancel")}
               </Button>
-              <Button
-                variant="destructive"
-                className="flex-1"
-                onClick={handleDelete}
-                disabled={deleting}
-              >
-                {deleting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  t("catalog.delete")
-                )}
+              <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={deleting}>
+                {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("catalog.delete")}
               </Button>
             </div>
           </div>

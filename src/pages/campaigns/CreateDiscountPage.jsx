@@ -6,6 +6,7 @@ import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
 import { Input } from "@components/ui/input";
 import { discountService } from "@services/discountService";
+import { Label } from "@/components/ui/label";
 
 const discountTypes = [
   { value: "PERCENT", label: "discounts.percentage" },
@@ -111,23 +112,13 @@ const CreateDiscountPage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Button
-            onClick={handleCancel}
-            variant={"outline"}
-            className="h-13 w-13 rounded-xl transition hover:bg-slate-100"
-          >
+          <Button onClick={handleCancel} variant={"outline"} className="h-13 w-13 rounded-xl transition hover:bg-slate-100">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="font-title text-xl font-bold">
-            {isEditMode ? "Edit Discount" : "Create Discount"}
-          </h2>
+          <h2 className="font-title text-xl font-bold">{isEditMode ? "Edit Discount" : "Create Discount"}</h2>
         </div>
         <Button onClick={handleSave} disabled={loading} className="gap-2">
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           {isEditMode ? "Save Changes" : t("articles.save")}
         </Button>
       </div>
@@ -135,46 +126,24 @@ const CreateDiscountPage = () => {
       <Card className="p-6 space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.discountCode")} (ex. SUMMER20)
-            </label>
-            <Input
-              value={form.code}
-              onChange={(e) =>
-                handleChange("code", e.target.value.toUpperCase())
-              }
-              placeholder={t("summer20")}
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.discountCode")} (ex. SUMMER20)</Label>
+            <Input value={form.code} onChange={(e) => handleChange("code", e.target.value.toUpperCase())} placeholder={t("summer20")} />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.campaignName")}
-            </label>
-            <Input
-              value={form.name}
-              onChange={(e) => handleChange("name", e.target.value)}
-              placeholder={t("summerSale2026")}
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.campaignName")}</Label>
+            <Input value={form.name} onChange={(e) => handleChange("name", e.target.value)} placeholder={t("summerSale2026")} />
           </div>
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("articles.slug")}
-          </label>
-          <Input
-            value={form.slug}
-            onChange={(e) => handleChange("slug", e.target.value)}
-            placeholder={t("summersale2026")}
-          />
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.slug")}</label>
+          <Input value={form.slug} onChange={(e) => handleChange("slug", e.target.value)} placeholder={t("summersale2026")} />
         </div>
 
         {/* Discount Type */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.discountType")}
-            </label>
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.discountType")}</Label>
             <select
               value={form.type}
               onChange={(e) => handleChange("type", e.target.value)}
@@ -189,9 +158,9 @@ const CreateDiscountPage = () => {
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">
               {t("catalog.value")} {form.type === "PERCENT" ? "(%)" : "(VNĐ)"}
-            </label>
+            </Label>
             <Input
               type="number"
               value={form.value}
@@ -205,67 +174,35 @@ const CreateDiscountPage = () => {
         {/* Min Order & Max Usage */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("discounts.minimumOrder")}
-            </label>
-            <Input
-              type="number"
-              value={form.minOrderAmount}
-              onChange={(e) => handleChange("minOrderAmount", e.target.value)}
-              placeholder={t("eg100000")}
-              min="0"
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("discounts.minimumOrder")}</Label>
+            <Input type="number" value={form.minOrderAmount} onChange={(e) => handleChange("minOrderAmount", e.target.value)} placeholder={t("eg100000")} min="0" />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("maxUsageLimit")}
-            </label>
-            <Input
-              type="number"
-              value={form.maxUses}
-              onChange={(e) => handleChange("maxUses", e.target.value)}
-              placeholder={t("eg100")}
-              min="1"
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("maxUsageLimit")}</Label>
+            <Input type="number" value={form.maxUses} onChange={(e) => handleChange("maxUses", e.target.value)} placeholder={t("eg100")} min="1" />
           </div>
         </div>
 
         {/* Start & End Date */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.startDate")}
-            </label>
-            <Input
-              type="date"
-              value={form.startsAt}
-              onChange={(e) => handleChange("startsAt", e.target.value)}
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.startDate")}</Label>
+            <Input type="date" value={form.startsAt} onChange={(e) => handleChange("startsAt", e.target.value)} />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("catalog.endDate")}
-            </label>
-            <Input
-              type="date"
-              value={form.expiresAt}
-              onChange={(e) => handleChange("expiresAt", e.target.value)}
-            />
+            <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("catalog.endDate")}</Label>
+            <Input type="date" value={form.expiresAt} onChange={(e) => handleChange("expiresAt", e.target.value)} />
           </div>
         </div>
 
         {/* Status */}
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("articles.status")}
-          </label>
+          <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.status")}</Label>
           <select
             value={form.isActive ? "active" : "inactive"}
-            onChange={(e) =>
-              handleChange("isActive", e.target.value === "active")
-            }
+            onChange={(e) => handleChange("isActive", e.target.value === "active")}
             className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
           >
             <option value="active">{t("catalog.active")}</option>

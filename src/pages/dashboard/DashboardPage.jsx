@@ -1,16 +1,10 @@
 import { useEffect, useState } from "react";
 
 import { dashboardService } from "@services/dashboardService";
-import { useTranslation } from "@hooks/useTranslation";
-import {
-  WidgetsSection,
-  ChartsSection,
-  TablesSection,
-} from "@/layouts/DashoardLayout/components/DashboardSection";
+import { WidgetsSection, ChartsSection, TablesSection } from "@/layouts/DashoardLayout/components/DashboardSection";
 import Loading from "@/components/Loading";
 
 const DashboardPage = () => {
-  const { t } = useTranslation();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,13 +34,13 @@ const DashboardPage = () => {
 
   return (
     <section className="space-y-6">
-      {/* â”€â”€ Section 1: Widgets (always first) â”€â”€ */}
+      {/* Section 1: Widgets (always first) */}
       <WidgetsSection widgets={widgets} />
 
-      {/* â”€â”€ Section 2: Charts (always second) â”€â”€ */}
+      {/* Section 2: Charts (always second) */}
       <ChartsSection charts={charts} />
 
-      {/* â”€â”€ Section 3: Tables (always last) â”€â”€ */}
+      {/* Section 3: Tables (always last) */}
       <TablesSection tables={tables} />
     </section>
   );
