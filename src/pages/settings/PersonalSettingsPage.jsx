@@ -25,6 +25,7 @@ import { settingsService } from "@services/settingsService";
 import { useTranslation } from "@hooks/useTranslation";
 import { useAuthStore } from "@/store/authStore";
 import Loading from "@/components/Loading";
+import { Label } from "@/components/ui/label";
 
 const DEFAULT_AVATAR_COLOR = "bg-slate-950";
 
@@ -370,9 +371,9 @@ const PersonalSettingsPage = () => {
             <form onSubmit={handleSaveProfile} className="space-y-5">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
+                <Label className="block text-sm font-medium  mb-1.5">
                   {t("settings.fullName", "Full Name")}
-                </label>
+                </Label>
                 <Input
                   value={profile.name}
                   onChange={(e) => handleProfileChange("name", e.target.value)}
@@ -383,9 +384,9 @@ const PersonalSettingsPage = () => {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium  mb-1.5">
+                <Label className="block text-sm font-medium  mb-1.5">
                   {t("settings.emailAddress", "Email Address")}
-                </label>
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 " />
                   <Input

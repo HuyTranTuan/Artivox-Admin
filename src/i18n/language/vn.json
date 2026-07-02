@@ -52,6 +52,8 @@
   "articles.vi": "VI",
   "articles.views": "lượt xem",
   "articles.writeContentWithLocale": "Viết nội dung bài viết bằng {locale}...",
+  "articles.currentCoverImage": "Ảnh bìa hiện tại",
+  "articles.newCoverImage": "Ảnh bìa mới",
   "auth.admin": "Quản trị",
   "auth.description": "Trang quản trị.",
   "auth.forgotPassword": "Quên mật khẩu",

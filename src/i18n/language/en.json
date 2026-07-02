@@ -52,6 +52,8 @@
   "articles.vi": "VI",
   "articles.views": "views",
   "articles.writeContentWithLocale": "Write your article content in {locale}...",
+  "articles.currentCoverImage": "Current Cover Image",
+  "articles.newCoverImage": "New Cover Image",
   "auth.admin": "Admin",
   "auth.description": "Admin/Staff Dashboard.",
   "auth.forgotPassword": "Forgot Password",

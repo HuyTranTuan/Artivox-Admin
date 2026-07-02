@@ -1,19 +1,17 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
-import { Button } from "@components/ui/button";
+
 import { Card } from "@components/ui/card";
-import RichTextEditor from "@/components/RichTextEditor";
-import { useUiStore } from "@store/uiStore";
+import { Button } from "@components/ui/button";
 import { useAuthStore } from "@store/authStore";
-import { useRBAC } from "@hooks/useRBAC";
 import { useTranslation } from "@hooks/useTranslation";
-import useToast from "@hooks/useToast";
+import { FormField } from "@components/forms/FormField";
 import { articleService } from "@services/articleService";
-import Loading from "@components/Loading";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import useToast from "@hooks/useToast";
+import RichTextEditor from "@/components/RichTextEditor";
 import { Label } from "@/components/ui/label";
+import Loading from "@components/Loading";
 
 const tabs = [
   { value: "vi", labelKey: "articles.vi" },
@@ -94,7 +92,7 @@ const EditArticlePage = () => {
     if (articleSlug) {
       fetchArticle();
     }
-  }, [articleSlug]);
+  }, [articleSlug, t, toastTopRight]);
 
   const handleSave = async () => {
     if (!canUpdate) return;
@@ -146,117 +144,140 @@ const EditArticlePage = () => {
 
   return (
     <section className="space-y-6">
-      {error && <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">{error}</div>}
-
-      <Card className="p-6 space-y-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button onClick={handleCancel} variant="outline" size="icon-sm" className="h-8 w-8 rounded-lg hover:bg-primary hover:text-primary-foreground transition-colors">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h2 className="font-title text-xl font-bold ">{t("catalog.edit")}</h2>
-          </div>
-          <Button onClick={handleSave} variant="primary" className="gap-2 px-4 py-2 rounded-xl" disabled={!canUpdate || isSaving}>
-            <Save className="h-4 w-4" />
-            {isSaving ? t("common.saving") : t("common.save")}
-          </Button>
+      {error && (
+        <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">
+          {error}
         </div>
-        {/* Slug / URL */}
-        <div>
-          <Label className="mb-1.5 block text-sm font-medium ">{t("articles.slug")}</Label>
-          <Input
-            type="text"
+      )}
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={handleCancel}
+            className="rounded-lg hover:bg-(--color-primary)/70 p-2.5"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h2 className="font-title text-xl font-bold">
+            {t("catalog.edit") || "Edit Article"}
+          </h2>
+        </div>
+        <Button
+          onClick={handleSave}
+          className="gap-2 px-3 py-2"
+          disabled={!canUpdate || isSaving}
+        >
+          <Save className="h-4 w-4" />
+          {isSaving ? t("common.saving") || "Saving..." : t("common.save")}
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-6 space-y-5">
+          {/* Slug / URL */}
+          <FormField
+            label={t("articles.slug")}
             value={slug}
             onChange={(e) => setSlug(e.target.value)}
             placeholder={t("articles.slugPlaceholder")}
-            className="h-10 w-full rounded-xl border border-slate-300 outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
           />
-        </div>
 
-        {/* Cover Image */}
-        <div>
-          <Label className="mb-1.5 block text-sm font-medium ">{t("articles.coverImage")}</Label>
-          {currentCoverImage && !coverImage && (
-            <div className="mb-3">
-              <img src={currentCoverImage} alt="Current cover" className="h-32 w-auto object-cover rounded-xl border border-slate-200" />
-            </div>
-          )}
-          <Input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setCoverImage(e.target.files[0])}
-            className="h-12 w-full rounded-xl border border-slate-300 outline-none transition focus:border-(--color-primary) focus:ring-1 focus:ring-(--color-primary)"
-          />
-          <p className="mt-1 text-xs ">{t("articles.coverImage")}</p>
-        </div>
-
-        {/* Language Tabs */}
-        <div>
-          <div className="flex gap-2.5 items-center border-b border-slate-200 mb-4">
-            {tabs.map((tab) => (
-              <Button
-                key={tab.value}
-                onClick={() => setActiveTab(tab.value)}
-                variant="outline"
-                className={`px-4 py-2.5 text-sm font-medium transition ${activeTab === tab.value ? "text-(--color-secondary) bg-(--color-primary)/80" : "border-transparent"}`}
-              >
-                {t(tab.labelKey)}
-              </Button>
-            ))}
+          {/* Cover Image */}
+          <div>
+            {currentCoverImage && !coverImage && (
+              <div className="mb-3">
+                <Label className="mb-1.5 block text-sm font-medium">
+                  {t("articles.currentCoverImage") || "Current Cover Image"}
+                </Label>
+                <img
+                  src={currentCoverImage}
+                  alt="Current cover"
+                  className="h-32 w-auto object-cover rounded-xl border border-slate-200"
+                />
+              </div>
+            )}
+            <FormField
+              type="file"
+              label={t("articles.coverImage")}
+              onChange={(e) => setCoverImage(e.target.files[0])}
+              accept="image/*"
+            />
           </div>
 
-          {/* Title */}
-          <div className="mb-4">
-            <label className="mb-1.5 block text-sm font-medium ">
-              {t("articles.titleWithLocale", {
+          {/* Language Tabs */}
+          <>
+            <div className="flex items-center border-b border-slate-200 mb-4">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.value}
+                  variant="default"
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
+                    activeTab === tab.value
+                      ? "bg-(--color-primary)/70"
+                      : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
+                  }`}
+                >
+                  {t(tab.labelKey)}
+                </Button>
+              ))}
+            </div>
+
+            {/* Title */}
+            <FormField
+              label={t("articles.titleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-            </label>
-            <Input
               value={translations[activeTab]?.title || ""}
-              onChange={(e) => handleTranslationChange(activeTab, "title", e.target.value)}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "title", e.target.value)
+              }
               placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="h-10 w-full rounded-xl border border-slate-300 px-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="mb-4"
             />
-          </div>
 
-          {/* Summary */}
-          <div className="mb-4">
-            <Label className="mb-1.5 block text-sm font-medium ">
-              {t("articles.summaryWithLocale", {
-                locale: activeTab.toUpperCase(),
-              })}
-            </Label>
-            <Textarea
+            {/* Summary */}
+            <FormField
+              type="textarea"
+              label={
+                t("articles.summaryWithLocale", {
+                  locale: activeTab.toUpperCase(),
+                }) || `Summary (${activeTab.toUpperCase()})`
+              }
               value={translations[activeTab]?.summary || ""}
-              onChange={(e) => handleTranslationChange(activeTab, "summary", e.target.value)}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "summary", e.target.value)
+              }
               placeholder={t("articles.enterSummaryWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-              className="min-h-20 w-full rounded-xl border border-slate-300 p-3 text-sm  outline-none transition focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+              className="mb-4 min-h-20"
             />
-          </div>
-
-          {/* Content - Rich Text Editor */}
-          <div>
-            <Label className="mb-1.5 block text-sm font-medium ">
-              {t("articles.contentWithLocale", {
-                locale: activeTab.toUpperCase(),
-              })}
-            </Label>
-            <RichTextEditor
-              key={activeTab}
-              value={translations[activeTab]?.content || ""}
-              onChange={(value) => handleTranslationChange(activeTab, "content", value)}
-              placeholder={t("articles.writeContentWithLocale", {
-                locale: activeTab.toUpperCase(),
-              })}
-            />
-          </div>
-        </div>
-      </Card>
+          </>
+        </Card>
+        <Card className="p-6 space-y-5">
+          <Label className="mb-3 block text-sm font-medium">
+            {t("articles.contentWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+          </Label>
+          <RichTextEditor
+            key={activeTab}
+            value={translations[activeTab]?.content || ""}
+            onChange={(value) =>
+              handleTranslationChange(activeTab, "content", value)
+            }
+            className="h-full overflow-y-auto"
+            placeholder={t("articles.writeContentWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+          />
+        </Card>
+      </div>
     </section>
   );
 };
