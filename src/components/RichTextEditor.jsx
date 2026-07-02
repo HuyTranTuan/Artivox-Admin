@@ -1,11 +1,4 @@
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Image from "@tiptap/extension-image";
-import Youtube from "@tiptap/extension-youtube";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableHeader } from "@tiptap/extension-table-header";
-import { TableCell } from "@tiptap/extension-table-cell";
+import { useCallback } from "react";
 import {
   Bold,
   Italic,
@@ -23,11 +16,20 @@ import {
   Table as TableIcon,
   VideoIcon,
 } from "lucide-react";
-import { useCallback } from "react";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import Youtube from "@tiptap/extension-youtube";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { useEditor, EditorContent } from "@tiptap/react";
+import { Button } from "@/components/ui/button";
 
 const ToolbarButton = ({ onClick, active, children, title }) => (
-  <button
-    type="button"
+  <Button
+    variant="outline"
+    size="icon-sm"
     onClick={onClick}
     title={title}
     className={`flex h-8 w-8 items-center justify-center rounded-xl border transition ${
@@ -37,7 +39,7 @@ const ToolbarButton = ({ onClick, active, children, title }) => (
     }`}
   >
     {children}
-  </button>
+  </Button>
 );
 
 const Divider = () => <div className="h-6 w-px bg-slate-200" />;
@@ -64,7 +66,15 @@ const RichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          "prose prose-slate max-w-none min-h-[300px] px-4 py-4 text-sm text-slate-900 outline-none focus:outline-none",
+          // Cấu hình typography nền tảng (Thay text-sm bằng text-base cho chuẩn font bài viết)
+          "prose prose-slate prose-amber max-w-none min-h-[300px] px-6 py-6 text-base text-slate-800 outline-none focus:outline-none " +
+          // Làm đậm chỉn chu các thẻ Heading giống ảnh mẫu
+          "prose-headings:text-slate-950 prose-headings:font-bold " +
+          // Custom Blockquote thành thanh màu hổ phách, bỏ dấu ngoặc kép rườm rà
+          "prose-blockquote:before:content-none prose-blockquote:after:content-none " +
+          "prose-blockquote:border-l-4 prose-blockquote:border-amber-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-slate-600 " +
+          // Mẹo Tailwind: Tự động biến paragraph ngay sau thẻ img thành chữ chú thích ảnh (nhỏ, xám, sát hình)
+          "[&_img+p]:text-xs [&_img+p]:text-slate-500 [&_img+p]:mt-2 [&_img+p]:mb-6",
         placeholder,
       },
     },
@@ -225,7 +235,7 @@ const RichTextEditor = ({
       {/* Editor Content */}
       <EditorContent
         editor={editor}
-        className="min-h-[300px] max-h-[500px] overflow-y-auto"
+        className="min-h-[300px] max-h-[500px] overflow-auto scroll-smooth"
       />
     </div>
   );

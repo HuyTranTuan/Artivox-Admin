@@ -113,7 +113,7 @@ const CreateArticlePage = () => {
             variant="outline"
             size="icon-sm"
             onClick={handleCancel}
-            className="rounded-lg hover:bg-(--color-primary)/70"
+            className="rounded-lg hover:bg-(--color-primary)/70 p-2.5"
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
