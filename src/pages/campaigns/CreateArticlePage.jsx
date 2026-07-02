@@ -37,7 +37,10 @@ const CreateArticlePage = () => {
     if (!user?.permission) return {};
     if (typeof user.permission === "object") return user.permission;
     try {
-      const validJsonString = user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"');
+      const validJsonString = user.permission.replace(
+        /([a-zA-Z0-9_]+)(?=\s*:)/g,
+        '"$1"',
+      );
       return JSON.parse(validJsonString);
     } catch (e) {
       console.error("Failed to parse permission string", e);
@@ -57,9 +60,14 @@ const CreateArticlePage = () => {
       return;
     }
 
-    const validTranslations = [translations.vi, translations.en].filter((t) => t.title && t.title.trim() !== "");
+    const validTranslations = [translations.vi, translations.en].filter(
+      (t) => t.title && t.title.trim() !== "",
+    );
     if (validTranslations.length === 0) {
-      alert(t("articles.translationRequired") || "At least one translation with a title is required");
+      alert(
+        t("articles.translationRequired") ||
+          "At least one translation with a title is required",
+      );
       setIsSaving(false);
       return;
     }
@@ -101,88 +109,119 @@ const CreateArticlePage = () => {
     <section className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <button onClick={handleCancel} className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 transition hover:bg-slate-100">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            onClick={handleCancel}
+            className="rounded-lg hover:bg-(--color-primary)/70"
+          >
             <ArrowLeft className="h-4 w-4" />
-          </button>
-          <h2 className="font-title text-xl font-bold">{t("articles.createArticle")}</h2>
+          </Button>
+          <h2 className="font-title text-xl font-bold">
+            {t("articles.createArticle")}
+          </h2>
         </div>
-        <Button onClick={handleSave} className="gap-2 px-3 py-2" disabled={!canCreate || isSaving}>
+        <Button
+          onClick={handleSave}
+          className="gap-2 px-3 py-2"
+          disabled={!canCreate || isSaving}
+        >
           <Save className="h-4 w-4" />
           {isSaving ? t("common.saving") || "Saving..." : t("common.save")}
         </Button>
       </div>
 
-      <Card className="p-6 space-y-5">
-        {/* Slug / URL */}
-        <FormField label={t("articles.slug")} value={slug} onChange={(e) => setSlug(e.target.value)} placeholder={t("articles.slugPlaceholder")} />
-
-        {/* Cover Image */}
-        <FormField type="file" label={t("articles.coverImage")} onChange={(e) => setCoverImage(e.target.files[0])} accept="image/*" />
-
-        {/* Language Tabs */}
-        <>
-          <div className="flex items-center border-b border-slate-200 mb-4">
-            {tabs.map((tab) => (
-              <Button
-                key={tab.value}
-                variant="default"
-                onClick={() => setActiveTab(tab.value)}
-                className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
-                  activeTab === tab.value ? "bg-(--color-primary)/70" : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
-                }`}
-              >
-                {t(tab.labelKey)}
-              </Button>
-            ))}
-          </div>
-
-          {/* Title */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="p-6 space-y-5">
+          {/* Slug / URL */}
           <FormField
-            label={t("articles.titleWithLocale", {
-              locale: activeTab.toUpperCase(),
-            })}
-            value={translations[activeTab]?.title || ""}
-            onChange={(e) => handleTranslationChange(activeTab, "title", e.target.value)}
-            placeholder={t("articles.enterTitleWithLocale", {
-              locale: activeTab.toUpperCase(),
-            })}
-            className="mb-4"
+            label={t("articles.slug")}
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            placeholder={t("articles.slugPlaceholder")}
           />
 
-          {/* Summary */}
+          {/* Cover Image */}
           <FormField
-            type="textarea"
-            label={
-              t("articles.summaryWithLocale", {
-                locale: activeTab.toUpperCase(),
-              }) || `Summary (${activeTab.toUpperCase()})`
-            }
-            value={translations[activeTab]?.summary || ""}
-            onChange={(e) => handleTranslationChange(activeTab, "summary", e.target.value)}
-            placeholder={t("articles.enterSummaryWithLocale", {
-              locale: activeTab.toUpperCase(),
-            })}
-            className="mb-4 min-h-20"
+            type="file"
+            label={t("articles.coverImage")}
+            onChange={(e) => setCoverImage(e.target.files[0])}
+            accept="image/*"
           />
 
-          {/* Content - Rich Text Editor */}
-          <div>
-            <Label className="mb-1.5 block text-sm font-medium text-slate-700">
-              {t("articles.contentWithLocale", {
+          {/* Language Tabs */}
+          <>
+            <div className="flex items-center border-b border-slate-200 mb-4">
+              {tabs.map((tab) => (
+                <Button
+                  key={tab.value}
+                  variant="default"
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`px-4 py-2.5 text-sm font-medium transition border-b-2 -mb-px ${
+                    activeTab === tab.value
+                      ? "bg-(--color-primary)/70"
+                      : "border-transparent text-slate-500 dark:text-white hover:text-slate-700"
+                  }`}
+                >
+                  {t(tab.labelKey)}
+                </Button>
+              ))}
+            </div>
+
+            {/* Title */}
+            <FormField
+              label={t("articles.titleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
-            </Label>
-            <RichTextEditor
-              key={activeTab}
-              value={translations[activeTab]?.content || ""}
-              onChange={(value) => handleTranslationChange(activeTab, "content", value)}
-              placeholder={t("articles.writeContentWithLocale", {
+              value={translations[activeTab]?.title || ""}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "title", e.target.value)
+              }
+              placeholder={t("articles.enterTitleWithLocale", {
                 locale: activeTab.toUpperCase(),
               })}
+              className="mb-4"
             />
-          </div>
-        </>
-      </Card>
+
+            {/* Summary */}
+            <FormField
+              type="textarea"
+              label={
+                t("articles.summaryWithLocale", {
+                  locale: activeTab.toUpperCase(),
+                }) || `Summary (${activeTab.toUpperCase()})`
+              }
+              value={translations[activeTab]?.summary || ""}
+              onChange={(e) =>
+                handleTranslationChange(activeTab, "summary", e.target.value)
+              }
+              placeholder={t("articles.enterSummaryWithLocale", {
+                locale: activeTab.toUpperCase(),
+              })}
+              className="mb-4 min-h-20"
+            />
+
+            {/* Content - Rich Text Editor */}
+          </>
+        </Card>
+        <Card>
+          <Label className="mb-1.5 block text-sm font-medium">
+            {t("articles.contentWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+          </Label>
+          <RichTextEditor
+            key={activeTab}
+            value={translations[activeTab]?.content || ""}
+            onChange={(value) =>
+              handleTranslationChange(activeTab, "content", value)
+            }
+            placeholder={t("articles.writeContentWithLocale", {
+              locale: activeTab.toUpperCase(),
+            })}
+          />
+        </Card>
+      </div>
     </section>
   );
 };
