@@ -26,6 +26,7 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { useDebounce } from "@hooks/useDebounce";
 import { useAuthStore } from "@/store/authStore";
 import { useTranslation } from "@hooks/useTranslation";
+import { useRBAC } from "@hooks/useRBAC";
 import SummaryCard from "@/components/SummaryCard";
 
 const formatDateLabel = (value) => {
@@ -85,24 +86,7 @@ const DiscountsPage = () => {
   const { toastTopRight } = useToast();
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === "ADMIN";
-
-  const permission = useMemo(() => {
-    if (isAdmin) return { create: true, update: true, del: true };
-    try {
-      return JSON.parse(
-        (user?.permission || "{}")
-          .replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"')
-          .replace(/'/g, '"'),
-      );
-    } catch {
-      return {};
-    }
-  }, [user, isAdmin]);
-
-  const canCreate = permission.create;
-  const canUpdate = permission.update;
-  const canDelete = permission.del;
+  const { isAdmin, canCreate, canUpdate, canDelete, permissions: permission } = useRBAC();
 
   useEffect(() => {
     let mounted = true;
@@ -517,7 +501,10 @@ const DiscountsPage = () => {
                     </div>
                   </div>
                 </div>
-                <Button className="w-full mt-6" onClick={() => setOd(null)}>
+                <Button
+                  className="w-full mt-6 px-3 py-2"
+                  onClick={() => setOd(null)}
+                >
                   {t("catalog.close")}
                 </Button>
               </>
@@ -564,12 +551,12 @@ const DiscountsPage = () => {
                       <SelectTrigger>
                         <SelectValue placeholder={t("discounts.selectType")} />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-(--color-background)">
                         <SelectItem value="PERCENT">
                           {t("discounts.percentage")}
                         </SelectItem>
                         <SelectItem value="FIXED">
-                          {t("discounts.fixedAmount")}
+                          {t("discounts.fixed")}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -584,15 +571,15 @@ const DiscountsPage = () => {
                         setForm((p) => ({ ...p, isActive: v === "ACTIVE" }))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ACTIVE">
-                          {t("discounts.active")}
+                      <SelectContent className="bg-(--color-background)">
+                        <SelectItem value="ACTIVE" className="">
+                          {t("discount.active")}
                         </SelectItem>
-                        <SelectItem value="INACTIVE">
-                          {t("discounts.inactive")}
+                        <SelectItem value="INACTIVE" className="">
+                          {t("discount.inactive")}
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -616,14 +603,14 @@ const DiscountsPage = () => {
                 <div className="flex gap-3 mt-5">
                   <Button
                     variant="secondary"
-                    className="flex-1"
+                    className="flex-1 px-3 py-2"
                     onClick={() => setOd(null)}
                     disabled={saving}
                   >
                     {t("common.cancel")}
                   </Button>
                   <Button
-                    className="flex-1"
+                    className="flex-1 px-3 py-2"
                     disabled={saving}
                     onClick={async () => {
                       if (!si?.slug) return;
@@ -666,7 +653,7 @@ const DiscountsPage = () => {
                       }
                     }}
                   >
-                    {saving ? "Saving¦" : t("common.save")}
+                    {saving ? t("common.saving") : t("common.save")}
                   </Button>
                 </div>
               </>
@@ -687,7 +674,7 @@ const DiscountsPage = () => {
                     onClick={() => setOd(null)}
                     disabled={saving}
                   >
-                    {t("common.cancel")}
+                    {saving ? t("common.canceling") : t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -706,7 +693,7 @@ const DiscountsPage = () => {
                       }
                     }}
                   >
-                    {saving ? "Deleting¦" : t("common.delete")}
+                    {saving ? t("common.deleting") : t("common.delete")}
                   </Button>
                 </div>
               </>

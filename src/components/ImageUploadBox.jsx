@@ -1,5 +1,7 @@
 import { Upload } from "lucide-react";
 import { useTranslation } from "@hooks/useTranslation";
+import { Label } from "./ui/label";
+import { Button } from "./ui/button";
 
 const ImageUploadBox = ({
   label,
@@ -12,7 +14,7 @@ const ImageUploadBox = ({
   const { t } = useTranslation();
   return (
     <div>
-      <label className="text-xs font-semibold mb-1.5 block">{label}</label>
+      <Label className="text-xs font-semibold mb-1.5 block">{label}</Label>
       <div className="flex items-center gap-3">
         <div
           onClick={() => inputRef.current?.click()}
@@ -45,13 +47,13 @@ const ImageUploadBox = ({
           <p>{recommended}</p>
         </div>
         {value && (
-          <button
-            type="button"
+          <Button
+            variant="outline"
             onClick={onClear}
-            className="text-rose-500 hover:text-rose-700 text-xs font-semibold ml-auto"
+            className="text-(--color-secondary) hover:text-(--color-error) text-xs font-semibold ml-auto"
           >
             {t("catalog.remove")}
-          </button>
+          </Button>
         )}
       </div>
     </div>

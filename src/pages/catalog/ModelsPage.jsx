@@ -28,6 +28,7 @@ import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { useAuthStore } from "@store/authStore";
 import { useRBAC } from "@hooks/useRBAC";
+import { useImageUpload } from "@hooks/useImageUpload";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate, formatPrice } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
@@ -45,15 +46,13 @@ const ModelsPage = () => {
   const { toastTopRight } = useToast();
 
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
-  const permission = validJsonString ? JSON.parse(validJsonString) : {};
-  const canCreate = isAdmin || permission.create;
-  const canUpdate = isAdmin || permission.update;
-  const canDelete = isAdmin || permission.del;
+  const {
+    isAdmin,
+    canCreate,
+    canUpdate,
+    canDelete,
+    permissions: permission,
+  } = useRBAC();
 
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -73,7 +72,15 @@ const ModelsPage = () => {
   });
   const [thumbnailBefore, setThumbnailBefore] = useState(null);
   const [thumbnailAfter, setThumbnailAfter] = useState(null);
-  const [formGalleryImages, setFormGalleryImages] = useState([]);
+  const {
+    formGalleryImages,
+    setFormGalleryImages,
+    removedGalleryImageIds,
+    handleGalleryAdd,
+    removeGalleryImage,
+    resetGallery,
+    appendGalleryToFormData,
+  } = useImageUpload();
 
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState([]);
@@ -250,6 +257,7 @@ const ModelsPage = () => {
         ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
         : null,
     );
+    resetGallery();
     setFormGalleryImages(
       gallery.map((img) => ({
         preview: img.url,
@@ -320,11 +328,7 @@ const ModelsPage = () => {
             `thumbnail_after.${ext}`,
           );
         }
-        formGalleryImages.forEach((img) => {
-          if (img.file) {
-            formData.append("gallery", img.file);
-          }
-        });
+        appendGalleryToFormData(formData);
 
         if (sourceFile)
           formData.append("source_file", sourceFile, sourceFile.name);
@@ -366,22 +370,6 @@ const ModelsPage = () => {
     }
     setSourceFile(file);
     e.target.value = "";
-  };
-
-  const handleGalleryAdd = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      isExisting: false,
-    }));
-    setFormGalleryImages((prev) => [...prev, ...newImages]);
-    e.target.value = "";
-  };
-
-  const removeGalleryImage = (idx) => {
-    setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleRowClick = (slug) => {
@@ -848,18 +836,18 @@ const ModelsPage = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className=" rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className="bg-(--color-surface) rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
-            <h2 className="font-title text-xl font-bold dark:mb-4">
+            <h2 className="font-title text-xl font-bold mb-4">
               {t("common.delete")}
             </h2>
-            <p className="text-sm dark:mb-4">
+            <p className="text-sm mb-4">
               {t("catalog.deleteConfirm", { name: selectedItem.name })}
             </p>
             <div className="flex gap-3">
               <Button
-                variant="secondary"
-                className="flex-1 cursor-pointer"
+                variant="outline"
+                className="flex-1 px-3 py-2"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -867,7 +855,7 @@ const ModelsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1 cursor-pointer"
+                className="flex-1 px-3 py-2"
                 onClick={handleDelete}
                 disabled={deleting}
               >

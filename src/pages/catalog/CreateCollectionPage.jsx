@@ -143,16 +143,18 @@ const CreateCollectionPage = () => {
               ? t("catalog.editCollection")
               : t("catalog.addNewCollection")}
           </h2>
-          <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="gap-2 p-2"
+          >
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <Save className="h-4 w-4" />
             )}
             {isEditMode ? (
-              <span className="lg:block hidden">
-                {t("common.saveChanges")}
-              </span>
+              <span className="lg:block hidden">{t("common.saveChanges")}</span>
             ) : (
               <span className="lg:block hidden">{t("common.create")}</span>
             )}
@@ -205,14 +207,32 @@ const CreateCollectionPage = () => {
             }
             className="h-13 w-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none placeholder:text-slate-500"
           >
-            <option value="active">{t("catalog.active")}</option>
-            <option value="inactive">{t("catalog.inactive")}</option>
+            <option
+              value="active"
+              className={
+                form.isActive
+                  ? "bg-(--color-primary) text-(--color-background)"
+                  : ""
+              }
+            >
+              {t("catalog.active")}
+            </option>
+            <option
+              value="inactive"
+              className={
+                form.isActive
+                  ? "bg-(--color-primary) text-(--color-background)"
+                  : ""
+              }
+            >
+              {t("catalog.inactive")}
+            </option>
           </select>
         </div>
       </Card>
 
       <Card className="p-6 space-y-5">
-        <h3 className="font-title text-lg font-semibold text-slate-900 border-b border-slate-200 pb-3">
+        <h3 className="font-title text-lg font-semibold border-b border-slate-200 pb-3">
           {t("catalog.collectionImage")}
         </h3>
 

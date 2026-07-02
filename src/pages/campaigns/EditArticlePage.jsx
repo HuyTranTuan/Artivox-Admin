@@ -21,31 +21,30 @@ const tabs = [
 const EditArticlePage = () => {
   const { slug: articleSlug } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("vi");
-
-  const [slug, setSlug] = useState("");
-  const [coverImage, setCoverImage] = useState(null);
-  const [currentCoverImage, setCurrentCoverImage] = useState("");
-
-  const [translations, setTranslations] = useState({
-    vi: { title: "", summary: "", content: "", locale: "vi" },
-    en: { title: "", summary: "", content: "", locale: "en" },
-  });
-
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { toastTopRight } = useToast();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [slug, setSlug] = useState("");
+  const [coverImage, setCoverImage] = useState(null);
+  const [currentCoverImage, setCurrentCoverImage] = useState("");
+  const [activeTab, setActiveTab] = useState("vi");
+  const [translations, setTranslations] = useState({
+    vi: { title: "", summary: "", content: "", locale: "vi" },
+    en: { title: "", summary: "", content: "", locale: "en" },
+  });
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "MANAGER";
   const permission = useMemo(() => {
     if (!user?.permission) return {};
     if (typeof user.permission === "object") return user.permission;
     try {
-      const validJsonString = user.permission.replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"');
+      const validJsonString = user.permission.replace(
+        /([a-zA-Z0-9_]+)(?=\s*:)/g,
+        '"$1"',
+      );
       return JSON.parse(validJsonString);
     } catch (e) {
       console.error("Failed to parse permission string", e);
@@ -96,20 +95,26 @@ const EditArticlePage = () => {
 
   const handleSave = async () => {
     if (!canUpdate) return;
-    setError("");
+    setIsSaving(true);
 
     if (!slug.trim()) {
-      setError(t("articles.slugRequired"));
+      alert(t("articles.slugRequired") || "Slug is required");
+      setIsSaving(false);
       return;
     }
 
-    const validTranslations = [translations.vi, translations.en].filter((t) => t.title && t.title.trim() !== "");
+    const validTranslations = [translations.vi, translations.en].filter(
+      (t) => t.title && t.title.trim() !== "",
+    );
     if (validTranslations.length === 0) {
-      setError(t("articles.translationRequired"));
+      alert(
+        t("articles.translationRequired") ||
+          "At least one translation with a title is required",
+      );
+      setIsSaving(false);
       return;
     }
 
-    setIsSaving(true);
     try {
       const formData = new FormData();
       formData.append("slug", slug);
@@ -123,6 +128,7 @@ const EditArticlePage = () => {
       toastTopRight("success", t("articles.updateSuccess") || "Article updated successfully");
       navigate("/articles");
     } catch (err) {
+      console.error("Failed to update article", err);
       toastTopRight("error", t("articles.updateError"));
     } finally {
       setIsSaving(false);
@@ -144,12 +150,6 @@ const EditArticlePage = () => {
 
   return (
     <section className="space-y-6">
-      {error && (
-        <div className="p-4 rounded-xl bg-red-50 text-red-600 text-sm">
-          {error}
-        </div>
-      )}
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button

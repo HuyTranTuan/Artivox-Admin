@@ -85,6 +85,6 @@ const del = async (path, config) => {
   return result?.data || result;
 };
 
-const http = { get, post, put, patch, del };
+const http = { get, post, put, patch, del, delete: del };
 
 export default http;

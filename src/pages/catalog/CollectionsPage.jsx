@@ -27,21 +27,13 @@ const CollectionsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { toastTopRight } = useToast();
-  const { user } = useAuthStore();
-
-  const isAdmin = user?.role === "ADMIN";
-  const permission = (() => {
-    try {
-      return JSON.parse(
-        (user?.permission || "{}").replace(/([a-zA-Z0-9_]+)(?=\s*:)/g, '"$1"'),
-      );
-    } catch {
-      return {};
-    }
-  })();
-  const canCreate = isAdmin || permission.create;
-  const canUpdate = isAdmin || permission.update;
-  const canDelete = isAdmin || permission.del;
+  const {
+    isAdmin,
+    canCreate,
+    canUpdate,
+    canDelete,
+    permissions: permission,
+  } = useRBAC();
 
   const [activeFilters, setActiveFilters] = useState({ status: null });
   const [openDialog, setOpenDialog] = useState(null);
@@ -362,10 +354,10 @@ const CollectionsPage = () => {
       </Card>
 
       {openDialog === "delete" && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-(--color-background)/40 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4 bg-(--color-background)"
           >
             <h2 className="font-title text-xl font-bold mb-3">
               {t("catalog.confirmDelete")}
@@ -376,7 +368,7 @@ const CollectionsPage = () => {
             <div className="flex gap-3">
               <Button
                 variant="secondary"
-                className="flex-1"
+                className="flex-1 px-3 py-2"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -384,7 +376,7 @@ const CollectionsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 px-3 py-2"
                 onClick={handleDelete}
                 disabled={deleting}
               >

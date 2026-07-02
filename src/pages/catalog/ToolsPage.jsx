@@ -28,6 +28,7 @@ import { useRBAC } from "@hooks/useRBAC";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
 import { formatDate, formatPrice } from "@utils/formatUtils";
 import ImageUploadBox from "@components/ImageUploadBox";
+import { useImageUpload } from "@hooks/useImageUpload";
 import {
   DataTable,
   TableToolbar,
@@ -42,15 +43,13 @@ const ToolsPage = () => {
   const { toastTopRight } = useToast();
   const { user } = useAuthStore();
 
-  const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
-  const permission = validJsonString ? JSON.parse(validJsonString) : {};
-  const canCreate = isAdmin || permission.create;
-  const canUpdate = isAdmin || permission.update;
-  const canDelete = isAdmin || permission.del;
+  const {
+    isAdmin,
+    canCreate,
+    canUpdate,
+    canDelete,
+    permissions: permission,
+  } = useRBAC();
   const [filterOpen, setFilterOpen] = useState(false);
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -66,7 +65,14 @@ const ToolsPage = () => {
     collectionId: "",
   });
   const [saving, setSaving] = useState(false);
-  const [formGalleryImages, setFormGalleryImages] = useState([]);
+  const {
+    formGalleryImages,
+    handleImageChange,
+    handleGalleryAdd,
+    removeGalleryImage,
+    resetGallery,
+    appendGalleryToFormData,
+  } = useImageUpload();
   const [thumbnailBefore, setThumbnailBefore] = useState(null);
   const [thumbnailAfter, setThumbnailAfter] = useState(null);
   const thumbnailBeforeRef = useRef(null);
@@ -125,6 +131,7 @@ const ToolsPage = () => {
   }, [debouncedSearch, selectedFilters.status]);
 
   const openGallery = (images, index = 0) => {
+    console.log("images in openGallery", images);
     setGalleryImages(images || []);
     setGalleryIndex(index);
     setGalleryOpen(true);
@@ -156,10 +163,11 @@ const ToolsPage = () => {
       sortable: false,
       render: (item) => (
         <ThumbnailPreview
-          images={item.images}
+          images={item?.images}
           onClick={(e) => {
+            console.log("item", item);
             e.stopPropagation();
-            openGallery(item.images);
+            openGallery(item?.images);
           }}
         />
       ),
@@ -245,15 +253,7 @@ const ToolsPage = () => {
         ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
         : null,
     );
-    setFormGalleryImages(
-      gallery.map((img) => ({
-        preview: img.url,
-        id: img.id,
-        isExisting: true,
-        alt: img.altText || "Gallery Image",
-        file: null,
-      })),
-    );
+    resetGallery(gallery);
   };
 
   const [deleting, setDeleting] = useState(false);
@@ -313,11 +313,7 @@ const ToolsPage = () => {
           );
         }
 
-        formGalleryImages.forEach((img) => {
-          if (img.file) {
-            formData.append("gallery", img.file);
-          }
-        });
+        appendGalleryToFormData(formData);
 
         await toolsService.updateTool(selectedItem.slug, formData);
         toastTopRight(
@@ -334,29 +330,6 @@ const ToolsPage = () => {
         setSaving(false);
       }
     }
-  };
-
-  const handleImageChange = (setter) => (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setter({ file, preview: URL.createObjectURL(file), isExisting: false });
-    e.target.value = "";
-  };
-
-  const handleGalleryAdd = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      isExisting: false,
-    }));
-    setFormGalleryImages((prev) => [...prev, ...newImages]);
-    e.target.value = "";
-  };
-
-  const removeGalleryImage = (idx) => {
-    setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
   };
 
   const handleRowClick = (slug) => {
@@ -534,7 +507,7 @@ const ToolsPage = () => {
                       <Button
                         variant="outline"
                         size="icon"
-                        className="rounded-full cursor-pointer text-red-500"
+                        className="rounded-full text-(--color-secondary) hover:text-(--color-error)"
                         onClick={() => removeGalleryImage(idx)}
                       >
                         <X className="h-4 w-4" />
@@ -552,10 +525,9 @@ const ToolsPage = () => {
                 onChange={handleGalleryAdd}
               />
               <Button
-                type="button"
                 variant="outline"
                 size="sm"
-                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300 cursor-pointer"
+                className="mt-2 px-3 py-2 gap-1.5 text-xs w-full border border-dashed border-slate-300 hover:bg-(--color-secondary)/50"
                 onClick={() => galleryInputRef.current?.click()}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -582,14 +554,14 @@ const ToolsPage = () => {
         <div className="flex gap-3 pt-4 border-t border-slate-100">
           <Button
             variant="destructive"
-            className="flex-1 cursor-pointer"
+            className="flex-1 px-3 py-2"
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
             {t("common.cancel")}
           </Button>
           <Button
-            className="flex-1 gap-2 cursor-pointer"
+            className="flex-1 px-3 py-2"
             onClick={handleSubmit}
             disabled={saving}
             variant="primary"
@@ -667,12 +639,12 @@ const ToolsPage = () => {
               <div className="col-span-full flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-(--color-primary)" />
               </div>
-            ) : dt.paginated.length === 0 ? (
+            ) : dt.paginated?.length === 0 ? (
               <div className="col-span-full text-center py-8 text-sm ">
                 {t("catalog.noTools")}
               </div>
             ) : (
-              dt.paginated.map((item) => (
+              dt.paginated?.map((item) => (
                 <div
                   key={item.id}
                   className="border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition group cursor-pointer"
@@ -743,10 +715,10 @@ const ToolsPage = () => {
       {(openDialog === "create" || openDialog === "edit") && renderFormModal()}
 
       {openDialog === "delete" && selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-(--color-background)/40 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4 bg-(--color-background)"
           >
             <h2 className="font-title text-xl font-bold  mb-4">
               {t("common.delete")}
@@ -757,7 +729,7 @@ const ToolsPage = () => {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                className="flex-1 cursor-pointer"
+                className="flex-1 px-3 py-2"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -765,7 +737,7 @@ const ToolsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1 cursor-pointer"
+                className="flex-1 px-3 py-2"
                 onClick={handleDelete}
                 disabled={deleting}
               >

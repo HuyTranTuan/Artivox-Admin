@@ -11,9 +11,10 @@ const ThumbnailPreview = ({ images, onClick }) => {
       </div>
     );
   }
-  const firstImg = images[0];
+  const firstImg =
+    images.find((img) => img.role === "THUMBNAIL_BEFORE") || images[0];
   const imgSrc =
-    typeof firstImg === "string" ? firstImg : firstImg?.thumb || firstImg?.url;
+    typeof firstImg === "string" ? firstImg : firstImg?.url || firstImg?.thumb;
   return (
     <div className="relative group" onClick={onClick}>
       <img
@@ -21,7 +22,7 @@ const ThumbnailPreview = ({ images, onClick }) => {
         alt="thumbnail"
         className="h-16 w-16 rounded-xl object-cover cursor-pointer border border-slate-200 hover:border-amber-300 transition hover:shadow-md"
         onError={(e) => {
-          e.target.style.display = "none";
+          e.target.src = "https://placehold.co/64x64/D9D9D9/312E2E/png";
         }}
       />
       {images.length > 1 && (

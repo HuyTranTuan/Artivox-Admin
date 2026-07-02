@@ -7,50 +7,42 @@ import {
   Trash2,
   X,
   Plus,
-  ImageIcon,
   Loader2,
   GripVertical,
+  ImageIcon,
 } from "lucide-react";
 
-import { Card } from "@components/ui/card";
-import { Badge } from "@components/ui/badge";
 import { Button } from "@components/ui/button";
 import { FormField } from "@components/forms/FormField";
 import { useClickOutsideClose } from "@hooks/useClickOutsideClose";
 import ImageUploadBox from "@components/ImageUploadBox";
+import { useImageUpload } from "@hooks/useImageUpload";
 import { useDebounce } from "@hooks/useDebounce";
 import { useExpandableSearch } from "@hooks/useExpandableSearch";
 import { usePaginatedApi } from "@hooks/usePaginatedApi";
 import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
-import { useAuthStore } from "@store/authStore";
 import useToast from "@hooks/useToast";
-import ImageGalleryModal from "@/components/ImageGalleryModal";
+import { useRBAC } from "@hooks/useRBAC";
 import { formatDate, formatPrice } from "@utils/formatUtils";
 import {
   DataTable,
-  TableToolbar,
   TablePagination,
+  TableToolbar,
   useDataTable,
 } from "@components/DataTable";
-import { Input } from "@/components/ui/input";
-import ThumbnailPreview from "@/components/ThumbnailPreview";
+import { Input } from "@components/ui/input";
+import { Label } from "@components/ui/label";
+import ThumbnailPreview from "@components/ThumbnailPreview";
+import { Card } from "@components/ui/card";
+import ImageGalleryModal from "@components/ImageGalleryModal";
+import { Badge } from "@components/ui/badge";
 
 const MaterialsPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user } = useAuthStore();
   const { toastTopRight } = useToast();
-
-  const isAdmin = user?.role === "ADMIN";
-  const validJsonString = user?.permission?.replace(
-    /([a-zA-Z0-9_]+)(?=\s*:)/g,
-    '"$1"',
-  );
-  const permission = validJsonString ? JSON.parse(validJsonString) : {};
-  const canCreate = isAdmin || permission.create;
-  const canUpdate = isAdmin || permission.update;
-  const canDelete = isAdmin || permission.del;
+  const { isAdmin, canCreate, canUpdate, canDelete } = useRBAC();
 
   const [openDialog, setOpenDialog] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -58,6 +50,7 @@ const MaterialsPage = () => {
     type: null,
     status: null,
   });
+  const [galleryOpen, setGalleryOpen] = useState(false);
 
   const search = useExpandableSearch();
   const debouncedSearch = useDebounce(search.value, 300);
@@ -70,8 +63,6 @@ const MaterialsPage = () => {
     totalPages,
     totalItems: total,
     setPage,
-    nextPage,
-    prevPage,
     refetch,
   } = usePaginatedApi(
     (params) =>
@@ -105,17 +96,25 @@ const MaterialsPage = () => {
     basePrice: "0",
     collectionId: "",
   });
-  const galleryInputRef = useRef(null);
-  const thumbnailAfterRef = useRef(null);
-  const thumbnailBeforeRef = useRef(null);
-  const [saving, setSaving] = useState(false);
-  const [galleryOpen, setGalleryOpen] = useState(false);
-  const [collections, setCollections] = useState([]);
-  const [galleryIndex, setGalleryIndex] = useState(0);
-  const [galleryImages, setGalleryImages] = useState([]);
+
+  const {
+    formGalleryImages,
+    handleGalleryAdd,
+    removeGalleryImage,
+    resetGallery,
+    appendGalleryToFormData,
+  } = useImageUpload();
+
   const [thumbnailAfter, setThumbnailAfter] = useState(null);
   const [thumbnailBefore, setThumbnailBefore] = useState(null);
-  const [formGalleryImages, setFormGalleryImages] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const [saving, setSaving] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryIndex, setGalleryIndex] = useState(0);
+
+  const thumbnailBeforeRef = useRef(null);
+  const thumbnailAfterRef = useRef(null);
+  const galleryInputRef = useRef(null);
 
   useEffect(() => {
     collectionService
@@ -127,7 +126,6 @@ const MaterialsPage = () => {
   }, []);
 
   const dialogRef = useClickOutsideClose(() => setOpenDialog(null));
-  const filterRef = useClickOutsideClose(() => setFilterOpen(false));
 
   useEffect(() => {
     setPage(1);
@@ -259,15 +257,14 @@ const MaterialsPage = () => {
         ? { preview: thumbAfter.url, id: thumbAfter.id, isExisting: true }
         : null,
     );
-    setFormGalleryImages(
-      gallery.map((img) => ({
-        preview: img.url,
-        id: img.id,
-        isExisting: true,
-        alt: img.altText || "Gallery Image",
-        file: null,
-      })),
-    );
+    resetGallery(gallery);
+  };
+
+  const handleImageChange = (setter) => (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setter({ file, preview: URL.createObjectURL(file), isExisting: false });
+    e.target.value = "";
   };
 
   const [deleting, setDeleting] = useState(false);
@@ -329,11 +326,7 @@ const MaterialsPage = () => {
           );
         }
 
-        formGalleryImages.forEach((img) => {
-          if (img.file) {
-            formData.append("gallery", img.file);
-          }
-        });
+        appendGalleryToFormData(formData);
 
         await materialsService.updateMaterial(selectedItem.slug, formData);
         toastTopRight(
@@ -352,69 +345,49 @@ const MaterialsPage = () => {
     }
   };
 
-  const handleImageChange = (setter) => (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setter({ file, preview: URL.createObjectURL(file), isExisting: false });
-    e.target.value = "";
-  };
-
-  const handleGalleryAdd = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-    const newImages = files.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      isExisting: false,
-    }));
-    setFormGalleryImages((prev) => [...prev, ...newImages]);
-    e.target.value = "";
-  };
-
-  const removeGalleryImage = (idx) => {
-    setFormGalleryImages((prev) => prev.filter((_, i) => i !== idx));
-  };
-
   const handleRowClick = (slug) => {
     navigate(`/catalog/materials/${slug}`);
   };
 
   const renderActionButtons = (item) => (
     <div className="flex gap-1.5">
-      <button
+      <Button
         onClick={(e) => {
           e.stopPropagation();
           handleRowClick(item.slug);
         }}
+        variant="outline"
+        size="sm"
         className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
-        style={{ padding: 5 }}
       >
         <Eye style={{ width: 18, height: 18 }} />
-      </button>
+      </Button>
       {canUpdate && (
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             handleEdit(item);
           }}
+          variant="outline"
+          size="sm"
           className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
-          style={{ padding: 5 }}
         >
           <Edit style={{ width: 18, height: 18 }} />
-        </button>
+        </Button>
       )}
       {canDelete && (
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             setSelectedItem(item);
             setOpenDialog("delete");
           }}
+          variant="outline"
+          size="sm"
           className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
-          style={{ padding: 5 }}
         >
           <Trash2 style={{ width: 18, height: 18 }} />
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -446,7 +419,7 @@ const MaterialsPage = () => {
               value={form.slug}
               readOnly
               placeholder={t("catalog.slug")}
-              className="bg-slate-50 cursor-not-allowed border-slate-200"
+              className="cursor-not-allowed"
             />
             <FormField
               label={t("catalog.description")}
@@ -524,9 +497,9 @@ const MaterialsPage = () => {
               t={t}
             />
             <div>
-              <label className="text-xs font-semibold mb-1.5 block">
+              <Label className="text-xs font-semibold mb-1.5 block">
                 {t("catalog.gallery")} ({formGalleryImages.length})
-              </label>
+              </Label>
               <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-xl p-2">
                 {formGalleryImages.length === 0 ? (
                   <div className="text-center py-4 text-xs text-slate-400">
@@ -548,9 +521,9 @@ const MaterialsPage = () => {
                         {img.file?.name || img.alt || `Image ${idx + 1}`}
                       </span>
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         onClick={() => removeGalleryImage(idx)}
-                        className=" shrink-0 cursor-pointer"
+                        className="p-2 text-(--color-secondary) hover:text-(--color-error) "
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -569,7 +542,7 @@ const MaterialsPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-2 gap-1.5 text-xs w-full border border-dashed border-slate-300 cursor-pointer"
+                className="mt-2 px-3 py-2 gap-1.5 text-xs w-full border border-dashed border-slate-300 cursor-pointer"
                 onClick={() => galleryInputRef.current?.click()}
               >
                 <Plus className="h-3.5 w-3.5" />
@@ -589,9 +562,9 @@ const MaterialsPage = () => {
                 placeholder={t("plaAbs")}
               />
               <div>
-                <label className="text-xs font-semibold">
+                <Label className="text-xs font-semibold">
                   {t("catalog.color")}
-                </label>
+                </Label>
                 <div className="flex gap-2 h-10 mt-[2px]">
                   <Input
                     type="color"
@@ -599,16 +572,7 @@ const MaterialsPage = () => {
                     onChange={(e) =>
                       setForm({ ...form, color: e.target.value })
                     }
-                    className="h-10 w-12 cursor-pointer border border-slate-200 rounded shrink-0"
-                  />
-                  <Input
-                    type="text"
-                    value={form.color}
-                    onChange={(e) =>
-                      setForm({ ...form, color: e.target.value })
-                    }
-                    placeholder={t("catalog.color")}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-12 w-12 cursor-pointer border border-slate-200 rounded shrink-0"
                   />
                 </div>
               </div>
@@ -625,14 +589,14 @@ const MaterialsPage = () => {
         <div className="flex gap-3 pt-4 border-t border-slate-100">
           <Button
             variant="destructive"
-            className="flex-1 cursor-pointer"
+            className="flex-1 px-3 py-2"
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
             {t("common.cancel")}
           </Button>
           <Button
-            className="flex-1 gap-2 cursor-pointer"
+            className="flex-1 px-3 py-2"
             onClick={handleSubmit}
             disabled={saving}
           >
@@ -811,10 +775,10 @@ const MaterialsPage = () => {
         ? renderFormModal()
         : null}
       {openDialog === "delete" && selectedItem && (
-        <div className="fixed inset-0 bg-(--color-background) z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-(--color-background)/50 z-50 flex items-center justify-center">
           <div
             ref={dialogRef}
-            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
+            className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4 bg-(--color-background)"
           >
             <h2 className="font-title text-xl font-bold  mb-4">
               {t("common.delete")}
@@ -824,8 +788,8 @@ const MaterialsPage = () => {
             </p>
             <div className="flex gap-3">
               <Button
-                variant="destructive"
-                className="flex-1 cursor-pointer"
+                variant="outline"
+                className="flex-1 px-3 py-2"
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
@@ -833,7 +797,7 @@ const MaterialsPage = () => {
               </Button>
               <Button
                 variant="destructive"
-                className="flex-1 cursor-pointer"
+                className="flex-1 px-3 py-2"
                 onClick={handleDelete}
                 disabled={deleting}
               >
