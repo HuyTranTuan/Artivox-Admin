@@ -119,7 +119,7 @@ const CreateDiscountPage = () => {
         </div>
         <Button onClick={handleSave} disabled={loading} className="gap-2">
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {isEditMode ? "Save Changes" : t("articles.save")}
+          {isEditMode ? "Save Changes" : t("common.save")}
         </Button>
       </div>
 
@@ -199,7 +199,7 @@ const CreateDiscountPage = () => {
 
         {/* Status */}
         <div>
-          <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("articles.status")}</Label>
+          <Label className="mb-1.5 block text-sm font-medium text-slate-700">{t("common.status")}</Label>
           <select
             value={form.isActive ? "active" : "inactive"}
             onChange={(e) => handleChange("isActive", e.target.value === "active")}

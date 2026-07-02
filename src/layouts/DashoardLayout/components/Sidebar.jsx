@@ -48,7 +48,7 @@ const adminNavItems = [
     icon: ClipboardCheck,
   },
   { to: "/customers", labelKey: "nav.customers", icon: Users },
-  { to: "/staff-permissions", labelKey: "Staff Permissions", icon: Shield },
+  { to: "/staff-permissions", labelKey: "nav.staffPermissions", icon: Shield },
   // { to: "/support/chat", labelKey: "nav.supportChat", icon: MessageCircleMore },
   // { to: "/support/admin-chat", labelKey: "nav.adminChat", icon: MessageCircleMore },
   { to: "/support/ai-chat", labelKey: "nav.aiChat", icon: Bot },

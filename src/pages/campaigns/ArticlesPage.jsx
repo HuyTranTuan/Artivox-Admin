@@ -122,7 +122,8 @@ const ArticlesPage = () => {
   });
 
   const handleDelete = async (slug) => {
-    if (!window.confirm("Delete this article?")) return;
+    if (!window.confirm(t("articles.confirmDelete", "Delete this article?")))
+      return;
     try {
       await articleService.deleteArticle(slug);
       toastTopRight("success", t("articles.deleteSuccess"));
@@ -134,7 +135,8 @@ const ArticlesPage = () => {
   };
 
   const handleApprove = async (id) => {
-    if (!window.confirm("Publish this article?")) return;
+    if (!window.confirm(t("articles.confirmPublish", "Publish this article?")))
+      return;
     try {
       await articleService.approveArticle(id);
       toastTopRight("success", t("articles.approveSuccess"));
@@ -175,11 +177,11 @@ const ArticlesPage = () => {
     {
       key: "title",
       label: t("articles.titleLabel"),
-      width: "2fr",
+      width: "3fr",
       render: (row) => (
-        <div>
+        <div className="">
           <div
-            className="font-semibold cursor-pointer text-(--color-secondary) hover:text-(--color-primary)/90 transition-colors"
+            className="font-semibold cursor-pointer text-(--color-secondary) hover:text-(--color-primary)/90 transition-colors line-clamp-1 text-ellipsis"
             onClick={() => navigate(`/articles/${row.slug}`)}
           >
             {row.title}
@@ -192,11 +194,18 @@ const ArticlesPage = () => {
       ),
     },
     { key: "locale", label: t("articles.locale") },
-    { key: "author", label: t("articles.author") },
+    {
+      key: "author",
+      label: t("articles.author"),
+      width: "2fr",
+      render: (row) => (
+        <div className="line-clamp-1 text-ellipsis">{row.author}</div>
+      ),
+    },
     {
       key: "status",
-      label: t("articles.status"),
-      render: (row) => <Badge>{row.status}</Badge>,
+      label: t("common.status"),
+      render: (row) => <Badge>{t(`status.${row.status}`, row.status)}</Badge>,
     },
     {
       key: "publishedAt",
@@ -205,14 +214,14 @@ const ArticlesPage = () => {
     },
     {
       key: "actions",
-      label: t("articles.actions"),
+      label: t("common.actions"),
       sortable: false,
-      width: "120px",
+      width: "150px",
       render: (row) => (
         <div className="flex gap-1.5">
           <Button
             variant="outline"
-            className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+            className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
             onClick={() => navigate(`/articles/${row.slug}`)}
           >
             <Eye className="h-5 w-5" />
@@ -220,7 +229,7 @@ const ArticlesPage = () => {
           {canUpdate && (
             <Button
               variant="outline"
-              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+              className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
               onClick={() => navigate(`/articles/${row.slug}/edit`)}
             >
               <Pencil className="h-5 w-5" />
@@ -229,7 +238,7 @@ const ArticlesPage = () => {
           {isAdmin && !row.publishedAt && (
             <Button
               variant="outline"
-              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
+              className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-indigo-600 hover:bg-indigo-50 transition"
               onClick={() => handleApprove(row.id)}
             >
               <CheckCircle className="h-5 w-5" />
@@ -238,7 +247,7 @@ const ArticlesPage = () => {
           {canDelete && (
             <Button
               variant="outline"
-              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+              className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
               onClick={() => handleDelete(row.slug)}
             >
               <Trash2 className="h-5 w-5" />
@@ -269,12 +278,16 @@ const ArticlesPage = () => {
           onRefresh={loadArticles}
           onExportCsv={dt.handleExport}
           search={search}
-          searchPlaceholder="Search articles..."
+          searchPlaceholder={t(
+            "articles.searchPlaceholder",
+            "Search articles...",
+          )}
           filterOptions={[
             {
               key: "status",
-              label: "Status",
+              label: t("common.status", "Status"),
               values: ["Published", "Draft", "Deleted"],
+              valuePrefix: "status.",
             },
           ]}
           activeFilters={{}}

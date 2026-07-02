@@ -108,7 +108,7 @@ const CreateArticlePage = () => {
         </div>
         <Button onClick={handleSave} className="gap-2 px-3 py-2" disabled={!canCreate || isSaving}>
           <Save className="h-4 w-4" />
-          {isSaving ? t("common.saving") || "Saving..." : t("articles.save")}
+          {isSaving ? t("common.saving") || "Saving..." : t("common.save")}
         </Button>
       </div>
 

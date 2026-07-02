@@ -190,7 +190,7 @@ export const NotificationDetailPage = () => {
           </div>
           <div>
             <div className="text-xs  uppercase tracking-wider mb-1">
-              {t("catalog.type")}
+              {t("common.type")}
             </div>
             <div className="text-sm font-medium  capitalize">
               {notification.type}
@@ -247,7 +247,7 @@ export const NotificationDetailPage = () => {
             className="gap-2 px-2 py-1.5"
           >
             <Trash2 className="h-4 w-4" />
-            {t("catalog.delete")}
+            {t("common.delete")}
           </Button>
         </div>
       </Card>

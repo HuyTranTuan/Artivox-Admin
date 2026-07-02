@@ -152,7 +152,7 @@ const CustomerDetailPage = () => {
               <div>{t("orders.date")}</div>
               <div>{t("items")}</div>
               <div>{t("total")}</div>
-              <div>{t("articles.status")}</div>
+              <div>{t("common.status")}</div>
             </div>
             {orders.map((o) => (
               <div

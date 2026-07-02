@@ -174,7 +174,7 @@ const CustomersPage = () => {
     return (
       <Button
         variant="link"
-        className="w-full text-left transition truncate"
+        className="w-max! text-left transition truncate"
         onDoubleClick={() => startEditing(customer, field)}
       >
         {customer[field] || ""}
@@ -185,7 +185,7 @@ const CustomersPage = () => {
   const columns = [
     {
       key: "name",
-      label: t("customers.columns.name"),
+      label: t("common.name"),
       width: "2fr",
       render: (r) => (
         <div className="font-semibold truncate text-left">
@@ -220,12 +220,12 @@ const CustomersPage = () => {
     },
     {
       key: "status",
-      label: t("customers.columns.status"),
+      label: t("common.status"),
       render: (r) => (
         <span
           className={`text-xs font-medium ${r.verifiedAt ? "text-emerald-600" : ""}`}
         >
-          {r.verifiedAt ? "Verified" : "Not verified"}
+          {r.verifiedAt ? t("common.verified") : t("common.notVerified")}
         </span>
       ),
     },
@@ -243,7 +243,7 @@ const CustomersPage = () => {
 
         return (
           <div>
-            <div className="text-sm font-medium">{tierName}</div>
+            <div className="text-sm font-medium">{t(`tier.${tierName}`)}</div>
             <div className="text-[10px] text-slate-400">
               {fmt(spent)} ({r.orderCount || r.totalOrders || 0} orders)
             </div>
@@ -253,9 +253,9 @@ const CustomersPage = () => {
     },
     {
       key: "actions",
-      label: t("customers.columns.actions"),
+      label: t("common.actions"),
       sortable: false,
-      width: "120px",
+      width: "150px",
       render: (row) => (
         <div className="flex gap-1.5">
           {editingRowId === row.id ? (
@@ -280,14 +280,14 @@ const CustomersPage = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/customers/${row.id}`)}
-                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 transition cursor-pointer"
+                className="h-8! w-8! p-2! flex items-center justify-center rounded-xl border border-slate-200 text-blue-600 transition cursor-pointer"
               >
                 <Eye className="h-4 w-4" />
               </Button>
               <Button
                 variant="outline"
                 onClick={() => startEditing(row, "fullName")}
-                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 transition cursor-pointer"
+                className="h-8! w-8! p-2! flex items-center justify-center rounded-xl border border-slate-200 text-emerald-600 transition cursor-pointer"
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -297,7 +297,7 @@ const CustomersPage = () => {
                   setSelectedCustomer(row);
                   setOpenDialog("delete");
                 }}
-                className="h-8! w-8! flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 transition cursor-pointer"
+                className="h-8! w-8! p-2! flex items-center justify-center rounded-xl border border-slate-200 text-rose-600 transition cursor-pointer"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -375,14 +375,14 @@ const CustomersPage = () => {
                 className="flex-1 cursor-pointer"
                 onClick={() => setOpenDialog(null)}
               >
-                {t("customers.deleteDialog.cancel")}
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="destructive"
                 className="flex-1 cursor-pointer"
                 onClick={deleteCustomer}
               >
-                {t("customers.deleteDialog.delete")}
+                {t("common.delete")}
               </Button>
             </div>
           </div>

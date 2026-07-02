@@ -161,17 +161,17 @@ const MaterialDetailPage = () => {
           </div>
           <div className="space-y-4">
             <div>
-              <div className="text-xs  uppercase">{t("catalog.name")}</div>
+              <div className="text-xs  uppercase">{t("common.name")}</div>
               <div className="text-sm font-medium  mt-1">{material.name}</div>
             </div>
             <div>
-              <div className="text-xs  uppercase">{t("catalog.type")}</div>
+              <div className="text-xs  uppercase">{t("common.type")}</div>
               <div className="text-sm text-slate-700 mt-1">
                 {material.type || ""}
               </div>
             </div>
             <div>
-              <div className="text-xs  uppercase">{t("catalog.status")}</div>
+              <div className="text-xs  uppercase">{t("common.status")}</div>
               <div className="mt-1">
                 <Badge>{material.status}</Badge>
               </div>

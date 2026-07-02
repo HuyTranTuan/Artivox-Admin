@@ -3,6 +3,7 @@ import { applyAxiosInterceptors } from "@api/interceptors";
 import HTTP_CODE from "@/constants/httpStatus";
 import { toast } from "react-toastify";
 import i18n from "@/i18n/i18n";
+import { translateBackendError } from "@/utils/errorTranslator";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3600/api/v1";
 
@@ -48,7 +49,7 @@ const _send = async (method, path, data, config) => {
     const backendMessage = error.response?.data?.message;
 
     if (statusCode && statusCode < 500 && backendMessage) {
-      errorMsg = backendMessage;
+      errorMsg = translateBackendError(backendMessage, i18n.t);
     } else if (statusCode >= 500) {
       errorMsg = defaultMsg;
     } else if (!statusCode) {

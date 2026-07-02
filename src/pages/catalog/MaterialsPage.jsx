@@ -26,7 +26,7 @@ import { collectionService } from "@services/collectionService";
 import { useAuthStore } from "@store/authStore";
 import useToast from "@hooks/useToast";
 import ImageGalleryModal from "@/components/ImageGalleryModal";
-import { formatDate } from "@utils/formatUtils";
+import { formatDate, formatPrice } from "@utils/formatUtils";
 import {
   DataTable,
   TableToolbar,
@@ -178,26 +178,28 @@ const MaterialsPage = () => {
     },
     {
       key: "name",
-      label: t("catalog.name"),
+      label: t("common.name"),
       width: "2fr",
       render: (item) => (
-        <div className="font-title text-base font-semibold ">{item.name}</div>
+        <div className="font-semibold text-md">{item.name}</div>
       ),
     },
     {
       key: "basePrice",
       label: t("catalog.price"),
       width: "1fr",
-      render: (item) => <div>{item.basePrice?.toLocaleString()} VND</div>,
+      render: (item) => <div>{formatPrice(item.basePrice)}</div>,
     },
     {
       key: "isActive",
-      label: t("catalog.status"),
-      width: "1fr",
+      label: t("common.status"),
+      width: "160px",
       render: (item) => (
-        <Badge>
+        <span
+          className={`px-2 py-1 rounded text-xs font-semibold ${item.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"}`}
+        >
           {item.isActive ? t("catalog.active") : t("catalog.inactive")}
-        </Badge>
+        </span>
       ),
     },
     {
@@ -216,7 +218,7 @@ const MaterialsPage = () => {
     },
     {
       key: "actions",
-      label: t("catalog.actions"),
+      label: t("common.actions"),
       width: "150px",
       sortable: false,
       render: (item) => renderActionButtons(item),
@@ -434,10 +436,10 @@ const MaterialsPage = () => {
               {t("catalog.info")}
             </h3>
             <FormField
-              label={t("catalog.name")}
+              label={t("common.name")}
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder={t("catalog.name")}
+              placeholder={t("common.name")}
             />
             <FormField
               label={t("catalog.slugReadOnly")}
@@ -475,7 +477,7 @@ const MaterialsPage = () => {
               />
             </div>
             <FormField
-              label={t("catalog.status")}
+              label={t("common.status")}
               type="select"
               value={form.isActive ? "active" : "inactive"}
               onChange={(e) =>
@@ -579,7 +581,7 @@ const MaterialsPage = () => {
             </h3>
             <div className="grid grid-cols-3 gap-3">
               <FormField
-                label={t("catalog.type")}
+                label={t("common.type")}
                 value={form.materialType}
                 onChange={(e) =>
                   setForm({ ...form, materialType: e.target.value })
@@ -627,7 +629,7 @@ const MaterialsPage = () => {
             onClick={() => setOpenDialog(null)}
             disabled={saving}
           >
-            {t("catalog.cancel")}
+            {t("common.cancel")}
           </Button>
           <Button
             className="flex-1 gap-2 cursor-pointer"
@@ -635,7 +637,7 @@ const MaterialsPage = () => {
             disabled={saving}
           >
             {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-            {t("catalog.save")}
+            {t("common.save")}
           </Button>
         </div>
       </div>
@@ -652,7 +654,7 @@ const MaterialsPage = () => {
             </div>
             <div className="text-sm  mb-4">{error}</div>
             <Button onClick={refetch} className="cursor-pointer">
-              {t("catalog.retry")}
+              {t("common.retry")}
             </Button>
           </div>
         </Card>
@@ -675,12 +677,12 @@ const MaterialsPage = () => {
           filterOptions={[
             {
               key: "type",
-              label: t("catalog.type"),
+              label: t("common.type"),
               values: types,
             },
             {
               key: "status",
-              label: t("catalog.status"),
+              label: t("common.status"),
               values: statuses,
             },
           ]}
@@ -713,7 +715,7 @@ const MaterialsPage = () => {
             {loading ? (
               <div className="col-span-full flex items-center justify-center py-16">
                 <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-                <span className="ml-3 text-sm ">{t("catalog.loading")}</span>
+                <span className="ml-3 text-sm ">{t("common.loading")}</span>
               </div>
             ) : dt.paginated.length === 0 ? (
               <div className="col-span-full text-center py-8 text-sm ">
@@ -815,7 +817,7 @@ const MaterialsPage = () => {
             className="rounded-2xl shadow-xl p-6 max-w-md w-full mx-4"
           >
             <h2 className="font-title text-xl font-bold  mb-4">
-              {t("catalog.deleteTitle")}
+              {t("common.delete")}
             </h2>
             <p className="text-sm  mb-4">
               {t("catalog.deleteConfirm", { name: selectedItem.name })}
@@ -827,7 +829,7 @@ const MaterialsPage = () => {
                 onClick={() => setOpenDialog(null)}
                 disabled={deleting}
               >
-                {t("catalog.cancel")}
+                {t("common.cancel")}
               </Button>
               <Button
                 variant="destructive"
@@ -836,7 +838,7 @@ const MaterialsPage = () => {
                 disabled={deleting}
               >
                 {deleting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                {t("catalog.delete")}
+                {t("common.delete")}
               </Button>
             </div>
           </div>

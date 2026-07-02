@@ -87,7 +87,7 @@ const CollectionDetailPage = () => {
           <div className="space-y-4">
             <div>
               <div className="text-xs font-semibold uppercase">
-                {t("catalog.name")}
+                {t("common.name")}
               </div>
               <div className="text-sm mt-1">{collection.name}</div>
             </div>
@@ -106,7 +106,7 @@ const CollectionDetailPage = () => {
             {collection.status && (
               <div>
                 <div className="text-xs font-semibold uppercase">
-                  {t("articles.status")}
+                  {t("common.status")}
                 </div>
                 <div className="mt-1">
                   <Badge>{collection.status}</Badge>
@@ -133,7 +133,7 @@ const CollectionDetailPage = () => {
           <div className="overflow-hidden rounded-2xl border border-slate-200">
             <div className="grid grid-cols-[2fr_1fr_1fr] gap-4 px-4 py-3 text-xs uppercase tracking-[0.2em] border-b border-slate-300">
               <div className="font-semibold">{t("catalog.product")}</div>
-              <div className="font-semibold">{t("catalog.type")}</div>
+              <div className="font-semibold">{t("common.type")}</div>
               <div className="font-semibold">{t("catalog.price")}</div>
             </div>
             {(collection.products || []).length === 0 ? (

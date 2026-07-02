@@ -74,6 +74,7 @@ const StaffPermissionsPage = () => {
   }, [items]);
 
   const handleToggle = (email, key) => {
+    if (!isAdmin) return;
     setPermissionsState((prev) => ({
       ...prev,
       [email]: {
@@ -127,7 +128,7 @@ const StaffPermissionsPage = () => {
   const columns = [
     {
       key: "staff",
-      label: "Staff Info",
+      label: t("staff.staffInfo", "Staff Info"),
       width: "2fr",
       render: (item) => (
         <div className="flex items-center gap-3">
@@ -156,20 +157,20 @@ const StaffPermissionsPage = () => {
     },
     {
       key: "role",
-      label: "Role",
+      label: t("staff.role", "Role"),
       width: "1fr",
       render: (item) => (
         <Badge
           variant="outline"
           className="bg-blue-50 text-blue-700 border-blue-200"
         >
-          {item.role}
+          {t(`role.${item.role}`, item.role)}
         </Badge>
       ),
     },
     {
       key: "permissions",
-      label: "Permissions",
+      label: t("staff.permissions", "Permissions"),
       width: "3fr",
       render: (item) => {
         const perms = permissionsState[item.email] || {
@@ -183,9 +184,10 @@ const StaffPermissionsPage = () => {
               <div className="relative flex items-center">
                 <input
                   type="checkbox"
-                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-emerald-500 checked:bg-emerald-500 hover:border-emerald-500"
+                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-emerald-500 checked:bg-emerald-500 hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                   checked={perms.create}
                   onChange={() => handleToggle(item.email, "create")}
+                  disabled={!isAdmin}
                 />
                 <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
@@ -203,7 +205,7 @@ const StaffPermissionsPage = () => {
                 </span>
               </div>
               <span className="text-sm font-medium  select-none group-hover:text-emerald-600 transition-colors">
-                {t("catalog.create")}
+                {t("common.create")}
               </span>
             </label>
 
@@ -211,9 +213,10 @@ const StaffPermissionsPage = () => {
               <div className="relative flex items-center">
                 <input
                   type="checkbox"
-                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-amber-500 checked:bg-amber-500 hover:border-amber-500"
+                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-amber-500 checked:bg-amber-500 hover:border-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
                   checked={perms.update}
                   onChange={() => handleToggle(item.email, "update")}
+                  disabled={!isAdmin}
                 />
                 <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
@@ -231,7 +234,7 @@ const StaffPermissionsPage = () => {
                 </span>
               </div>
               <span className="text-sm font-medium  select-none group-hover:text-amber-600 transition-colors">
-                {t("update")}
+                {t("common.update")}
               </span>
             </label>
 
@@ -239,9 +242,10 @@ const StaffPermissionsPage = () => {
               <div className="relative flex items-center">
                 <input
                   type="checkbox"
-                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-rose-500 checked:bg-rose-500 hover:border-rose-500"
+                  className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-slate-300 transition-all checked:border-rose-500 checked:bg-rose-500 hover:border-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
                   checked={perms.del}
                   onChange={() => handleToggle(item.email, "del")}
+                  disabled={!isAdmin}
                 />
                 <span className="absolute opacity-0 peer-checked:opacity-100 pointer-events-none top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <svg
@@ -259,7 +263,7 @@ const StaffPermissionsPage = () => {
                 </span>
               </div>
               <span className="text-sm font-medium  select-none group-hover:text-rose-600 transition-colors">
-                {t("catalog.delete")}
+                {t("common.delete")}
               </span>
             </label>
           </div>
@@ -268,21 +272,21 @@ const StaffPermissionsPage = () => {
     },
     {
       key: "actions",
-      label: "Actions",
+      label: t("common.actions", "Actions"),
       width: "100px",
       render: (item) => (
         <Button
           size="sm"
-          className="gap-2"
+          className="gap-2 p-2"
           onClick={() => handleSave(item)}
-          disabled={savingId === item.email}
+          disabled={savingId === item.email || !isAdmin}
         >
           {savingId === item.email ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Shield className="h-4 w-4" />
           )}
-          Save
+          {t("common.save", "Save")}
         </Button>
       ),
     },
@@ -304,16 +308,21 @@ const StaffPermissionsPage = () => {
     <section className="space-y-6">
       <Card className="p-6">
         <TableToolbar
-          title="Staff Permissions"
+          title={t("nav.staffPermissions", "Staff Permissions")}
           onRefresh={refetch}
-          searchPlaceholder="Search staff..."
+          searchPlaceholder={t("staff.searchPlaceholder", "Search staff...")}
         />
         <DataTable
           columns={columns}
           rows={dt.paginated}
           keyField="id"
           loading={loading}
-          emptyMessage="No staff members found."
+          emptyMessage={t("staff.noResults", "No staff members found.")}
+          checkedIds={dt.checkedIds}
+          onToggleRow={dt.toggleRow}
+          onToggleAll={dt.toggleAll}
+          allChecked={dt.allChecked}
+          someChecked={dt.someChecked}
         />
       </Card>
     </section>

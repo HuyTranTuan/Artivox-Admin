@@ -156,7 +156,7 @@ const ModelDetailPage = () => {
           <div className="space-y-4">
             <div>
               <div className="text-xs uppercase flex items-center gap-1">
-                <Package className="h-3 w-3" /> {t("catalog.name")}
+                <Package className="h-3 w-3" /> {t("common.name")}
               </div>
               <div className="text-sm font-medium mt-1">{model.name}</div>
             </div>
@@ -165,7 +165,7 @@ const ModelDetailPage = () => {
               <div className="text-sm mt-1">{model.category || ""}</div>
             </div>
             <div>
-              <div className="text-xs uppercase">{t("catalog.status")}</div>
+              <div className="text-xs uppercase">{t("common.status")}</div>
               <div className="mt-1">
                 <Badge>{model.status}</Badge>
               </div>

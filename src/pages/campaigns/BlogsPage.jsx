@@ -101,7 +101,7 @@ const BlogsPage = () => {
             <div>{t("articles.titleLabel")}</div>
             <div>{t("articles.locale")}</div>
             <div>{t("articles.author")}</div>
-            <div>{t("articles.status")}</div>
+            <div>{t("common.status")}</div>
             <div>{t("articles.published")}</div>
           </div>
 

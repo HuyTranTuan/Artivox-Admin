@@ -258,7 +258,7 @@ const StaffAiChatPage = () => {
               <Bot className="h-6 w-6 text-white" />
             </div>
             <div>
-              <div className="font-title text-2xl font-bold text-slate-950">
+              <div className="font-title text-2xl font-bold">
                 {t("chat.title", "AI Assistant Chat")}
               </div>
               <div className="mt-1 text-sm text-slate-500 dark:text-white">
@@ -293,7 +293,7 @@ const StaffAiChatPage = () => {
             <Bot className="h-4 w-4 text-amber-600" />
           </div>
           <div>
-            <div className="font-title text-base font-semibold text-slate-950">
+            <div className="font-title text-base font-semibold">
               {t("chat.aiName", "Artivox AI")}
             </div>
             <div className="flex items-center gap-2">

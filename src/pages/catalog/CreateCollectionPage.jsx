@@ -151,17 +151,17 @@ const CreateCollectionPage = () => {
             )}
             {isEditMode ? (
               <span className="lg:block hidden">
-                {t("catalog.saveChanges")}
+                {t("common.saveChanges")}
               </span>
             ) : (
-              <span className="lg:block hidden">{t("catalog.create")}</span>
+              <span className="lg:block hidden">{t("common.create")}</span>
             )}
           </Button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="mb-1.5 block text-sm font-medium">
-              {t("catalog.name")}
+              {t("common.name")}
             </label>
             <Input
               value={form.name}
@@ -196,7 +196,7 @@ const CreateCollectionPage = () => {
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium">
-            {t("catalog.status")}
+            {t("common.status")}
           </label>
           <select
             value={form.isActive ? "active" : "inactive"}

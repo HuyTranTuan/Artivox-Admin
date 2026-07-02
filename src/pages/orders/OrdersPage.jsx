@@ -183,10 +183,10 @@ const OrdersPage = () => {
     },
     {
       key: "status",
-      label: t("orders.status"),
+      label: t("common.status"),
       render: (r) => (
         <span className={`text-xs font-medium ${statusColor[r.status] || ""}`}>
-          {r.status}
+          {t(`status.${r.status}`, r.status)}
         </span>
       ),
     },
@@ -197,9 +197,9 @@ const OrdersPage = () => {
     },
     {
       key: "actions",
-      label: t("orders.actions"),
+      label: t("common.actions"),
       sortable: false,
-      width: "80px",
+      width: "150px",
       render: (row) => (
         <button
           onClick={() =>
@@ -226,8 +226,9 @@ const OrdersPage = () => {
           filterOptions={[
             {
               key: "status",
-              label: t("orders.filterStatus"),
+              label: t("common.status"),
               values: statusOptions,
+              valuePrefix: "status.",
             },
           ]}
           activeFilters={activeFilters}

@@ -68,7 +68,7 @@ const CreateBlogPage = () => {
         </div>
         <Button onClick={handleSave} className="gap-2">
           <Save className="h-4 w-4" />
-          {t("articles.save")}
+          {t("common.save")}
         </Button>
       </div>
 
@@ -136,7 +136,7 @@ const CreateBlogPage = () => {
         {/* Status */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {t("articles.status")}
+            {t("common.status")}
           </label>
           <select
             value={status}

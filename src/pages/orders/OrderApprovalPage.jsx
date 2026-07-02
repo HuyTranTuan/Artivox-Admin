@@ -138,22 +138,22 @@ const OrderApprovalPage = () => {
     },
     {
       key: "status",
-      label: t("orders.status"),
+      label: t("common.status"),
       render: (r) => (
         <span className={`text-xs font-medium ${statusColor[r.status] || ""}`}>
-          {STATUS_LABELS[r.status] || r.status}
+          {t(`status.${r.status}`, STATUS_LABELS[r.status] || r.status)}
         </span>
       ),
     },
     {
       key: "actions",
-      label: t("orders.actions"),
+      label: t("common.actions"),
       sortable: false,
-      width: "80px",
+      width: "140px",
       render: (row) => (
         <Button
           onClick={() => navigate(`/orders/${row.orderNumber}/approval`)}
-          className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 hover:bg-(--color-primary) cursor-pointer"
+          className="h-8 w-8 p-2! flex items-center justify-center text-blue-600 rounded-[5px] border border-slate-200 hover:bg-(--color-primary) cursor-pointer"
           title="View & Process"
           variant="outline"
         >
@@ -172,7 +172,7 @@ const OrderApprovalPage = () => {
               {t("approval.failedToLoad")}
             </div>
             <div className="text-sm  mb-4">{error}</div>
-            <Button onClick={refetch}>{t("approval.retry")}</Button>
+            <Button onClick={refetch}>{t("common.retry")}</Button>
           </div>
         </Card>
       </section>
@@ -193,8 +193,9 @@ const OrderApprovalPage = () => {
           filterOptions={[
             {
               key: "status",
-              label: t("orders.filterStatus"),
+              label: t("common.status"),
               values: ["PENDING", ...ACTIVE_STATUSES],
+              valuePrefix: "status.",
             },
           ]}
           activeFilters={activeFilters}

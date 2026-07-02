@@ -261,7 +261,7 @@ const CreateModelPage = () => {
           ) : (
             <Save className="h-4 w-4" />
           )}
-          {t("catalog.create")}
+          {t("common.create")}
         </Button>
       </div>
 
@@ -271,7 +271,7 @@ const CreateModelPage = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
-            label={t("catalog.name")}
+            label={t("common.name")}
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
             placeholder={t("catalog.modelNamePlaceholder")}
@@ -331,7 +331,7 @@ const CreateModelPage = () => {
           />
           <FormField
             type="select"
-            label={t("catalog.status")}
+            label={t("common.status")}
             value={form.isActive ? "active" : "inactive"}
             onChange={(e) =>
               handleChange("isActive", e.target.value === "active")

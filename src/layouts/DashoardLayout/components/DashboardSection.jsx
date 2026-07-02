@@ -1,5 +1,15 @@
 import { useMemo, useState } from "react";
-import { DollarSign, ShoppingCart, Box, BarChart3, UserCheck, MessageCircle, Percent, CarTaxiFront, CarTaxiFrontIcon } from "lucide-react";
+import {
+  DollarSign,
+  ShoppingCart,
+  Box,
+  BarChart3,
+  UserCheck,
+  MessageCircle,
+  Percent,
+  CarTaxiFront,
+  CarTaxiFrontIcon,
+} from "lucide-react";
 
 import { Card } from "@components/ui/card";
 import { useCountUp } from "@hooks/useCountUp";
@@ -21,7 +31,8 @@ const buildLinePath = (data, width, height, padding = 20, key = "value") => {
   return data
     .map((d, i) => {
       const x = padding + i * stepX;
-      const y = height - padding - ((d[key] - minV) / range) * (height - padding * 2);
+      const y =
+        height - padding - ((d[key] - minV) / range) * (height - padding * 2);
       return `${i === 0 ? "M" : "L"} ${x} ${y}`;
     })
     .join(" ");
@@ -38,26 +49,69 @@ const buildAreaPath = (data, width, height, padding = 20, key = "value") => {
 
 // Widgets Section
 const WidgetsSection = ({ widgets }) => {
-  const { abandonedCartRate, averageOrderValue, totalAbandonedCarts, totalActiveCarts, totalCompletedOrders, totalRevenue, totalArticleViews } = widgets;
+  const {
+    abandonedCartRate,
+    averageOrderValue,
+    totalAbandonedCarts,
+    totalActiveCarts,
+    totalCompletedOrders,
+    totalRevenue,
+    totalArticleViews,
+  } = widgets;
 
   const { t } = useTranslation();
 
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <SummaryCard label={t("dashboard.totalRevenue")} value={formatPrice(useCountUp(totalRevenue))} icon={DollarSign} color="from-amber-500 to-orange-500" />
+        <SummaryCard
+          label={t("dashboard.totalRevenue")}
+          value={formatPrice(useCountUp(totalRevenue))}
+          icon={DollarSign}
+          color="from-amber-500 to-orange-500"
+        />
 
-        <SummaryCard label={t("dashboard.completedOrders")} value={formatPrice(useCountUp(totalCompletedOrders))} icon={ShoppingCart} color="from-emerald-500 to-teal-500" />
+        <SummaryCard
+          label={t("dashboard.completedOrders")}
+          value={useCountUp(totalCompletedOrders)}
+          icon={ShoppingCart}
+          color="from-emerald-500 to-teal-500"
+        />
 
-        <SummaryCard label={t("dashboard.avgOrderValue")} value={formatPrice(useCountUp(averageOrderValue))} icon={BarChart3} color="from-purple-500 to-pink-500" />
+        <SummaryCard
+          label={t("dashboard.avgOrderValue")}
+          value={formatPrice(useCountUp(averageOrderValue))}
+          icon={BarChart3}
+          color="from-purple-500 to-pink-500"
+        />
 
-        <SummaryCard label={t("dashboard.abandonedCartRate")} value={formatPrice(useCountUp(abandonedCartRate))} icon={Percent} color="from-rose-500 to-red-500" />
+        <SummaryCard
+          label={t("dashboard.abandonedCartRate")}
+          value={`${useCountUp(abandonedCartRate)} %`}
+          icon={Percent}
+          color="from-rose-500 to-red-500"
+        />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
-        <SummaryCard label={t("dashboard.activeCarts")} value={formatPrice(useCountUp(totalActiveCarts))} icon={CarTaxiFront} color="from-rose-500 to-red-500" />
-        <SummaryCard label={t("dashboard.abandonedCarts")} value={formatPrice(useCountUp(totalAbandonedCarts))} icon={CarTaxiFrontIcon} color="from-rose-500 to-red-500" />
-        <SummaryCard label={t("dashboard.totalArticleViews")} value={useCountUp(totalArticleViews)} icon={MessageCircle} color="from-blue-500 to-indigo-500" />
+        <SummaryCard
+          label={t("dashboard.activeCarts")}
+          value={useCountUp(totalActiveCarts)}
+          icon={CarTaxiFront}
+          color="from-rose-500 to-red-500"
+        />
+        <SummaryCard
+          label={t("dashboard.abandonedCarts")}
+          value={useCountUp(totalAbandonedCarts)}
+          icon={CarTaxiFrontIcon}
+          color="from-rose-500 to-red-500"
+        />
+        <SummaryCard
+          label={t("dashboard.totalArticleViews")}
+          value={useCountUp(totalArticleViews)}
+          icon={MessageCircle}
+          color="from-blue-500 to-indigo-500"
+        />
       </div>
     </>
   );
@@ -104,8 +158,14 @@ const ChartsSection = ({ charts }) => {
       <Card className="xl:col-span-7 p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <div className="font-title text-lg font-bold ">{t("dashboard.thirtyDayTrend")}</div>
-            <div className="text-sm text-slate-500 dark:text-white mt-1">{chartView === "revenue" ? t("dashboard.revenue") : t("dashboard.customers")}</div>
+            <div className="font-title text-lg font-bold ">
+              {t("dashboard.thirtyDayTrend")}
+            </div>
+            <div className="text-sm text-slate-500 dark:text-white mt-1">
+              {chartView === "revenue"
+                ? t("dashboard.revenue")
+                : t("dashboard.customers")}
+            </div>
           </div>
           <div className="flex  p-0.5 rounded-xl">
             <Button
@@ -126,7 +186,11 @@ const ChartsSection = ({ charts }) => {
         </div>
         <div className="w-full overflow-x-auto pb-2">
           <div className="min-w-150">
-            <svg viewBox="0 0 600 200" className="w-full h-auto" preserveAspectRatio="none">
+            <svg
+              viewBox="0 0 600 200"
+              className="w-full h-auto"
+              preserveAspectRatio="none"
+            >
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.3" />
@@ -135,10 +199,30 @@ const ChartsSection = ({ charts }) => {
               </defs>
               {[0, 1, 2, 3, 4].map((i) => {
                 const y = 20 + (i / 4) * (200 - 40);
-                return <line key={i} x1="20" y1={y} x2={600 - 20} y2={y} stroke="#e2e8f0" strokeWidth="1" />;
+                return (
+                  <line
+                    key={i}
+                    x1="20"
+                    y1={y}
+                    x2={600 - 20}
+                    y2={y}
+                    stroke="#e2e8f0"
+                    strokeWidth="1"
+                  />
+                );
               })}
-              <path d={buildAreaPath(lineSeries, 600, 200)} fill="url(#areaGrad)" />
-              <path d={buildLinePath(lineSeries, 600, 200)} fill="none" stroke="#f59e0b" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              <path
+                d={buildAreaPath(lineSeries, 600, 200)}
+                fill="url(#areaGrad)"
+              />
+              <path
+                d={buildLinePath(lineSeries, 600, 200)}
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
               {lineSeries.map((d, i) => {
                 if (lineSeries.length < 2) return null;
                 const values = lineSeries.map((r) => r.value);
@@ -148,7 +232,17 @@ const ChartsSection = ({ charts }) => {
                 const stepX = (600 - 40) / (lineSeries.length - 1);
                 const x = 20 + i * stepX;
                 const y = 200 - 20 - ((d.value - minV) / range) * (200 - 40);
-                return <circle key={d.label} cx={x} cy={y} r="4" fill="#fff" stroke="#f59e0b" strokeWidth="2" />;
+                return (
+                  <circle
+                    key={d.label}
+                    cx={x}
+                    cy={y}
+                    r="4"
+                    fill="#fff"
+                    stroke="#f59e0b"
+                    strokeWidth="2"
+                  />
+                );
               })}
               {lineSeries
                 .filter((_, i) => i % 5 === 0 || i === lineSeries.length - 1)
@@ -158,7 +252,13 @@ const ChartsSection = ({ charts }) => {
                   const idx = lineSeries.indexOf(d);
                   const x = 20 + idx * stepX;
                   return (
-                    <text key={d.label} x={x} y={200 - 4} textAnchor="middle" className="text-[10px] fill-slate-500">
+                    <text
+                      key={d.label}
+                      x={x}
+                      y={200 - 4}
+                      textAnchor="middle"
+                      className="text-[10px] fill-slate-500"
+                    >
                       {d.label}
                     </text>
                   );
@@ -170,8 +270,12 @@ const ChartsSection = ({ charts }) => {
 
       {/* Category Revenue Pie Chart */}
       <Card className="p-6 xl:col-span-5">
-        <div className="font-title text-lg font-bold  mb-1">{t("dashboard.revenueByProductType")}</div>
-        <div className="text-sm text-slate-500 dark:text-white mb-6">{t("dashboard.breakdownByCategory")}</div>
+        <div className="font-title text-lg font-bold  mb-1">
+          {t("dashboard.revenueByProductType")}
+        </div>
+        <div className="text-sm text-slate-500 dark:text-white mb-6">
+          {t("dashboard.breakdownByCategory")}
+        </div>
         <div className="overflow-x-auto pb-2">
           <div className="flex flex-col lg:flex-row gap-6 md:gap-10 items-center min-w-100">
             <div className="flex-1 max-w-xs shrink-0">
@@ -180,9 +284,14 @@ const ChartsSection = ({ charts }) => {
             <div className="flex-1 gap-2 sm:gap-4 flex flex-row md:flex-col md:items-start shrink-0">
               {pieData.map((c) => (
                 <div key={c.name} className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }} />
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: c.color }}
+                  />
                   <span className="text-sm font-medium ">{c.name}</span>
-                  <span className="text-xs text-slate-500 dark:text-white">{formatPrice(c.value)}</span>
+                  <span className="text-xs text-slate-500 dark:text-white">
+                    {formatPrice(c.value)}
+                  </span>
                 </div>
               ))}
             </div>
@@ -204,8 +313,12 @@ const TablesSection = ({ tables }) => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold ">{t("dashboard.topStaffByArticles")}</div>
-              <div className="text-sm text-slate-500 dark:text-white mt-1">{t("dashboard.mostPublishedArticles")}</div>
+              <div className="font-title text-lg font-bold ">
+                {t("dashboard.topStaffByArticles")}
+              </div>
+              <div className="text-sm text-slate-500 dark:text-white mt-1">
+                {t("dashboard.mostPublishedArticles")}
+              </div>
             </div>
             <UserCheck className="h-5 w-5 text-slate-400" />
           </div>
@@ -221,8 +334,12 @@ const TablesSection = ({ tables }) => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <div className="font-title text-lg font-bold ">{t("dashboard.topStaffByChat")}</div>
-              <div className="text-sm text-slate-500 dark:text-white mt-1">{t("dashboard.mostActiveInSupport")}</div>
+              <div className="font-title text-lg font-bold ">
+                {t("dashboard.topStaffByChat")}
+              </div>
+              <div className="text-sm text-slate-500 dark:text-white mt-1">
+                {t("dashboard.mostActiveInSupport")}
+              </div>
             </div>
             <MessageCircle className="h-5 w-5 text-slate-400" />
           </div>
@@ -240,25 +357,41 @@ const TablesSection = ({ tables }) => {
       <Card className="p-6">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <div className="font-title text-lg font-bold ">{t("dashboard.topProducts")}</div>
-            <div className="text-sm text-slate-500 dark:text-white mt-1">{t("dashboard.bestSelling")}</div>
+            <div className="font-title text-lg font-bold ">
+              {t("dashboard.topProducts")}
+            </div>
+            <div className="text-sm text-slate-500 dark:text-white mt-1">
+              {t("dashboard.bestSelling")}
+            </div>
           </div>
           <Box className="h-5 w-5 text-slate-400" />
         </div>
         <div className="overflow-x-auto pb-2">
           <div className="min-w-125 space-y-3">
             {(tables.topProductsWithDetails || []).map((p, i) => (
-              <div key={p.productId || i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl  text-slate-700 font-bold text-sm shrink-0">{i + 1}</div>
+              <div
+                key={p.productId || i}
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl  text-slate-700 font-bold text-sm shrink-0">
+                  {i + 1}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-title text-sm font-semibold  truncate">{p.name || t("common.unknownProduct")}</div>
+                  <div className="font-title text-sm font-semibold  truncate">
+                    {p.name || t("common.unknownProduct")}
+                  </div>
                   <div className="text-xs text-slate-500 dark:text-white">
-                    {p.totalSold || 0} {t("dashboard.sold")} - {p.type || t("common.na")}
+                    {p.totalSold || 0} {t("dashboard.sold")} -{" "}
+                    {p.type || t("common.na")}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <div className="font-title text-sm font-bold ">{formatPrice(p.estimatedRevenue)}</div>
-                  <div className="text-xs text-slate-500 dark:text-white">{t("dashboard.revenueLabel")}</div>
+                  <div className="font-title text-sm font-bold ">
+                    {formatPrice(p.estimatedRevenue)}
+                  </div>
+                  <div className="text-xs text-slate-500 dark:text-white">
+                    {t("dashboard.revenueLabel")}
+                  </div>
                 </div>
               </div>
             ))}

@@ -158,7 +158,7 @@ const EditArticlePage = () => {
           </div>
           <Button onClick={handleSave} variant="primary" className="gap-2 px-4 py-2 rounded-xl" disabled={!canUpdate || isSaving}>
             <Save className="h-4 w-4" />
-            {isSaving ? t("common.saving") : t("articles.save")}
+            {isSaving ? t("common.saving") : t("common.save")}
           </Button>
         </div>
         {/* Slug / URL */}

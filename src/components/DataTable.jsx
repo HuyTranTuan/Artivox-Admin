@@ -1,6 +1,21 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { useState, useMemo, useCallback } from "react";
-import { Search, Filter, Plus, RefreshCw, Download, LayoutGrid, LayoutList, ChevronLeft, ChevronRight, X, ArrowUp, ArrowDown, ArrowUpDown, PackageSearch } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Plus,
+  RefreshCw,
+  Download,
+  LayoutGrid,
+  LayoutList,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown,
+  PackageSearch,
+} from "lucide-react";
 
 import { Button } from "@components/ui/button";
 import { Input } from "@components/ui/input";
@@ -32,7 +47,11 @@ export const TableToolbar = ({
       <div className="flex items-center gap-3">
         <h2 className="font-title text-xl font-bold">{title}</h2>
         {onAddNew && (
-          <Button variant="outline-orange" className="gap-1.5 rounded-xl px-3 h-9 text-sm font-semibold " onClick={onAddNew}>
+          <Button
+            variant="outline-orange"
+            className="gap-1.5 rounded-xl px-3 h-9 text-sm font-semibold "
+            onClick={onAddNew}
+          >
             <Plus className="h-4 w-4" />
             {t("catalog.addNew")}
           </Button>
@@ -42,13 +61,23 @@ export const TableToolbar = ({
       {/* Right: actions */}
       <div className="flex items-center gap-1.5">
         {/* Export CSV */}
-        <Button variant="outline" className="gap-1.5 h-9 px-3 text-sm border-green-600 text-green-600 hover:bg-white " onClick={onExportCsv} title="Export CSV">
+        <Button
+          variant="outline"
+          className="gap-1.5 h-9 px-3 text-sm border-green-600 text-green-600 hover:bg-white "
+          onClick={onExportCsv}
+          title="Export CSV"
+        >
           <Download className="h-4 w-4" />
           <span className="hidden sm:inline">{t("csv")}</span>
         </Button>
 
         {/* Refresh */}
-        <Button variant="ghost" className="h-9 w-9 p-0! " onClick={onRefresh} title="Refresh">
+        <Button
+          variant="ghost"
+          className="h-9 w-9 p-0! "
+          onClick={onRefresh}
+          title="Refresh"
+        >
           <RefreshCw className="h-4 w-4" />
         </Button>
 
@@ -88,13 +117,22 @@ export const TableToolbar = ({
                   onKeyDown={(e) => e.key === "Enter" && search.submit()}
                 />
                 {search.value && (
-                  <Button className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 " onClick={search.clear} variant="ghost">
+                  <Button
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 "
+                    onClick={search.clear}
+                    variant="ghost"
+                  >
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 )}
               </div>
             )}
-            <Button variant="ghost" className="h-9 w-9 p-0! " onClick={search.submit} title="Search">
+            <Button
+              variant="ghost"
+              className="h-9 w-9 p-0! "
+              onClick={search.submit}
+              title="Search"
+            >
               <Search className="h-4 w-4" />
             </Button>
           </div>
@@ -103,34 +141,65 @@ export const TableToolbar = ({
         {/* Filter */}
         {filterOptions.length > 0 && (
           <div className="relative">
-            <Button variant={filterOpen || hasActiveFilter ? "default" : "ghost"} className="h-9 w-9 p-0! " onClick={() => setFilterOpen((v) => !v)} title="Filter">
+            <Button
+              variant={filterOpen || hasActiveFilter ? "default" : "ghost"}
+              className="h-9 w-9 p-0! "
+              onClick={() => setFilterOpen((v) => !v)}
+              title="Filter"
+            >
               <Filter className="h-4 w-4" />
             </Button>
 
             {filterOpen && (
-              <div ref={filterRef} className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 w-60 z-40">
+              <div
+                ref={filterRef}
+                className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-2xl shadow-xl p-4 w-60 z-40"
+              >
                 <div className="space-y-4">
                   {filterOptions.map((opt) => (
                     <div key={opt.key}>
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">{opt.label}</div>
+                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                        {opt.label}
+                      </div>
                       <div className="space-y-1">
                         {opt.values.map((val) => (
-                          <Label key={val} className="flex items-center gap-2  py-0.5">
+                          <Label
+                            key={val}
+                            className="flex items-center gap-2  py-0.5"
+                          >
                             <input
                               type="checkbox"
                               checked={activeFilters[opt.key] === val}
-                              onChange={() => onFilterChange(opt.key, activeFilters[opt.key] === val ? null : val)}
+                              onChange={() =>
+                                onFilterChange(
+                                  opt.key,
+                                  activeFilters[opt.key] === val ? null : val,
+                                )
+                              }
                               className="rounded accent-orange-600"
                             />
-                            <span className="text-sm text-slate-700">{val}</span>
+                            <span className="text-sm text-slate-700">
+                              {opt.valuePrefix
+                                ? t(`${opt.valuePrefix}${val}`)
+                                : val}
+                            </span>
                           </Label>
                         ))}
                       </div>
                     </div>
                   ))}
                   {hasActiveFilter && (
-                    <Button variant="secondary" size="sm" className="w-full mt-1 " onClick={() => filterOptions.forEach((opt) => onFilterChange(opt.key, null))}>
-                      {t("catalog.clearFilters")}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full mt-1 "
+                      onClick={() =>
+                        filterOptions.forEach((opt) =>
+                          onFilterChange(opt.key, null),
+                        )
+                      }
+                    >
+                      {t("common.clearFilters")}
                     </Button>
                   )}
                 </div>
@@ -143,7 +212,13 @@ export const TableToolbar = ({
   );
 };
 
-export const TablePagination = ({ currentPage, totalPages, totalItems, pageSize, onPage }) => {
+export const TablePagination = ({
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPage,
+}) => {
   const { t } = useTranslation();
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, totalItems);
@@ -175,37 +250,69 @@ export const TablePagination = ({ currentPage, totalPages, totalItems, pageSize,
         })}
       </div>
       <div className="flex gap-1 items-center">
-        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs " onClick={() => onPage(Math.max(1, currentPage - 1))} disabled={currentPage <= 1}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1 px-2 text-xs "
+          onClick={() => onPage(Math.max(1, currentPage - 1))}
+          disabled={currentPage <= 1}
+        >
           <ChevronLeft className="h-3.5 w-3.5" />
-          {t("discounts.prev")}
+          {t("common.previous")}
         </Button>
 
         {pages[0] > 1 && (
           <>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0! text-xs " onClick={() => onPage(1)}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0! text-xs "
+              onClick={() => onPage(1)}
+            >
               1
             </Button>
-            {pages[0] > 2 && <span className="text-slate-400 text-xs px-1">...</span>}
+            {pages[0] > 2 && (
+              <span className="text-slate-400 text-xs px-1">...</span>
+            )}
           </>
         )}
 
         {pages.map((p) => (
-          <Button key={p} variant={currentPage === p ? "default" : "ghost"} size="sm" className="h-8 w-8 p-0! text-xs " onClick={() => onPage(p)}>
+          <Button
+            key={p}
+            variant={currentPage === p ? "default" : "ghost"}
+            size="sm"
+            className="h-8 w-8 p-0! text-xs "
+            onClick={() => onPage(p)}
+          >
             {p}
           </Button>
         ))}
 
         {pages[pages.length - 1] < totalPages && (
           <>
-            {pages[pages.length - 1] < totalPages - 1 && <span className="text-slate-400 text-xs px-1">...</span>}
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0! text-xs " onClick={() => onPage(totalPages)}>
+            {pages[pages.length - 1] < totalPages - 1 && (
+              <span className="text-slate-400 text-xs px-1">...</span>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0! text-xs "
+              onClick={() => onPage(totalPages)}
+            >
               {totalPages}
             </Button>
           </>
         )}
 
-        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs " onClick={() => onPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage >= totalPages}>
-          {t("catalog.next")}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 gap-1 px-2 text-xs "
+          onClick={() => onPage(Math.min(totalPages, currentPage + 1))}
+          disabled={currentPage >= totalPages}
+        >
+          {t("common.next")}
           <ChevronRight className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -220,8 +327,13 @@ export const EmptyState = ({ message = "No items found." }) => (
 );
 
 const SortIcon = ({ field, sortField, sortDir }) => {
-  if (sortField !== field) return <ArrowUpDown className="h-3 w-3 opacity-30 shrink-0" />;
-  return sortDir === "asc" ? <ArrowUp className="h-3 w-3 text-amber-500 shrink-0" /> : <ArrowDown className="h-3 w-3 text-amber-500 shrink-0" />;
+  if (sortField !== field)
+    return <ArrowUpDown className="h-3 w-3 opacity-30 shrink-0" />;
+  return sortDir === "asc" ? (
+    <ArrowUp className="h-3 w-3 text-amber-500 shrink-0" />
+  ) : (
+    <ArrowDown className="h-3 w-3 text-amber-500 shrink-0" />
+  );
 };
 
 export const DataTable = ({
@@ -287,21 +399,34 @@ export const DataTable = ({
       {/* selection hint */}
       {checkedIds.size > 0 && (
         <div className="mb-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-700 font-medium">
-          {checkedIds.size} {checkedIds.size > 1 ? t("common.rows") : t("common.row")} {t("common.selected")}
+          {checkedIds.size}{" "}
+          {checkedIds.size > 1 ? t("common.rows") : t("common.row")}{" "}
+          {t("common.selected")}
         </div>
       )}
 
-      <div className="overflow-auto rounded-2xl border border-slate-200 bg-white" style={{ maxHeight: "calc(100vh - 340px)" }}>
-        <table className="w-full border-collapse text-left table-fixed" style={{ minWidth: `${minTableWidth}px` }}>
+      <div
+        className="overflow-auto rounded-2xl border border-slate-200 bg-white"
+        style={{ maxHeight: "calc(100vh - 340px)" }}
+      >
+        <table
+          className="w-full border-collapse text-left table-fixed"
+          style={{ minWidth: `${minTableWidth}px` }}
+        >
           <colgroup>
-            <col style={{ width: checkboxColWidth, minWidth: checkboxColWidth }} />
+            <col
+              style={{ width: checkboxColWidth, minWidth: checkboxColWidth }}
+            />
             {columns.map((col) => (
               <col key={col.key} style={getColStyle(col.width || "1fr")} />
             ))}
           </colgroup>
           <thead>
             <tr className="text-[10px] uppercase tracking-widest font-bold border-b border-slate-200">
-              <th style={{ width: checkboxColWidth, minWidth: checkboxColWidth }} className="px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-200 z-10">
+              <th
+                style={{ width: checkboxColWidth, minWidth: checkboxColWidth }}
+                className="px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-200 z-10"
+              >
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -315,7 +440,8 @@ export const DataTable = ({
                 </div>
               </th>
               {columns.map((col) => {
-                const isSortable = col.sortable !== false && col.key !== "actions";
+                const isSortable =
+                  col.sortable !== false && col.key !== "actions";
                 return (
                   <th
                     key={col.key}
@@ -323,9 +449,15 @@ export const DataTable = ({
                     className={`px-4 py-3 whitespace-nowrap align-middle sticky top-0 bg-slate-200 z-10 ${isSortable ? " select-none text-slate-800 hover:text-slate-900" : ""} ${col.headerClass || ""}`}
                     onClick={() => isSortable && onSort?.(col.key)}
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 text-slate-800">
                       {col.label}
-                      {isSortable && onSort && <SortIcon field={col.key} sortField={sortField} sortDir={sortDir} />}
+                      {isSortable && onSort && (
+                        <SortIcon
+                          field={col.key}
+                          sortField={sortField}
+                          sortDir={sortDir}
+                        />
+                      )}
                     </div>
                   </th>
                 );
@@ -335,7 +467,10 @@ export const DataTable = ({
           <tbody className="divide-y divide-slate-100 text-sm">
             {loading ? (
               <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-10 text-center font-semibold">
+                <td
+                  colSpan={columns.length + 1}
+                  className="px-4 py-10 text-center font-semibold"
+                >
                   {t("common.loading")}
                 </td>
               </tr>
@@ -350,7 +485,10 @@ export const DataTable = ({
                 const id = row[keyField];
                 const isChecked = checkedIds.has(id);
                 return (
-                  <tr key={id ?? idx} className={`transition-colors bg-slate-50/50 align-middle font-semibold text-slate-800 ${idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"}`}>
+                  <tr
+                    key={id ?? idx}
+                    className={`transition-colors bg-slate-50/50 align-middle font-semibold text-slate-800 ${idx % 2 === 1 ? "bg-slate-50/50" : "bg-white"}`}
+                  >
                     <td
                       style={{
                         width: checkboxColWidth,
@@ -359,12 +497,23 @@ export const DataTable = ({
                       className="px-4 py-3 align-middle"
                     >
                       <div className="flex items-center">
-                        <input type="checkbox" checked={isChecked} onChange={() => onToggleRow?.(id)} className="rounded accent-orange-600 " />
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => onToggleRow?.(id)}
+                          className="rounded accent-orange-600 "
+                        />
                       </div>
                     </td>
                     {columns.map((col) => (
-                      <td key={col.key} style={getColStyle(col.width || "1fr")} className={`px-4 py-3 align-middle font-semibold ${col.className || ""}`}>
-                        {col.render ? col.render(row, idx) : (row[col.key] ?? "-")}
+                      <td
+                        key={col.key}
+                        style={getColStyle(col.width || "1fr")}
+                        className={`px-4 py-3 align-middle font-semibold ${col.className || ""}`}
+                      >
+                        {col.render
+                          ? col.render(row, idx)
+                          : (row[col.key] ?? "-")}
                       </td>
                     ))}
                   </tr>
@@ -378,7 +527,13 @@ export const DataTable = ({
   );
 };
 
-export function useDataTable({ rows = [], keyField = "id", pageSize = 20, exportFilename = "export", onExportRow = null } = {}) {
+export function useDataTable({
+  rows = [],
+  keyField = "id",
+  pageSize = 20,
+  exportFilename = "export",
+  onExportRow = null,
+} = {}) {
   const [sortField, setSortField] = useState(null);
   const [sortDir, setSortDir] = useState("asc");
   const [checkedIds, setCheckedIds] = useState(new Set());
@@ -405,18 +560,25 @@ export function useDataTable({ rows = [], keyField = "id", pageSize = 20, export
       if (va == null && vb == null) return 0;
       if (va == null) return sortDir === "asc" ? 1 : -1;
       if (vb == null) return sortDir === "asc" ? -1 : 1;
-      if (typeof va === "number" && typeof vb === "number") return sortDir === "asc" ? va - vb : vb - va;
-      return sortDir === "asc" ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      if (typeof va === "number" && typeof vb === "number")
+        return sortDir === "asc" ? va - vb : vb - va;
+      return sortDir === "asc"
+        ? String(va).localeCompare(String(vb))
+        : String(vb).localeCompare(String(va));
     });
   }, [rows, sortField, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(currentPage, totalPages);
-  const paginated = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const paginated = sorted.slice(
+    (safePage - 1) * pageSize,
+    safePage * pageSize,
+  );
 
   const toggleAll = useCallback(() => {
     setCheckedIds((prev) => {
-      if (prev.size === paginated.length && paginated.length > 0) return new Set();
+      if (prev.size === paginated.length && paginated.length > 0)
+        return new Set();
       return new Set(paginated.map((r) => r[keyField]));
     });
   }, [paginated, keyField]);
@@ -430,12 +592,16 @@ export function useDataTable({ rows = [], keyField = "id", pageSize = 20, export
   }, []);
 
   const handleExport = useCallback(() => {
-    const target = checkedIds.size > 0 ? sorted.filter((r) => checkedIds.has(r[keyField])) : sorted;
+    const target =
+      checkedIds.size > 0
+        ? sorted.filter((r) => checkedIds.has(r[keyField]))
+        : sorted;
     const mapped = onExportRow ? target.map(onExportRow) : target;
     exportToCsv(mapped, exportFilename);
   }, [sorted, checkedIds, keyField, onExportRow, exportFilename]);
 
-  const allChecked = paginated.length > 0 && checkedIds.size === paginated.length;
+  const allChecked =
+    paginated.length > 0 && checkedIds.size === paginated.length;
   const someChecked = checkedIds.size > 0 && checkedIds.size < paginated.length;
 
   const setPage = useCallback((p) => setCurrentPage(p), []);

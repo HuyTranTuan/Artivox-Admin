@@ -193,12 +193,12 @@ const DiscountsPage = () => {
   const columns = [
     {
       key: "name",
-      label: t("discounts.name"),
+      label: t("common.name"),
       width: "2fr",
       render: (row) => <div className="font-semibold truncate">{row.name}</div>,
     },
     { key: "code", label: t("discounts.code"), width: "1fr" },
-    { key: "type", label: t("discounts.type") },
+    { key: "type", label: t("common.type") },
     {
       key: "discount",
       label: t("discounts.discount"),
@@ -225,31 +225,41 @@ const DiscountsPage = () => {
     },
     {
       key: "isActive",
-      label: t("discounts.status"),
-      render: (row) => <Badge>{row.isActive ? "Active" : "Inactive"}</Badge>,
+      label: t("common.status"),
+      render: (row) => (
+        <Badge
+          className={`px-2 py-1 rounded text-xs font-semibold ${
+            row.isActive
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          {row.isActive ? t("catalog.active") : t("catalog.inactive")}
+        </Badge>
+      ),
     },
     {
       key: "startDate",
       label: t("discounts.startDate"),
-      width: "100px",
+      width: "140px",
       render: (row) => <span className="text-xs">{row.startDate}</span>,
     },
     {
       key: "endDate",
       label: t("discounts.endDate"),
-      width: "100px",
+      width: "140px",
       render: (row) => <span className="text-xs">{row.endDate}</span>,
     },
     {
       key: "actions",
-      label: t("discounts.actions"),
+      label: t("common.actions"),
       sortable: false,
-      width: "110px",
+      width: "150px",
       render: (row) => (
         <div className="flex gap-1.5">
           <Button
             variant="outline"
-            className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
+            className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-blue-600 hover:bg-blue-50 transition"
             onClick={() => {
               setSi(row);
               setOd("view");
@@ -278,7 +288,7 @@ const DiscountsPage = () => {
                 });
                 setOd("edit");
               }}
-              className="h-8 w-8 p-0! flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
+              className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-emerald-600 hover:bg-emerald-50 transition"
             >
               <Edit style={{ width: 16, height: 16 }} />
             </Button>
@@ -286,7 +296,7 @@ const DiscountsPage = () => {
           {canDelete && (
             <Button
               variant="outline"
-              className="h-8 w-8 flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
+              className="h-8 w-8 p-2! flex items-center justify-center rounded-[5px] border border-slate-200 text-rose-600 hover:bg-rose-50 transition"
               onClick={() => {
                 setSi(row);
                 setOd("delete");
@@ -335,7 +345,7 @@ const DiscountsPage = () => {
           search={search}
           searchPlaceholder={t("catalog.searchPlaceholder")}
           filterOptions={[
-            { key: "type", label: t("discounts.type"), values: types },
+            { key: "type", label: t("common.type"), values: types },
           ]}
           activeFilters={activeFilters}
           onFilterChange={(key, val) =>
@@ -481,9 +491,9 @@ const DiscountsPage = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    ["name", t("discounts.name")],
+                    ["name", t("common.name")],
                     ["code", t("discounts.code")],
-                    ["type", t("discounts.type")],
+                    ["type", t("common.type")],
                     ["discount", t("discounts.discount")],
                     ["usage", t("discounts.usage")],
                   ].map(([k, label]) => (
@@ -498,7 +508,7 @@ const DiscountsPage = () => {
                   ))}
                   <div>
                     <span className="text-[10px] uppercase font-bold">
-                      {t("discounts.status")}
+                      {t("common.status")}
                     </span>
                     <div
                       className={`text-sm font-medium mt-0.5 ${si?.isActive ? "text-emerald-600" : "text-rose-500"}`}
@@ -520,7 +530,7 @@ const DiscountsPage = () => {
                 </h2>
                 <div className="space-y-3">
                   {[
-                    ["name", "text", t("discounts.name"), "campaign-name"],
+                    ["name", "text", t("common.name"), "campaign-name"],
                     ["code", "text", t("discounts.code"), "campaign-code"],
                     [
                       "value",
@@ -545,7 +555,7 @@ const DiscountsPage = () => {
                   ))}
                   <div>
                     <Label className="text-sm mb-1 block">
-                      {t("discounts.type")}
+                      {t("common.type")}
                     </Label>
                     <Select
                       value={form.type ?? ""}
@@ -566,7 +576,7 @@ const DiscountsPage = () => {
                   </div>
                   <div>
                     <Label className="text-sm mb-1 block">
-                      {t("discounts.status")}
+                      {t("common.status")}
                     </Label>
                     <Select
                       value={form.isActive ? "ACTIVE" : "INACTIVE"}
@@ -610,7 +620,7 @@ const DiscountsPage = () => {
                     onClick={() => setOd(null)}
                     disabled={saving}
                   >
-                    {t("discounts.cancel")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     className="flex-1"
@@ -656,7 +666,7 @@ const DiscountsPage = () => {
                       }
                     }}
                   >
-                    {saving ? "Saving¦" : t("catalog.save")}
+                    {saving ? "Saving¦" : t("common.save")}
                   </Button>
                 </div>
               </>
@@ -677,7 +687,7 @@ const DiscountsPage = () => {
                     onClick={() => setOd(null)}
                     disabled={saving}
                   >
-                    {t("discounts.cancel")}
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     variant="destructive"
@@ -696,7 +706,7 @@ const DiscountsPage = () => {
                       }
                     }}
                   >
-                    {saving ? "Deleting¦" : t("discounts.delete")}
+                    {saving ? "Deleting¦" : t("common.delete")}
                   </Button>
                 </div>
               </>

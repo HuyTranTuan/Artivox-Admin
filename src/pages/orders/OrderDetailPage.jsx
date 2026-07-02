@@ -306,7 +306,7 @@ const OrderDetailPage = () => {
               disabled={updating}
             >
               <XCircle className="h-4 w-4" />
-              {t("catalog.cancel")}
+              {t("common.cancel")}
             </Button>
             {canAdvance && (
               <Button
@@ -506,10 +506,10 @@ const OrderDetailPage = () => {
                     key={idx}
                     className="grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 px-4 py-2.5 text-sm border-b border-slate-100 last:border-b-0 items-center"
                   >
-                    <div className="font-medium  truncate">{item.name}</div>
-                    <div className="text-xs  font-mono">{item.sku}</div>
-                    <div className="text-slate-700">x{item.qty}</div>
-                    <div className="text-right font-medium ">
+                    <div className="font-medium truncate">{item.name}</div>
+                    <div className="text-xs font-mono">{item.sku}</div>
+                    <div className="">x{item.qty}</div>
+                    <div className="text-right font-medium">
                       {formatPrice(item.price)}
                     </div>
                   </div>
@@ -519,18 +519,16 @@ const OrderDetailPage = () => {
 
             {/* Total */}
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
-              <div className="text-xs  uppercase tracking-wider font-semibold">
+              <div className="text-xs uppercase tracking-wider font-semibold">
                 {t("subtotal")}
               </div>
-              <div className="text-sm text-slate-700">
-                {formatPrice(order.amount)}
-              </div>
+              <div className="text-sm">{formatPrice(order.amount)}</div>
             </div>
             <div className="flex items-center justify-between">
-              <div className="text-xs  uppercase tracking-wider font-semibold">
+              <div className="text-xs uppercase tracking-wider font-semibold">
                 {t("shipping")}
               </div>
-              <div className="text-sm text-slate-700">{t("free")}</div>
+              <div className="text-sm">{t("free")}</div>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 pt-3">
               <div className="font-title text-base font-bold ">
