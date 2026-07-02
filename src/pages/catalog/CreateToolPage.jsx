@@ -9,6 +9,7 @@ import {
   GripVertical,
   ImageIcon,
   Loader2,
+  Trash,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -199,8 +200,9 @@ const CreateToolPage = () => {
             variant="destructive"
             size="icon"
             onClick={onClear}
-            className="ml-auto"
+            className="px-3 py-2 gap-2 cursor-pointer"
           >
+            <Trash className="h-4 w-4" />
             {t("catalog.remove")}
           </Button>
         )}
@@ -226,7 +228,7 @@ const CreateToolPage = () => {
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className="gap-2 cursor-pointer"
+          className="gap-2 px-3 py-2"
         >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -359,7 +361,7 @@ const CreateToolPage = () => {
               galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-2 py-1.5"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5"
                 >
                   <GripVertical className="h-4 w-4 text-slate-300 shrink-0 cursor-grab" />
                   <img
@@ -375,7 +377,8 @@ const CreateToolPage = () => {
                   </span>
                   <Button
                     variant="destructive"
-                    size="sm"
+                    size="icon"
+                    className="shrink-0 bg-transparent hover:bg-transparent hover:text-rose-500 cursor-pointer"
                     onClick={() => removeGalleryImage(idx)}
                   >
                     <X className="h-4 w-4" />
@@ -395,7 +398,7 @@ const CreateToolPage = () => {
           <Button
             variant="primary"
             size="sm"
-            className="mt-2 gap-1.5 text-xs cursor-pointer"
+            className="mt-2 px-3 py-2 gap-1.5 text-xs cursor-pointer"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />

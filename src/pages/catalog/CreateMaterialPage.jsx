@@ -9,6 +9,7 @@ import {
   GripVertical,
   ImageIcon,
   Loader2,
+  Trash,
 } from "lucide-react";
 import { Button } from "@components/ui/button";
 import { Card } from "@components/ui/card";
@@ -18,6 +19,7 @@ import useToast from "@hooks/useToast";
 import { materialsService } from "@services/materialsService";
 import { collectionService } from "@services/collectionService";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const CreateMaterialPage = () => {
   const navigate = useNavigate();
@@ -187,11 +189,12 @@ const CreateMaterialPage = () => {
         </div>
         {value && (
           <Button
-            type="button"
+            className="px-3 py-2 gap-2 cursor-pointer"
             variant="destructive"
             size="sm"
             onClick={onClear}
           >
+            <Trash className="h-4 w-4" />
             {t("catalog.remove")}
           </Button>
         )}
@@ -218,7 +221,11 @@ const CreateMaterialPage = () => {
             {t("catalog.addNewMaterial")}
           </h2>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="gap-2 px-3 py-2"
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -359,9 +366,9 @@ const CreateMaterialPage = () => {
         />
 
         <div>
-          <label className="text-xs font-semibold mb-1.5 block">
+          <Label className="text-xs font-semibold mb-1.5 block">
             {t("catalog.gallery")} ({galleryImages.length})
-          </label>
+          </Label>
           <div className="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3">
             {galleryImages.length === 0 ? (
               <div className="text-center py-6 text-xs ">
@@ -372,7 +379,7 @@ const CreateMaterialPage = () => {
               galleryImages.map((img, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-slate-50 rounded-xl px-2 py-1.5"
+                  className="flex items-center gap-2 rounded-xl px-2 py-1.5"
                 >
                   <GripVertical className="h-4 w-4 shrink-0 cursor-grab" />
                   <img
@@ -389,7 +396,8 @@ const CreateMaterialPage = () => {
                   <Button
                     variant="destructive"
                     onClick={() => removeGalleryImage(idx)}
-                    size="sm"
+                    size="icon"
+                    className="shrink-0 bg-transparent hover:bg-transparent hover:text-rose-500 cursor-pointer"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -409,7 +417,7 @@ const CreateMaterialPage = () => {
             type="button"
             variant="outline"
             size="sm"
-            className="mt-2 gap-1.5 text-xs cursor-pointer border border-(--color-border) hover:bg-(--color-primary)"
+            className="mt-2 gap-1.5 px-3 py-2 text-xs cursor-pointer border border-(--color-border) hover:bg-(--color-primary) hover:text-(--color-background)!"
             onClick={() => galleryInputRef.current?.click()}
           >
             <Plus className="h-3.5 w-3.5" />
