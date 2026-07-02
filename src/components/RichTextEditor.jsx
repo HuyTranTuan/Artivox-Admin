@@ -223,7 +223,10 @@ const RichTextEditor = ({
       </div>
 
       {/* Editor Content */}
-      <EditorContent editor={editor} />
+      <EditorContent
+        editor={editor}
+        className="min-h-[300px] max-h-[500px] overflow-y-auto"
+      />
     </div>
   );
 };

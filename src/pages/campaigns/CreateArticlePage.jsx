@@ -131,7 +131,7 @@ const CreateArticlePage = () => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card className="p-6 space-y-5">
           {/* Slug / URL */}
           <FormField
@@ -204,8 +204,8 @@ const CreateArticlePage = () => {
             {/* Content - Rich Text Editor */}
           </>
         </Card>
-        <Card>
-          <Label className="mb-1.5 block text-sm font-medium">
+        <Card className="p-6 space-y-5">
+          <Label className="mb-3 block text-sm font-medium">
             {t("articles.contentWithLocale", {
               locale: activeTab.toUpperCase(),
             })}
@@ -216,6 +216,7 @@ const CreateArticlePage = () => {
             onChange={(value) =>
               handleTranslationChange(activeTab, "content", value)
             }
+            className="h-full overflow-y-auto"
             placeholder={t("articles.writeContentWithLocale", {
               locale: activeTab.toUpperCase(),
             })}
